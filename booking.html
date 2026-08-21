@@ -1,1 +1,138 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking — Ahmed English</title><link rel="stylesheet" href="styles.css"><script src="js/config.js"></script></head><body><header class="nav"><div class="container nav-inner"><a class="brand" href="index.html">Ahmed English</a><nav class="nav-links"><a href="about.html">About</a><a href="lessons.html">Lessons</a><a href="packages.html">Packages</a><a href="login.html">Student login</a></nav></div></header><section class="section"><div class="container"><div class="section-head"><div class="eyebrow">Booking</div><h1>Choose your lesson time.</h1><p class="lead">Paste the official Cal.com inline embed code into the booking panel when your event is ready.</p></div><div class="booking-wrap"><div class="booking-fallback"><div><h3>Cal.com booking calendar</h3><p class="muted">The button is a reliable fallback for mobile and when an embed is blocked.</p><a class="btn btn-primary" id="cal-link" target="_blank">Open booking calendar</a></div></div></div></div></section><script>document.getElementById("cal-link").href=`${APP_CONFIG.cal.base}/${APP_CONFIG.cal.username}/${APP_CONFIG.cal.trialEvent}`;</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schedule a Lesson — Ahmed English</title>
+  <meta name="description" content="Book your 1-on-1 private English lesson or trial session directly on the online booking calendar.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html">
+        <div class="brand-icon">A</div>
+        <span class="brand-text">Ahmed English</span>
+      </a>
+      <nav class="nav-links">
+        <a href="about.html">About</a>
+        <a href="lessons.html">Lessons</a>
+        <a href="packages.html">Packages</a>
+        <a href="booking.html" class="active">Booking</a>
+        <a href="login.html">Student Login</a>
+        <a class="btn btn-primary btn-sm" href="booking.html">Book a Trial</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Booking Main Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Interactive Booking Calendar</div>
+        <h1>Select Your Lesson Time.</h1>
+        <p class="lead">Choose a convenient date and time for your 1-on-1 private session. All times automatically adjust to your local timezone.</p>
+      </div>
+
+      <!-- Event Type Selector -->
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" id="btn-trial">30-Min Trial Lesson</button>
+        <button class="btn btn-secondary btn-sm" id="btn-lesson">60-Min Private Lesson</button>
+        <button class="btn btn-secondary btn-sm" id="btn-consult">30-Min Consultation</button>
+      </div>
+
+      <!-- Booking Calendar Wrapper Container -->
+      <div class="booking-wrap" id="booking-container" style="min-height:700px;">
+        <div class="booking-fallback" id="booking-fallback">
+          <div>
+            <div class="card-icon" style="margin:0 auto 16px;">📅</div>
+            <h3>Cal.com Live Calendar</h3>
+            <p style="max-width:480px;margin:8px auto 24px;color:var(--ink-secondary);">
+              Click below to launch your booking session directly on Cal.com.
+            </p>
+            <a class="btn btn-primary" id="cal-direct-link" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax/30min-trial">
+              Open Booking Calendar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div><strong id="footer-brand">Ahmed English</strong> — Professional Online English Lessons</div>
+      <div>
+        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
+        <a id="contact-email">contact@ahmedenglish.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cfg = window.APP_CONFIG.cal;
+      const calLink = document.getElementById("cal-direct-link");
+      const container = document.getElementById("booking-container");
+
+      const btnTrial = document.getElementById("btn-trial");
+      const btnLesson = document.getElementById("btn-lesson");
+      const btnConsult = document.getElementById("btn-consult");
+
+      function updateActiveEvent(activeBtn, eventSlug) {
+        [btnTrial, btnLesson, btnConsult].forEach(b => {
+          b.className = "btn btn-secondary btn-sm";
+        });
+        activeBtn.className = "btn btn-primary btn-sm";
+
+        const fullUrl = `${cfg.base}/${cfg.username}/${eventSlug}`;
+        if (calLink) calLink.href = fullUrl;
+
+        // Re-embed Cal.com if loaded
+        if (window.Cal) {
+          window.Cal("inline", {
+            elementOrSelector: "#booking-container",
+            calLink: `${cfg.username}/${eventSlug}`,
+            layout: "month_view"
+          });
+        }
+      }
+
+      btnTrial.addEventListener("click", () => updateActiveEvent(btnTrial, cfg.trialEvent));
+      btnLesson.addEventListener("click", () => updateActiveEvent(btnLesson, cfg.lessonEvent));
+      btnConsult.addEventListener("click", () => updateActiveEvent(btnConsult, cfg.consultEvent));
+
+      // Load Cal.com embed dynamically
+      (function (C, A, L) {
+        let p = function (a, ar) { a.q.push(ar); };
+        let l = C.Cal = C.Cal || function () {
+          let cal = l; let arg = arguments;
+          if (!cal.q) { cal.q = []; }
+          p(cal, arg);
+        };
+        let d = A.createElement(L);
+        d.async = 1;
+        d.src = "https://app.cal.com/embed/embed.js";
+        A.head.appendChild(d);
+      })(window, document, "script");
+
+      setTimeout(() => {
+        if (window.Cal) {
+          window.Cal("init", { origin: "https://cal.com" });
+          window.Cal("inline", {
+            elementOrSelector: "#booking-container",
+            calLink: `${cfg.username}/${cfg.trialEvent}`,
+            layout: "month_view"
+          });
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>

@@ -1,1 +1,74 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login — Ahmed English</title><link rel="stylesheet" href="styles.css"><script src="js/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-client.js"></script><script src="js/auth.js"></script><script src="js/login.js"></script></head><body class="auth-page"><main class="auth-box"><div class="auth-logo"><div class="avatar">A</div><strong>Ahmed English</strong></div><div class="eyebrow">Student portal</div><h2 id="mode">Welcome back</h2><p class="muted">Sign in to view your lessons, homework and package information.</p><form id="auth-form"><div class="field"><label>Email</label><input id="email" type="email" required></div><div class="field"><label>Password</label><input id="password" type="password" required minlength="6"></div><button class="btn btn-primary" style="width:100%" id="submit">Sign in</button><div class="message" id="message"></div></form><p><a href="#" id="switcher">Create a student account</a></p><a href="index.html">← Back</a></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login & Portal Access — Ahmed English</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</head>
+<body class="auth-page">
+
+  <main class="auth-box">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <div class="brand-icon">A</div>
+      <div>
+        <strong style="font-family:var(--font-heading);font-size:1.2rem;">Ahmed English</strong>
+        <div style="font-size:0.8rem;color:var(--ink-muted);">Private Student & Tutor Portal</div>
+      </div>
+    </div>
+
+    <h2 id="mode-title" style="font-size:1.75rem;margin-bottom:6px;">Welcome Back</h2>
+    <p class="lead" id="mode-sub" style="font-size:0.92rem;margin-bottom:24px;">
+      Sign in to view your scheduled lessons, homework assignments, and study materials.
+    </p>
+
+    <form id="auth-form">
+      <div class="form-group" id="full-name-group" style="display:none;">
+        <label for="full_name">Full Name</label>
+        <input class="form-control" id="full_name" type="text" placeholder="e.g. Sarah Miller">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input class="form-control" id="email" type="email" placeholder="name@company.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input class="form-control" id="password" type="password" placeholder="••••••••" required minlength="6">
+      </div>
+
+      <div class="form-group" id="role-group" style="display:none;">
+        <label for="role">Account Type</label>
+        <select class="form-control" id="role">
+          <option value="student">Student</option>
+          <option value="tutor">Tutor Workspace Owner</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;margin-top:8px;" id="submit-btn" type="submit">
+        Sign In
+      </button>
+
+      <div class="message-box" id="message"></div>
+    </form>
+
+    <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:0.9rem;">
+      <p style="margin-bottom:12px;">
+        <a href="#" id="switcher" style="color:var(--accent-indigo);font-weight:700;text-decoration:none;">
+          Don't have an account? Create one
+        </a>
+      </p>
+      <a href="index.html" style="color:var(--ink-muted);text-decoration:none;font-size:0.85rem;">
+        ← Return to Main Website
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>

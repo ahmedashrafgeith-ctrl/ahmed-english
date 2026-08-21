@@ -1,1 +1,147 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Packages — Ahmed English</title><link rel="stylesheet" href="styles.css"><script src="js/config.js"></script></head><body><header class="nav"><div class="container nav-inner"><a class="brand" href="index.html">Ahmed English</a><nav class="nav-links"><a href="about.html">About</a><a href="lessons.html">Lessons</a><a href="packages.html">Packages</a><a href="booking.html">Booking</a><a href="login.html">Student login</a></nav></div></header><section class="section soft"><div class="container"><div class="section-head"><div class="eyebrow">Learning plans</div><h1>Build a routine that lasts.</h1><p class="lead">Connect your real Stripe Payment Links below.</p></div><div class="grid-3" id="plans"></div></div></section><script>const p=document.getElementById("plans"),c=APP_CONFIG;[["Starter","4 lessons / month","A steady routine.","starterPaymentLink"],["Progress","8 lessons / month","More weekly practice.","progressPaymentLink"],["Intensive","12 lessons / month","A focused schedule.","intensivePaymentLink"]].forEach((x,i)=>{const e=document.createElement("div");e.className="card package"+(i===1?" featured":"");e.innerHTML=`${i===1?'<span class="tag">Recommended</span>':''}<h3>${x[0]}</h3><p class="muted">${x[1]}</p><p class="muted">${x[2]}</p><ul class="checks"><li>Personalized lessons</li><li>Flexible booking</li><li>Progress notes</li></ul><a class="btn btn-primary" target="_blank">Choose ${x[0]}</a>`;e.querySelector("a").href=c.stripe[x[3]];p.appendChild(e)});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson Packages & Pricing — Ahmed English</title>
+  <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing and instant Stripe checkout.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html">
+        <div class="brand-icon">A</div>
+        <span class="brand-text">Ahmed English</span>
+      </a>
+      <nav class="nav-links">
+        <a href="about.html">About</a>
+        <a href="lessons.html">Lessons</a>
+        <a href="packages.html" class="active">Packages</a>
+        <a href="booking.html">Booking</a>
+        <a href="login.html">Student Login</a>
+        <a class="btn btn-primary btn-sm" href="booking.html">Book a Trial</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Learning Subscriptions</div>
+        <h1>Build a Consistent Routine That Delivers Results.</h1>
+        <p class="lead">Flexible monthly lesson plans with full access to your private Student Portal, customized lesson notes, and priority calendar booking.</p>
+      </div>
+
+      <div class="grid-3" id="plans-container"></div>
+    </div>
+  </section>
+
+  <!-- Guarantee & Trial Callout -->
+  <section class="section">
+    <div class="container">
+      <div class="card grid-2" style="align-items:center;">
+        <div>
+          <h3>Not Sure Which Plan to Select?</h3>
+          <p>Book a single 30-minute trial lesson first. We'll discuss your goals and choose the ideal plan together.</p>
+        </div>
+        <div style="text-align:right;">
+          <a class="btn btn-primary" href="booking.html">Book a 30-Min Trial First</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div><strong id="footer-brand">Ahmed English</strong> — Professional Online English Lessons</div>
+      <div>
+        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
+        <a id="contact-email">contact@ahmedenglish.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("plans-container");
+      const cfg = window.APP_CONFIG.stripe;
+
+      const packages = [
+        {
+          title: "Starter Plan",
+          price: "4 Lessons",
+          subtext: "1 lesson per week",
+          desc: "Ideal for maintaining steady progress and focusing on key speaking bottlenecks.",
+          linkKey: "starterPaymentLink",
+          featured: false,
+          features: [
+            "4 x 60-min 1-on-1 private lessons",
+            "Personalized lesson notes & vocabulary",
+            "Student Portal dashboard access",
+            "Flexible booking & rescheduling"
+          ]
+        },
+        {
+          title: "Progress Plan",
+          price: "8 Lessons",
+          subtext: "2 lessons per week",
+          desc: "Recommended for steady fluency gains, job interview prep, and business confidence.",
+          linkKey: "progressPaymentLink",
+          featured: true,
+          tag: "Most Popular",
+          features: [
+            "8 x 60-min 1-on-1 private lessons",
+            "Priority calendar booking",
+            "Customized homework & assignments",
+            "Direct tutor email support",
+            "Detailed monthly progress report"
+          ]
+        },
+        {
+          title: "Intensive Plan",
+          price: "12 Lessons",
+          subtext: "3 lessons per week",
+          desc: "Fast-track your fluency for urgent corporate roles, presentations, or moves abroad.",
+          linkKey: "intensivePaymentLink",
+          featured: false,
+          features: [
+            "12 x 60-min 1-on-1 private lessons",
+            "Highest priority calendar slots",
+            "Full resume & presentation editing",
+            "Unlimited homework feedback",
+            "1-on-1 WhatsApp audio support"
+          ]
+        }
+      ];
+
+      container.innerHTML = packages.map(p => `
+        <div class="card package-card ${p.featured ? 'featured' : ''}">
+          ${p.tag ? `<span class="package-tag">${p.tag}</span>` : ''}
+          <div>
+            <h3>${p.title}</h3>
+            <div class="package-price">${p.price}</div>
+            <small style="color:var(--ink-muted);font-weight:700;">${p.subtext}</small>
+            <p style="margin-top:12px;font-size:0.9rem;">${p.desc}</p>
+            <ul class="checks-list">
+              ${p.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+          </div>
+          <div style="margin-top:24px;">
+            <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${cfg[p.linkKey]}" target="_blank">
+              Select ${p.title}
+            </a>
+          </div>
+        </div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>

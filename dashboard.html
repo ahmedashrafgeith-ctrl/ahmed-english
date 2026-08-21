@@ -1,1 +1,145 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tutor Dashboard — Ahmed English</title><link rel="stylesheet" href="styles.css"><script src="js/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-client.js"></script><script src="js/auth.js"></script><script src="js/dashboard.js"></script></head><body class="dashboard"><div class="dash-shell"><aside class="sidebar"><div class="brand">Ahmed English</div><small class="muted">Tutor workspace</small><nav><a class="active" href="#overview">Overview</a><a href="#students">Students</a><a href="#activity">Lesson activity</a><a id="cal" target="_blank">Bookings</a><a id="stripe" target="_blank">Payments</a><a id="calendar" target="_blank">Calendar</a><a href="#" onclick="signOut();return false">Sign out</a></nav></aside><main class="dash-main"><div class="dash-top"><div><div class="eyebrow">Tutor dashboard</div><h2>Welcome, <span id="user-name"></span></h2></div><a class="btn btn-primary" href="index.html">Public site</a></div><div class="stats" id="overview"><div class="stat">Students<strong id="students-count">0</strong></div><div class="stat">Active subscriptions<strong id="subscriptions-count">0</strong></div><div class="stat">Lesson notes<strong id="notes-count">0</strong></div><div class="stat">Homework<strong id="homework-count">0</strong></div></div><section class="panel" id="students"><h3>Students</h3><div style="overflow:auto"><table class="table"><thead><tr><th>Student</th><th>Level</th><th>Goal</th><th>Status</th></tr></thead><tbody id="student-list"></tbody></table></div></section><section class="panel" id="activity"><h3>Recent lesson activity</h3><div id="recent-notes"></div></section><section class="panel"><h3>External tools</h3><div class="resource-grid"><a class="card resource" id="drive" target="_blank">Teaching materials<br><small>Google Drive</small></a><a class="card resource" id="cal2" target="_blank">Bookings<br><small>Cal.com</small></a><a class="card resource" id="stripe2" target="_blank">Payments<br><small>Stripe</small></a></div></section></main></div><script>document.addEventListener("DOMContentLoaded",()=>{cal.href=APP_CONFIG.cal.dashboardUrl;calendar.href=APP_CONFIG.calendar;stripe.href=APP_CONFIG.stripe.dashboardUrl;drive.href=APP_CONFIG.drive;cal2.href=APP_CONFIG.cal.dashboardUrl;stripe2.href=APP_CONFIG.stripe.dashboardUrl});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor Workspace Dashboard — Ahmed English</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</head>
+<body style="background:#f8fafc;">
+
+  <div class="dash-shell">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:4px;">
+          <div class="brand-icon">A</div>
+          <span>Ahmed English</span>
+        </a>
+        <small style="font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.05em;">Tutor Command Center</small>
+
+        <nav>
+          <a class="active" href="#overview">📊 Workspace Overview</a>
+          <a href="#students">👥 Student Roster</a>
+          <a href="#activity">📝 Lesson Activity</a>
+          <a id="cal-link-side" target="_blank">📅 Bookings (Cal.com)</a>
+          <a id="stripe-link-side" target="_blank">💳 Payments (Stripe)</a>
+        </nav>
+      </div>
+
+      <div>
+        <a href="index.html" class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:8px;">View Public Site</a>
+        <button class="btn btn-soft btn-sm" style="width:100%;" onclick="signOut()">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Dashboard Main Area -->
+    <main class="dash-main">
+      <div class="dash-header">
+        <div>
+          <div class="eyebrow">Tutor Workspace</div>
+          <h2>Welcome back, <span id="user-name">Ahmed</span>!</h2>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-secondary btn-sm" id="add-hw-btn">Assign Homework</button>
+          <button class="btn btn-primary btn-sm" id="add-note-btn">+ Add Lesson Note</button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="overview">
+        <div class="stat-card">
+          <small>Total Enrolled Students</small>
+          <strong id="students-count">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>Active Subscriptions</small>
+          <strong id="subscriptions-count">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>Lesson Notes Published</small>
+          <strong id="notes-count">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>Pending Homework Tasks</small>
+          <strong id="homework-count">0</strong>
+        </div>
+      </div>
+
+      <!-- Student Roster Panel -->
+      <section class="panel" id="students">
+        <div class="panel-header">
+          <h3>Student Roster & Subscriptions</h3>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>English Level</th>
+                <th>Target Goal</th>
+                <th>Subscription Status</th>
+              </tr>
+            </thead>
+            <tbody id="student-list">
+              <tr>
+                <td colspan="4" class="muted">Loading student directory...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Recent Activity Panel -->
+      <section class="panel" id="activity">
+        <div class="panel-header">
+          <h3>Recent Lesson Activity & Notes</h3>
+        </div>
+        <div id="recent-notes">
+          <p class="muted">Loading recent lesson notes...</p>
+        </div>
+      </section>
+
+      <!-- External Tools Grid -->
+      <section class="panel">
+        <h3>Connected Tutor Tools</h3>
+        <div class="grid-3" style="margin-top:16px;">
+          <a class="card" id="drive-link" target="_blank" style="text-decoration:none;">
+            <div class="card-icon">📁</div>
+            <strong>Teaching Materials</strong>
+            <p style="font-size:0.85rem;margin-top:4px;">Google Drive Folder</p>
+          </a>
+          <a class="card" id="cal-link" target="_blank" style="text-decoration:none;">
+            <div class="card-icon">📅</div>
+            <strong>Calendar & Bookings</strong>
+            <p style="font-size:0.85rem;margin-top:4px;">Cal.com Dashboard</p>
+          </a>
+          <a class="card" id="stripe-link" target="_blank" style="text-decoration:none;">
+            <div class="card-icon">💳</div>
+            <strong>Payments & Billing</strong>
+            <p style="font-size:0.85rem;margin-top:4px;">Stripe Dashboard</p>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cfg = window.APP_CONFIG;
+      if (cfg) {
+        if (document.getElementById("cal-link-side")) document.getElementById("cal-link-side").href = cfg.cal.dashboardUrl;
+        if (document.getElementById("stripe-link-side")) document.getElementById("stripe-link-side").href = cfg.stripe.dashboardUrl;
+        if (document.getElementById("drive-link")) document.getElementById("drive-link").href = cfg.drive;
+        if (document.getElementById("cal-link")) document.getElementById("cal-link").href = cfg.cal.dashboardUrl;
+        if (document.getElementById("stripe-link")) document.getElementById("stripe-link").href = cfg.stripe.dashboardUrl;
+      }
+    });
+  </script>
+</body>
+</html>
