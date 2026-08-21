@@ -3,27 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Packages & Subscriptions — TUTOR PRO</title>
+  <title>Packages & Pricing — TUTOR PRO</title>
   <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing, instant Stripe payment, and direct Cal.com booking.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
+  <script src="js/tutor-photo-data.js"></script>
   <script src="js/app.js"></script>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
+  <!-- Navigation Bar: Order -> Home | About | Lessons | Packages | Booking | Login -->
   <header class="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
         <span class="brand-badge">TUTOR PRO</span>
       </a>
       <nav class="nav-links">
+        <a href="index.html">Home</a>
         <a href="about.html">About</a>
         <a href="lessons.html">Lessons</a>
         <a href="packages.html" class="active">Packages</a>
         <a href="booking.html">Booking</a>
-        <a href="login.html">Student Login</a>
-        <a href="booking.html">Book a Trial</a>
+        <a href="login.html">Login</a>
       </nav>
     </div>
   </header>
@@ -59,11 +60,11 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
       <div><strong id="footer-brand">TUTOR PRO</strong> · Professional Online English Lessons</div>
       <div>
-        <a href="privacy.html" style="margin-right:20px;">Privacy Policy</a>
-        <a href="terms.html" style="margin-right:20px;">Terms of Service</a>
+        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
         <a id="contact-email">contact@ahmedenglish.com</a>
       </div>
     </div>
@@ -133,12 +134,12 @@
             <h3>${p.title}</h3>
             <div class="package-price">${p.price}</div>
             <small style="color:var(--ink-muted);font-weight:800;display:block;">${p.subtext}</small>
-            <p style="margin-top:14px;font-size:0.92rem;color:var(--ink-secondary);">${p.desc}</p>
+            <p style="margin-top:12px;font-size:0.92rem;color:var(--ink-secondary);">${p.desc}</p>
             <ul class="checks-list">
               ${p.features.map(f => `<li>${f}</li>`).join('')}
             </ul>
           </div>
-          <div style="margin-top:24px;display:grid;gap:10px;">
+          <div style="margin-top:20px;display:grid;gap:10px;">
             <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${p.stripeLink}" target="_blank">
               💳 Pay via Stripe
             </a>

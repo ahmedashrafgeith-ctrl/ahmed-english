@@ -7,23 +7,24 @@
   <meta name="description" content="Book your 1-on-1 private English lesson or trial session directly on the online booking calendar.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
+  <script src="js/tutor-photo-data.js"></script>
   <script src="js/app.js"></script>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
+  <!-- Navigation Bar: Order -> Home | About | Lessons | Packages | Booking | Login -->
   <header class="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
         <span class="brand-badge">TUTOR PRO</span>
       </a>
       <nav class="nav-links">
+        <a href="index.html">Home</a>
         <a href="about.html">About</a>
         <a href="lessons.html">Lessons</a>
         <a href="packages.html">Packages</a>
         <a href="booking.html" class="active">Booking</a>
-        <a href="login.html">Student Login</a>
-        <a href="booking.html">Book a Trial</a>
+        <a href="login.html">Login</a>
       </nav>
     </div>
   </header>
@@ -37,89 +38,52 @@
         <p class="lead">Select your session type below to view available dates and time slots directly in your local timezone.</p>
       </div>
 
-      <!-- Event Type Tabs -->
-      <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
+      <!-- Event Type Switcher Tabs -->
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" id="btn-trial">30-Min Trial Session</button>
         <button class="btn btn-secondary btn-sm" id="btn-lesson">60-Min Private Lesson</button>
         <button class="btn btn-secondary btn-sm" id="btn-consult">30-Min Consultation</button>
       </div>
 
       <!-- Single Direct Cal.com Embed Container -->
-      <div class="booking-wrap" style="min-height:720px;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);">
-        <div id="cal-live-embed" style="width:100%;height:100%;min-height:720px;"></div>
+      <div style="width:100%;min-height:750px;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid #cbd5e1;background:#ffffff;">
+        <iframe id="cal-iframe" src="https://cal.com/ahmed-ghaith-fbjoax/30min-trial" width="100%" height="750" frameborder="0" style="border:0;width:100%;height:750px;" allowfullscreen></iframe>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
       <div><strong id="footer-brand">TUTOR PRO</strong> · Professional Online English Lessons</div>
       <div>
-        <a href="privacy.html" style="margin-right:20px;">Privacy Policy</a>
-        <a href="terms.html" style="margin-right:20px;">Terms of Service</a>
+        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
         <a id="contact-email">contact@ahmedenglish.com</a>
       </div>
     </div>
   </footer>
 
-  <!-- Cal.com Official Embed Script -->
-  <script type="text/javascript">
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const cfg = window.APP_CONFIG.cal;
+      const iframe = document.getElementById("cal-iframe");
 
       const btnTrial = document.getElementById("btn-trial");
       const btnLesson = document.getElementById("btn-lesson");
       const btnConsult = document.getElementById("btn-consult");
 
-      function loadCalEmbed(eventSlug, activeBtn) {
+      function loadCalUrl(eventSlug, activeBtn) {
         [btnTrial, btnLesson, btnConsult].forEach(b => {
           b.className = "btn btn-secondary btn-sm";
         });
         activeBtn.className = "btn btn-primary btn-sm";
-
-        if (window.Cal) {
-          window.Cal("inline", {
-            elementOrSelector: "#cal-live-embed",
-            calLink: `${cfg.username}/${eventSlug}`,
-            layout: "month_view"
-          });
-        }
+        if (iframe) iframe.src = `${cfg.base}/${cfg.username}/${eventSlug}`;
       }
 
-      btnTrial.addEventListener("click", () => loadCalEmbed(cfg.trialEvent, btnTrial));
-      btnLesson.addEventListener("click", () => loadCalEmbed(cfg.lessonEvent, btnLesson));
-      btnConsult.addEventListener("click", () => loadCalEmbed(cfg.consultEvent, btnConsult));
-
-      // Initialize Cal.com Embed JS
-      (function (C, A, L) {
-        let p = function (a, ar) { a.q.push(ar); };
-        let l = C.Cal = C.Cal || function () {
-          let cal = l; let arg = arguments;
-          if (!cal.q) { cal.q = []; }
-          p(cal, arg);
-        };
-        let d = A.createElement(L);
-        d.async = 1;
-        d.src = "https://app.cal.com/embed/embed.js";
-        A.head.appendChild(d);
-      })(window, document, "script");
-
-      setTimeout(() => {
-        if (window.Cal) {
-          window.Cal("init", { origin: "https://cal.com" });
-          window.Cal("inline", {
-            elementOrSelector: "#cal-live-embed",
-            calLink: `${cfg.username}/${cfg.trialEvent}`,
-            layout: "month_view"
-          });
-          window.Cal("ui", {
-            styles: { branding: { brandColor: "#6366f1" } },
-            hideEventTypeDetails: false,
-            layout: "month_view"
-          });
-        }
-      }, 300);
+      btnTrial.addEventListener("click", () => loadCalUrl(cfg.trialEvent, btnTrial));
+      btnLesson.addEventListener("click", () => loadCalUrl(cfg.lessonEvent, btnLesson));
+      btnConsult.addEventListener("click", () => loadCalUrl(cfg.consultEvent, btnConsult));
     });
   </script>
 </body>
