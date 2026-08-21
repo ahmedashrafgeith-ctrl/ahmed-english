@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Packages & Pricing — TUTOR PRO</title>
-  <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing and instant Stripe checkout.">
+  <title>Packages & Subscriptions — TUTOR PRO</title>
+  <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing, instant Stripe payment, and direct Cal.com booking.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
@@ -16,7 +16,6 @@
     <div class="container nav-inner">
       <a class="brand" href="index.html">
         <span class="brand-badge">TUTOR PRO</span>
-        <span class="brand-title">Ahmed English</span>
       </a>
       <nav class="nav-links">
         <a href="about.html">About</a>
@@ -24,7 +23,7 @@
         <a href="packages.html" class="active">Packages</a>
         <a href="booking.html">Booking</a>
         <a href="login.html">Student Login</a>
-        <a class="btn btn-primary btn-sm" href="booking.html">Book a Trial</a>
+        <a href="booking.html">Book a Trial</a>
       </nav>
     </div>
   </header>
@@ -33,19 +32,35 @@
   <section class="section section-soft">
     <div class="container">
       <div class="section-head">
-        <div class="eyebrow">Coaching Subscriptions</div>
-        <h1>Build a High-Impact Routine That Delivers Results.</h1>
-        <p class="lead">Flexible monthly lesson packages with full access to your private Student Portal, customized lesson notes, and priority calendar booking.</p>
+        <div class="eyebrow">Lesson Packages & Pricing</div>
+        <h1>Choose the Learning Plan That Fits Your Routine.</h1>
+        <p class="lead">Select a package below to complete payment via Stripe or schedule your lesson time directly on Cal.com.</p>
       </div>
 
       <div class="grid-3" id="plans-container"></div>
     </div>
   </section>
 
+  <!-- Single Trial Callout Banner -->
+  <section class="section">
+    <div class="container">
+      <div class="card grid-2" style="align-items:center;">
+        <div>
+          <h3>Want to Try a Single Session First?</h3>
+          <p>Book a 30-minute trial lesson to assess your speaking level, discuss your goals, and choose the right package.</p>
+        </div>
+        <div style="text-align:right;display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;">
+          <a class="btn btn-primary" href="https://book.stripe.com/9B6cN480O5jI5Rd3pSgrS05" target="_blank">Pay Trial ($20)</a>
+          <a class="btn btn-secondary" href="https://cal.com/ahmed-ghaith-fbjoax/30min-trial" target="_blank">Schedule Cal.com Trial</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
-      <div><strong id="footer-brand">TUTOR PRO — Ahmed English</strong> · Professional Online English Lessons</div>
+      <div><strong id="footer-brand">TUTOR PRO</strong> · Professional Online English Lessons</div>
       <div>
         <a href="privacy.html" style="margin-right:20px;">Privacy Policy</a>
         <a href="terms.html" style="margin-right:20px;">Terms of Service</a>
@@ -57,52 +72,56 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const container = document.getElementById("plans-container");
-      const cfg = window.APP_CONFIG.stripe;
+      const stripeCfg = window.APP_CONFIG.stripe;
+      const calCfg = window.APP_CONFIG.cal;
 
       const packages = [
         {
-          title: "Starter Plan",
-          price: "4 Lessons",
+          title: "Starter Package",
+          price: "4 Lessons / Month",
           subtext: "1 lesson per week",
-          desc: "Ideal for maintaining steady progress and focusing on key speaking bottlenecks.",
-          linkKey: "starterPaymentLink",
+          desc: "Ideal for steady progress, maintaining your English skills, and addressing key speaking challenges.",
+          stripeLink: stripeCfg.starterPaymentLink,
+          calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent}`,
           featured: false,
           features: [
             "4 x 60-min 1-on-1 private lessons",
             "Personalized lesson notes & vocabulary",
-            "Student Portal dashboard access",
-            "Flexible booking & rescheduling"
+            "Student Portal access & progress tracking",
+            "Flexible booking & rescheduling via Cal.com"
           ]
         },
         {
-          title: "Progress Plan",
-          price: "8 Lessons",
+          title: "Progress Package",
+          price: "8 Lessons / Month",
           subtext: "2 lessons per week",
-          desc: "Recommended for rapid fluency gains, job interview prep, and business confidence.",
-          linkKey: "progressPaymentLink",
+          desc: "Recommended for rapid fluency gains, job interview prep, workplace confidence, and pronunciation.",
+          stripeLink: stripeCfg.progressPaymentLink,
+          calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent}`,
           featured: true,
           tag: "Recommended",
           features: [
             "8 x 60-min 1-on-1 private lessons",
-            "Priority calendar booking",
-            "Customized homework & assignments",
-            "Direct tutor email support",
-            "Detailed monthly progress report"
+            "Priority calendar scheduling on Cal.com",
+            "Customized homework & exercises",
+            "Direct tutor email & Q&A support",
+            "Detailed monthly progress reviews"
           ]
         },
         {
-          title: "Intensive Plan",
-          price: "12 Lessons",
+          title: "Intensive Package",
+          price: "12 Lessons / Month",
           subtext: "3 lessons per week",
-          desc: "Fast-track your fluency for urgent corporate roles, keynotes, or relocation abroad.",
-          linkKey: "intensivePaymentLink",
+          desc: "Fast-track your English fluency for urgent career advancements, international relocation, or executive interviews.",
+          stripeLink: stripeCfg.intensivePaymentLink,
+          calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent}`,
           featured: false,
           features: [
             "12 x 60-min 1-on-1 private lessons",
-            "Highest priority calendar slots",
-            "Full resume & presentation editing",
+            "Highest priority calendar slot selection",
+            "Resume & professional document review",
             "Unlimited homework feedback",
-            "Direct WhatsApp audio guidance"
+            "Direct audio messaging support"
           ]
         }
       ];
@@ -113,15 +132,18 @@
           <div>
             <h3>${p.title}</h3>
             <div class="package-price">${p.price}</div>
-            <small style="color:var(--ink-muted);font-weight:800;">${p.subtext}</small>
-            <p style="margin-top:14px;font-size:0.92rem;">${p.desc}</p>
+            <small style="color:var(--ink-muted);font-weight:800;display:block;">${p.subtext}</small>
+            <p style="margin-top:14px;font-size:0.92rem;color:var(--ink-secondary);">${p.desc}</p>
             <ul class="checks-list">
               ${p.features.map(f => `<li>${f}</li>`).join('')}
             </ul>
           </div>
-          <div style="margin-top:28px;">
-            <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${cfg[p.linkKey]}" target="_blank">
-              Select ${p.title}
+          <div style="margin-top:24px;display:grid;gap:10px;">
+            <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${p.stripeLink}" target="_blank">
+              💳 Pay via Stripe
+            </a>
+            <a class="btn btn-soft" style="width:100%;font-size:0.88rem;" href="${p.calLink}" target="_blank">
+              📅 Schedule on Cal.com
             </a>
           </div>
         </div>
