@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lesson Packages & Pricing — Ahmed English</title>
+  <title>Packages & Pricing — TUTOR PRO</title>
   <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing and instant Stripe checkout.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
@@ -15,8 +15,8 @@
   <header class="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
-        <div class="brand-icon">A</div>
-        <span class="brand-text">Ahmed English</span>
+        <span class="brand-badge">TUTOR PRO</span>
+        <span class="brand-title">Ahmed English</span>
       </a>
       <nav class="nav-links">
         <a href="about.html">About</a>
@@ -33,37 +33,22 @@
   <section class="section section-soft">
     <div class="container">
       <div class="section-head">
-        <div class="eyebrow">Learning Subscriptions</div>
-        <h1>Build a Consistent Routine That Delivers Results.</h1>
-        <p class="lead">Flexible monthly lesson plans with full access to your private Student Portal, customized lesson notes, and priority calendar booking.</p>
+        <div class="eyebrow">Coaching Subscriptions</div>
+        <h1>Build a High-Impact Routine That Delivers Results.</h1>
+        <p class="lead">Flexible monthly lesson packages with full access to your private Student Portal, customized lesson notes, and priority calendar booking.</p>
       </div>
 
       <div class="grid-3" id="plans-container"></div>
     </div>
   </section>
 
-  <!-- Guarantee & Trial Callout -->
-  <section class="section">
-    <div class="container">
-      <div class="card grid-2" style="align-items:center;">
-        <div>
-          <h3>Not Sure Which Plan to Select?</h3>
-          <p>Book a single 30-minute trial lesson first. We'll discuss your goals and choose the ideal plan together.</p>
-        </div>
-        <div style="text-align:right;">
-          <a class="btn btn-primary" href="booking.html">Book a 30-Min Trial First</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Footer -->
   <footer class="footer">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-      <div><strong id="footer-brand">Ahmed English</strong> — Professional Online English Lessons</div>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+      <div><strong id="footer-brand">TUTOR PRO — Ahmed English</strong> · Professional Online English Lessons</div>
       <div>
-        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
-        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
+        <a href="privacy.html" style="margin-right:20px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:20px;">Terms of Service</a>
         <a id="contact-email">contact@ahmedenglish.com</a>
       </div>
     </div>
@@ -93,10 +78,10 @@
           title: "Progress Plan",
           price: "8 Lessons",
           subtext: "2 lessons per week",
-          desc: "Recommended for steady fluency gains, job interview prep, and business confidence.",
+          desc: "Recommended for rapid fluency gains, job interview prep, and business confidence.",
           linkKey: "progressPaymentLink",
           featured: true,
-          tag: "Most Popular",
+          tag: "Recommended",
           features: [
             "8 x 60-min 1-on-1 private lessons",
             "Priority calendar booking",
@@ -109,7 +94,7 @@
           title: "Intensive Plan",
           price: "12 Lessons",
           subtext: "3 lessons per week",
-          desc: "Fast-track your fluency for urgent corporate roles, presentations, or moves abroad.",
+          desc: "Fast-track your fluency for urgent corporate roles, keynotes, or relocation abroad.",
           linkKey: "intensivePaymentLink",
           featured: false,
           features: [
@@ -117,7 +102,7 @@
             "Highest priority calendar slots",
             "Full resume & presentation editing",
             "Unlimited homework feedback",
-            "1-on-1 WhatsApp audio support"
+            "Direct WhatsApp audio guidance"
           ]
         }
       ];
@@ -128,13 +113,13 @@
           <div>
             <h3>${p.title}</h3>
             <div class="package-price">${p.price}</div>
-            <small style="color:var(--ink-muted);font-weight:700;">${p.subtext}</small>
-            <p style="margin-top:12px;font-size:0.9rem;">${p.desc}</p>
+            <small style="color:var(--ink-muted);font-weight:800;">${p.subtext}</small>
+            <p style="margin-top:14px;font-size:0.92rem;">${p.desc}</p>
             <ul class="checks-list">
               ${p.features.map(f => `<li>${f}</li>`).join('')}
             </ul>
           </div>
-          <div style="margin-top:24px;">
+          <div style="margin-top:28px;">
             <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${cfg[p.linkKey]}" target="_blank">
               Select ${p.title}
             </a>

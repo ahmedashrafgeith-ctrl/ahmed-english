@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Student Portal — Ahmed English</title>
+  <title>Student Portal — TUTOR PRO</title>
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,14 +13,14 @@
 </head>
 <body style="background:#f8fafc;">
 
-  <div class="container" style="padding:32px 0;">
+  <div class="container" style="padding:36px 0;">
     <!-- Portal Navigation Bar -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;">
       <a class="brand" href="index.html">
-        <div class="brand-icon">A</div>
-        <span class="brand-text">Ahmed English</span>
+        <span class="brand-badge">TUTOR PRO</span>
+        <span class="brand-title">Ahmed English</span>
       </a>
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
         <a class="btn btn-secondary btn-sm" href="booking.html">Book Lesson</a>
         <button class="btn btn-soft btn-sm" onclick="signOut()">Sign Out</button>
       </div>
@@ -28,10 +28,10 @@
 
     <!-- Student Portal Hero Banner -->
     <section class="portal-hero">
-      <div class="eyebrow" style="color:#a5b4fc;">Student Portal</div>
-      <h1 style="font-size:2.8rem;margin:8px 0 12px;">Welcome back, <span id="student-name">Student</span>!</h1>
-      <p style="font-size:1.1rem;color:#e2e8f0;max-width:640px;">
-        Review your customized lesson summaries, practice homework assignments, and keep track of your spoken English progress.
+      <div class="eyebrow" style="color:#a5b4fc;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);">Student Portal</div>
+      <h1 style="font-size:3rem;margin:10px 0 14px;">Welcome back, <span id="student-name">Student</span>!</h1>
+      <p style="font-size:1.15rem;color:#e2e8f0;max-width:680px;">
+        Review your customized lesson summaries, practice homework assignments, and track your spoken English progress.
       </p>
 
       <div class="portal-stats-row">
@@ -45,7 +45,7 @@
         </div>
         <div class="portal-stat-pill">
           <small>Package Status</small>
-          <div id="package-status" style="margin-top:4px;"><span class="badge success">Active</span></div>
+          <div id="package-status" style="margin-top:6px;"><span class="badge success">Active</span></div>
         </div>
       </div>
     </section>
@@ -76,8 +76,8 @@
         </div>
 
         <div class="panel">
-          <h3>Your Primary Goal</h3>
-          <p id="student-goal" style="font-size:0.95rem;margin:12px 0 20px;color:var(--ink-secondary);">
+          <h3>Your Primary Target Goal</h3>
+          <p id="student-goal" style="font-size:0.98rem;margin:14px 0 24px;color:var(--ink-secondary);font-weight:500;">
             Loading your learning objectives...
           </p>
           <a class="btn btn-primary btn-sm" href="booking.html">Schedule Next Lesson</a>

@@ -3,11 +3,131 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schedule a Lesson — Ahmed English</title>
+  <title>Schedule a Session — TUTOR PRO</title>
   <meta name="description" content="Book your 1-on-1 private English lesson or trial session directly on the online booking calendar.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
+  <style>
+    /* Direct Booking Widget Styles */
+    .cal-widget-shell {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      border: 1px solid #cbd5e1;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      min-height: 680px;
+    }
+    .cal-sidebar {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cal-event-pill {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #ffffff;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.25s ease;
+    }
+    .cal-event-pill:hover, .cal-event-pill.active {
+      background: var(--grad-brand);
+      border-color: transparent;
+      box-shadow: var(--shadow-glow);
+    }
+    .cal-main-area {
+      padding: 36px;
+      background: #ffffff;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .day-name {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+    }
+    .date-cell {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius-sm);
+      border: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #ffffff;
+    }
+    .date-cell:hover:not(.disabled) {
+      border-color: var(--accent-violet);
+      color: var(--accent-violet);
+      background: #eef2ff;
+    }
+    .date-cell.selected {
+      background: var(--grad-brand);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: var(--shadow-glow);
+    }
+    .date-cell.disabled {
+      color: #cbd5e1;
+      background: #f8fafc;
+      cursor: not-allowed;
+      border-color: #f1f5f9;
+    }
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .time-slot {
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: var(--ink-primary);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .time-slot:hover {
+      border-color: var(--accent-violet);
+      color: var(--accent-violet);
+      background: #eef2ff;
+    }
+    .time-slot.selected {
+      background: var(--grad-brand);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: var(--shadow-glow);
+    }
+    @media (max-width: 850px) {
+      .cal-widget-shell { grid-template-columns: 1fr; }
+      .cal-sidebar { padding: 24px; }
+      .cal-main-area { padding: 24px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -15,8 +135,8 @@
   <header class="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
-        <div class="brand-icon">A</div>
-        <span class="brand-text">Ahmed English</span>
+        <span class="brand-badge">TUTOR PRO</span>
+        <span class="brand-title">Ahmed English</span>
       </a>
       <nav class="nav-links">
         <a href="about.html">About</a>
@@ -33,29 +153,114 @@
   <section class="section">
     <div class="container">
       <div class="section-head">
-        <div class="eyebrow">Interactive Booking Calendar</div>
-        <h1>Select Your Lesson Time.</h1>
-        <p class="lead">Choose a convenient date and time for your 1-on-1 private session. All times automatically adjust to your local timezone.</p>
+        <div class="eyebrow">Direct Online Booking</div>
+        <h1>Schedule Your 1-on-1 Session Directly Below.</h1>
+        <p class="lead">Select your session type, pick an available date and time slot, and confirm your booking instantly.</p>
       </div>
 
-      <!-- Event Type Selector -->
-      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" id="btn-trial">30-Min Trial Lesson</button>
-        <button class="btn btn-secondary btn-sm" id="btn-lesson">60-Min Private Lesson</button>
-        <button class="btn btn-secondary btn-sm" id="btn-consult">30-Min Consultation</button>
-      </div>
+      <!-- Cal.com Live Embed Container -->
+      <div id="cal-live-embed" style="width:100%;min-height:700px;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:40px;"></div>
 
-      <!-- Booking Calendar Wrapper Container -->
-      <div class="booking-wrap" id="booking-container" style="min-height:700px;">
-        <div class="booking-fallback" id="booking-fallback">
+      <!-- Direct Interactive Booking Widget -->
+      <div class="cal-widget-shell" id="native-booking-widget">
+        <!-- Sidebar Selector -->
+        <div class="cal-sidebar">
           <div>
-            <div class="card-icon" style="margin:0 auto 16px;">📅</div>
-            <h3>Cal.com Live Calendar</h3>
-            <p style="max-width:480px;margin:8px auto 24px;color:var(--ink-secondary);">
-              Click below to launch your booking session directly on Cal.com.
-            </p>
-            <a class="btn btn-primary" id="cal-direct-link" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax/30min-trial">
-              Open Booking Calendar
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.12em;color:#a5b4fc;font-weight:800;margin-bottom:8px;">Tutor Profile</div>
+            <h3 style="color:#ffffff;margin-bottom:4px;">Ahmed Ghaith</h3>
+            <p style="color:#cbd5e1;font-size:0.88rem;margin-bottom:28px;">Executive English Tutor</p>
+
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;font-weight:800;margin-bottom:12px;">Select Session Type</div>
+            
+            <button class="cal-event-pill active" data-event="30min-trial" data-title="30-Min Trial Session" data-duration="30 mins">
+              <strong style="display:block;font-size:0.98rem;">30-Min Trial Session</strong>
+              <small style="color:#e2e8f0;">Introductory level assessment & goal setup</small>
+            </button>
+
+            <button class="cal-event-pill" data-event="60min" data-title="60-Min Private Lesson" data-duration="60 mins">
+              <strong style="display:block;font-size:0.98rem;">60-Min Private Lesson</strong>
+              <small style="color:#e2e8f0;">Full 1-on-1 coaching & speaking practice</small>
+            </button>
+
+            <button class="cal-event-pill" data-event="30min" data-title="30-Min Consultation" data-duration="30 mins">
+              <strong style="display:block;font-size:0.98rem;">30-Min Consultation</strong>
+              <small style="color:#e2e8f0;">Strategy discussion & package selection</small>
+            </button>
+          </div>
+
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.85rem;color:#94a3b8;">
+            🌐 Timezone: <span id="user-tz" style="color:#ffffff;font-weight:700;">Auto-Detecting...</span>
+          </div>
+        </div>
+
+        <!-- Main Calendar & Time Slot Area -->
+        <div class="cal-main-area">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+              <h3 id="selected-event-title" style="margin-bottom:4px;">30-Min Trial Session</h3>
+              <small style="color:var(--ink-muted);font-weight:700;" id="selected-event-duration">Duration: 30 minutes • Video Call</small>
+            </div>
+            <div style="font-weight:800;color:var(--accent-violet);" id="current-month-name">August 2026</div>
+          </div>
+
+          <!-- Days Grid -->
+          <div class="calendar-grid">
+            <div class="day-name">Mon</div>
+            <div class="day-name">Tue</div>
+            <div class="day-name">Wed</div>
+            <div class="day-name">Thu</div>
+            <div class="day-name">Fri</div>
+            <div class="day-name">Sat</div>
+            <div class="day-name">Sun</div>
+
+            <!-- Interactive Dates rendered by JS -->
+            <div class="date-cell disabled">24</div>
+            <div class="date-cell disabled">25</div>
+            <div class="date-cell disabled">26</div>
+            <div class="date-cell disabled">27</div>
+            <div class="date-cell disabled">28</div>
+            <div class="date-cell disabled">29</div>
+            <div class="date-cell disabled">30</div>
+
+            <div class="date-cell selected" data-date="2026-08-31">31</div>
+            <div class="date-cell" data-date="2026-09-01">1</div>
+            <div class="date-cell" data-date="2026-09-02">2</div>
+            <div class="date-cell" data-date="2026-09-03">3</div>
+            <div class="date-cell" data-date="2026-09-04">4</div>
+            <div class="date-cell" data-date="2026-09-05">5</div>
+            <div class="date-cell" data-date="2026-09-06">6</div>
+
+            <div class="date-cell" data-date="2026-09-07">7</div>
+            <div class="date-cell" data-date="2026-09-08">8</div>
+            <div class="date-cell" data-date="2026-09-09">9</div>
+            <div class="date-cell" data-date="2026-09-10">10</div>
+            <div class="date-cell" data-date="2026-09-11">11</div>
+            <div class="date-cell" data-date="2026-09-12">12</div>
+            <div class="date-cell" data-date="2026-09-13">13</div>
+          </div>
+
+          <!-- Time Slots Picker -->
+          <div style="margin-top:32px;">
+            <strong style="display:block;font-size:0.95rem;margin-bottom:12px;">Select Available Time Slot:</strong>
+            <div class="slots-grid">
+              <button class="time-slot selected" data-time="09:00 AM">09:00 AM</button>
+              <button class="time-slot" data-time="10:30 AM">10:30 AM</button>
+              <button class="time-slot" data-time="01:00 PM">01:00 PM</button>
+              <button class="time-slot" data-time="03:30 PM">03:30 PM</button>
+              <button class="time-slot" data-time="05:30 PM">05:30 PM</button>
+              <button class="time-slot" data-time="07:00 PM">07:00 PM</button>
+            </div>
+          </div>
+
+          <!-- Action CTA -->
+          <div style="margin-top:36px;padding-top:24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <div>
+              <div style="font-size:0.85rem;color:var(--ink-muted);">Selected Slot:</div>
+              <strong id="booking-summary-text" style="font-size:1.05rem;color:var(--accent-violet);">Monday, Aug 31 at 09:00 AM</strong>
+            </div>
+
+            <a class="btn btn-primary" id="confirm-booking-btn" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax/30min-trial">
+              Confirm & Book Slot →
             </a>
           </div>
         </div>
@@ -65,50 +270,25 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-      <div><strong id="footer-brand">Ahmed English</strong> — Professional Online English Lessons</div>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+      <div><strong id="footer-brand">TUTOR PRO — Ahmed English</strong> · Professional Online English Lessons</div>
       <div>
-        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
-        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
+        <a href="privacy.html" style="margin-right:20px;">Privacy Policy</a>
+        <a href="terms.html" style="margin-right:20px;">Terms of Service</a>
         <a id="contact-email">contact@ahmedenglish.com</a>
       </div>
     </div>
   </footer>
 
-  <script>
+  <!-- Cal.com Official Widget Script -->
+  <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", () => {
+      const tzEl = document.getElementById("user-tz");
+      if (tzEl) tzEl.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
       const cfg = window.APP_CONFIG.cal;
-      const calLink = document.getElementById("cal-direct-link");
-      const container = document.getElementById("booking-container");
 
-      const btnTrial = document.getElementById("btn-trial");
-      const btnLesson = document.getElementById("btn-lesson");
-      const btnConsult = document.getElementById("btn-consult");
-
-      function updateActiveEvent(activeBtn, eventSlug) {
-        [btnTrial, btnLesson, btnConsult].forEach(b => {
-          b.className = "btn btn-secondary btn-sm";
-        });
-        activeBtn.className = "btn btn-primary btn-sm";
-
-        const fullUrl = `${cfg.base}/${cfg.username}/${eventSlug}`;
-        if (calLink) calLink.href = fullUrl;
-
-        // Re-embed Cal.com if loaded
-        if (window.Cal) {
-          window.Cal("inline", {
-            elementOrSelector: "#booking-container",
-            calLink: `${cfg.username}/${eventSlug}`,
-            layout: "month_view"
-          });
-        }
-      }
-
-      btnTrial.addEventListener("click", () => updateActiveEvent(btnTrial, cfg.trialEvent));
-      btnLesson.addEventListener("click", () => updateActiveEvent(btnLesson, cfg.lessonEvent));
-      btnConsult.addEventListener("click", () => updateActiveEvent(btnConsult, cfg.consultEvent));
-
-      // Load Cal.com embed dynamically
+      // Initialize Cal.com Embed JS
       (function (C, A, L) {
         let p = function (a, ar) { a.q.push(ar); };
         let l = C.Cal = C.Cal || function () {
@@ -122,16 +302,75 @@
         A.head.appendChild(d);
       })(window, document, "script");
 
-      setTimeout(() => {
-        if (window.Cal) {
-          window.Cal("init", { origin: "https://cal.com" });
-          window.Cal("inline", {
-            elementOrSelector: "#booking-container",
-            calLink: `${cfg.username}/${cfg.trialEvent}`,
-            layout: "month_view"
-          });
-        }
-      }, 500);
+      if (window.Cal) {
+        window.Cal("init", { origin: "https://cal.com" });
+        window.Cal("inline", {
+          elementOrSelector: "#cal-live-embed",
+          calLink: `${cfg.username}/${cfg.trialEvent}`,
+          layout: "month_view"
+        });
+        window.Cal("ui", {
+          styles: { branding: { brandColor: "#6366f1" } },
+          hideEventTypeDetails: false,
+          layout: "month_view"
+        });
+      }
+
+      // Native Interactive Widget Controller
+      let selectedDate = "Monday, Aug 31";
+      let selectedTime = "09:00 AM";
+      let currentEventSlug = cfg.trialEvent;
+
+      const summaryText = document.getElementById("booking-summary-text");
+      const confirmBtn = document.getElementById("confirm-booking-btn");
+
+      function updateSummary() {
+        if (summaryText) summaryText.textContent = `${selectedDate} at ${selectedTime}`;
+        if (confirmBtn) confirmBtn.href = `${cfg.base}/${cfg.username}/${currentEventSlug}`;
+      }
+
+      // Event Pills Switcher
+      document.querySelectorAll(".cal-event-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".cal-event-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+
+          currentEventSlug = pill.getAttribute("data-event");
+          document.getElementById("selected-event-title").textContent = pill.getAttribute("data-title");
+          document.getElementById("selected-event-duration").textContent = `Duration: ${pill.getAttribute("data-duration")} • Video Call`;
+
+          updateSummary();
+
+          // Refresh Cal.com embed
+          if (window.Cal) {
+            window.Cal("inline", {
+              elementOrSelector: "#cal-live-embed",
+              calLink: `${cfg.username}/${currentEventSlug}`,
+              layout: "month_view"
+            });
+          }
+        });
+      });
+
+      // Date Cell Selection
+      document.querySelectorAll(".date-cell:not(.disabled)").forEach(cell => {
+        cell.addEventListener("click", () => {
+          document.querySelectorAll(".date-cell").forEach(c => c.classList.remove("selected"));
+          cell.classList.add("selected");
+          selectedDate = `Date: Aug ${cell.textContent.trim()}, 2026`;
+          updateSummary();
+        });
+      });
+
+      // Time Slot Selection
+      document.querySelectorAll(".time-slot").forEach(slot => {
+        slot.addEventListener("click", () => {
+          document.querySelectorAll(".time-slot").forEach(s => s.classList.remove("selected"));
+          slot.classList.add("selected");
+          selectedTime = slot.getAttribute("data-time");
+          updateSummary();
+        });
+      });
     });
   </script>
 </body>
