@@ -3,149 +3,150 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lessons & Coaching Tracks — TUTOR PRO</title>
+  <title>Lessons & Coaching Tracks - Ahmed English</title>
   <meta name="description" content="Explore customized private 1-on-1 English coaching tracks including Business English, Conversation, Interview Prep, Pronunciation, Beginners, and Travel.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/nav.js"></script>
   <script src="js/app.js"></script>
 </head>
 <body>
 
-  <!-- Navigation Bar: Order -> Home | About | Lessons | Packages | Booking | Login -->
-  <header class="nav">
-    <div class="container nav-inner">
+  <div class="nav-wrap">
+    <nav class="nav">
       <a class="brand" href="index.html">
-        <span class="brand-badge">TUTOR PRO</span>
+        <span class="brand-mark">A</span>
+        <span><span class="brand-name">Ahmed English</span><span class="brand-sub">Private Tutor</span></span>
       </a>
-      <nav class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="lessons.html" class="active">Lessons</a>
-        <a href="packages.html">Packages</a>
-        <a href="booking.html">Booking</a>
-        <a href="login.html">Login</a>
-      </nav>
+      <div class="nav-menu">
+        <a class="nav-link" href="index.html">Home</a>
+        <a class="nav-link" href="about.html">About</a>
+        <a class="nav-link active" href="lessons.html">Lessons</a>
+        <a class="nav-link" href="packages.html">Packages</a>
+        <a class="nav-link" href="booking.html">Book a Lesson</a>
+        <a class="nav-link" href="login.html">Student Login</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-primary btn-sm btn-cta-nav" href="booking.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Book Free Trial
+        </a>
+        <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+
+  <header class="hero" style="padding-bottom:48px;">
+    <div class="wrap">
+      <div class="sec-head left reveal" style="margin-bottom:40px;max-width:720px;">
+        <span class="eyebrow"><span class="dot"></span> Personalized Learning Roadmap</span>
+        <h1>Lessons Built Around <span class="grad-text">Your Exact Goals</span>.</h1>
+        <p class="lead">We first identify what you want to achieve and the areas you need to improve. Then we build lessons around those goals and track your progress along the way.</p>
+      </div>
+      <div class="hero-tags reveal" style="margin-bottom:36px;">
+        <span class="tag"><span class="tick">✓</span>Personalized Classes</span>
+        <span class="tag"><span class="tick">✓</span>Business English</span>
+        <span class="tag"><span class="tick">✓</span>Daily Conversations</span>
+        <span class="tag"><span class="tick">✓</span>Interview Coaching</span>
+        <span class="tag"><span class="tick">✓</span>Pronunciation</span>
+        <span class="tag"><span class="tick">✓</span>Beginners</span>
+        <span class="tag"><span class="tick">✓</span>Travel English</span>
+      </div>
+      <div class="grid-3 stagger">
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+          <h3>Business & Professional English</h3>
+          <p>Build communication skills for meetings, workplace conversations, presentations, and professional situations.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Workplace meetings & leadership voice</li>
+            <li><span class="ck">✓</span>Formal email & diplomatic phrasing</li>
+            <li><span class="ck">✓</span>Business Management background support</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+          <h3>Conversational English</h3>
+          <p>Practise speaking through topics related to your daily life, interests, travel, work, and culture.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Topical discussions & current events</li>
+            <li><span class="ck">✓</span>Elimination of mid-sentence pauses</li>
+            <li><span class="ck">✓</span>Idiomatic & real-world vocabulary</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
+          <h3>Pronunciation & Confidence</h3>
+          <p>Work on pronunciation, clarity, fluency, and expressing yourself more comfortably in English.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Vowel & consonant sound clarity</li>
+            <li><span class="ck">✓</span>Sentence intonation & rhythm</li>
+            <li><span class="ck">✓</span>Expressing ideas with confidence</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-3.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg></div>
+          <h3>Interview Preparation</h3>
+          <p>Practise common interview questions, improve your answers, and build confidence communicating professionally.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Mock interviews with instant feedback</li>
+            <li><span class="ck">✓</span>Structuring responses effectively</li>
+            <li><span class="ck">✓</span>Professional communication practice</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+          <h3>English for Beginners</h3>
+          <p>Develop a strong foundation in English through clear explanations, guided practice, and practical conversation.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Essential sentence structures</li>
+            <li><span class="ck">✓</span>Core vocabulary building</li>
+            <li><span class="ck">✓</span>Guided step-by-step practice</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+          <h3>Everyday & Travel English</h3>
+          <p>Learn practical vocabulary for social situations, international travel, airports, hotels, and casual chats.</p>
+          <ul class="checks">
+            <li><span class="ck">✓</span>Navigating travel & airports</li>
+            <li><span class="ck">✓</span>Social conversations & dining</li>
+            <li><span class="ck">✓</span>Real-world scenario practice</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Personalized Learning Roadmap</div>
-        <h1>Lessons Built Around Your Exact Goals.</h1>
-        <p class="lead">We first identify what you want to achieve and the areas you need to improve. Then, we build lessons around those goals and track your progress along the way.</p>
-      </div>
-
-      <!-- Category Pills Bar -->
-      <div class="pills-bar">
-        <span class="pill-item">Interactive & Personalized Classes</span>
-        <span class="pill-item">Business English 📈</span>
-        <span class="pill-item">Daily Conversations 🗣️</span>
-        <span class="pill-item">Public Speaking 🎤</span>
-        <span class="pill-item">Clear Pronunciation</span>
-        <span class="pill-item">Interview Coaching</span>
-        <span class="pill-item">Beginners</span>
-        <span class="pill-item">Travel English ✈️</span>
-      </div>
-
-      <div class="grid-3" style="margin-top:32px;">
-        <!-- Business English Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          </div>
-          <h3>Business & Professional English</h3>
-          <p>Build the communication skills you need for meetings, workplace conversations, presentations, and professional situations.</p>
-          <ul class="checks-list">
-            <li>Workplace meetings & leadership voice</li>
-            <li>Formal email & diplomatic phrasing</li>
-            <li>Business Management background support</li>
-          </ul>
-        </div>
-
-        <!-- Conversation Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </div>
-          <h3>Conversational English</h3>
-          <p>Practise speaking through topics related to your daily life, interests, travel, work, and culture.</p>
-          <ul class="checks-list">
-            <li>Topical discussions & current events</li>
-            <li>Elimination of mid-sentence pauses</li>
-            <li>Idiomatic & real-world vocabulary</li>
-          </ul>
-        </div>
-
-        <!-- Pronunciation Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2H3z"/></svg>
-          </div>
-          <h3>Pronunciation & Confidence</h3>
-          <p>Work on pronunciation, clarity, fluency, and expressing yourself more comfortably in English.</p>
-          <ul class="checks-list">
-            <li>Vowel & consonant sound clarity</li>
-            <li>Sentence intonation & rhythm</li>
-            <li>Expressing ideas with confidence</li>
-          </ul>
-        </div>
-
-        <!-- Interview Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-3.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg>
-          </div>
-          <h3>Interview Preparation</h3>
-          <p>Practise common interview questions, improve your answers, and build confidence communicating professionally.</p>
-          <ul class="checks-list">
-            <li>Mock interviews with instant feedback</li>
-            <li>Structuring responses effectively</li>
-            <li>Professional communication practice</li>
-          </ul>
-        </div>
-
-        <!-- Beginners Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          </div>
-          <h3>English for Beginners</h3>
-          <p>Develop a strong foundation in English through clear explanations, guided practice, and practical conversation.</p>
-          <ul class="checks-list">
-            <li>Essential sentence structures</li>
-            <li>Core vocabulary building</li>
-            <li>Guided step-by-step practice</li>
-          </ul>
-        </div>
-
-        <!-- Travel Track -->
-        <div class="card">
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          </div>
-          <h3>Everyday & Travel English</h3>
-          <p>Learn practical vocabulary for social situations, international travel, airports, hotels, and casual chats.</p>
-          <ul class="checks-list">
-            <li>Navigating travel & airports</li>
-            <li>Social conversations & dining</li>
-            <li>Real-world scenario practice</li>
-          </ul>
-        </div>
+  <section class="section section-alt">
+    <div class="wrap">
+      <div class="plan-band reveal">
+        <span class="eyebrow" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff;"><span class="dot"></span> Pick Your Focus Area</span>
+        <h2 style="margin-top:16px;">Every Lesson Is Customized</h2>
+        <p class="lead" style="margin:0 auto;">Book a free trial to discuss what you need and how I can help you reach your goals faster.</p>
+        <a class="btn" href="booking.html">
+          Book a Free Trial Lesson
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="footer">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-      <div><strong id="footer-brand">TUTOR PRO</strong> · Professional Online English Lessons</div>
-      <div>
-        <a href="privacy.html" style="margin-right:16px;">Privacy Policy</a>
-        <a href="terms.html" style="margin-right:16px;">Terms of Service</a>
-        <a id="contact-email">contact@ahmedenglish.com</a>
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <span class="mini-mark">A</span>
+        <strong data-footer-brand>Ahmed English</strong>
+        <span class="muted">· Personalized Online English Lessons</span>
+      </div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a data-contact-email>contact@ahmedenglish.com</a>
       </div>
     </div>
   </footer>
