@@ -3,10 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tutor Dashboard — Embedded</title>
-  <style>body{margin:0;padding:0;overflow-x:hidden;}iframe{width:100%;border:0;min-height:100vh;}</style>
+  <title>Ahmed English — Staff Dashboard</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #ffffff; }
+    #stage { position: relative; }
+    iframe { display: block; border: 0; }
+  </style>
 </head>
 <body>
-  <iframe src="https://ahmedashrafgeith-ctrl.github.io/ahmed-english/dashboard.html" title="Tutor Dashboard"></iframe>
+  <div id="stage">
+    <iframe id="app"
+      src="https://ahmedashrafgeith-ctrl.github.io/ahmed-english/dashboard.html"
+      title="Ahmed English Staff Dashboard"
+      scrolling="yes"></iframe>
+  </div>
+  <script>
+    // Fit the full dashboard into whatever width the host iframe gives us
+    // (Google Sites code embed) so it fills the box instead of zooming out.
+    (function () {
+      var iframe = document.getElementById('app');
+      var stage = document.getElementById('stage');
+      var DESIGN = 1366;        // the dashboard's designed desktop width
+      var HEIGHT_PX = 2400;     // approximate full page height at 1x
+      var last = '';
+
+      function fit() {
+        var w = document.documentElement.clientWidth || window.innerWidth || DESIGN;
+        if (!w) { w = DESIGN; }
+        var scale = w / DESIGN;
+        var key = w + '|' + scale;
+        if (key === last) return;
+        last = key;
+
+        iframe.style.width = DESIGN + 'px';
+        iframe.style.height = HEIGHT_PX + 'px';
+        iframe.style.transform = 'scale(' + scale + ')';
+        iframe.style.transformOrigin = 'top left';
+
+        stage.style.width = (DESIGN * scale) + 'px';
+        stage.style.height = (HEIGHT_PX * scale) + 'px';
+        iframe.style.position = 'relative';
+        iframe.style.verticalAlign = 'top';
+        stage.style.overflow = 'hidden';
+      }
+
+      window.addEventListener('resize', fit);
+      window.addEventListener('load', fit);
+      window.addEventListener('DOMContentLoaded', fit);
+      setTimeout(fit, 300);
+      setTimeout(fit, 800);
+      fit();
+    })();
+  </script>
 </body>
 </html>
