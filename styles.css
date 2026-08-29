@@ -277,18 +277,25 @@ p { color: var(--c-ink-2); }
 /* ============================================================
    THEME WIDGET (floating icon + dropdown)
    ============================================================ */
-#theme-widget { position: fixed; bottom: 22px; right: 22px; z-index: 9999; }
+#theme-widget { position: relative; z-index: 9999; }
+#theme-widget.floating { position: fixed; top: 22px; left: 22px; }
+#theme-widget.in-nav { display: flex; align-items: center; }
 .theme-toggle {
   width: 52px; height: 52px; border-radius: 50%;
   background: var(--c-surface); border: 1.5px solid var(--c-card-border);
   box-shadow: var(--shadow-md); display: grid; place-items: center;
   color: var(--c-ink); transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
 }
+#theme-widget.in-nav .theme-toggle {
+  width: 40px; height: 40px; box-shadow: var(--shadow-sm);
+}
+#theme-widget.in-nav .theme-toggle svg { width: 20px; height: 20px; }
+#theme-widget.in-nav .theme-dot { bottom: 6px; right: 6px; width: 9px; height: 9px; }
 .theme-toggle:hover { transform: scale(1.12) rotate(15deg); box-shadow: var(--shadow-lg); }
 .theme-toggle svg { width: 23px; height: 23px; }
 .theme-dot { position: absolute; bottom: 8px; right: 8px; width: 11px; height: 11px; border-radius: 50%; background: var(--c-accent); border: 2px solid var(--c-surface); transition: background .3s; }
 .theme-pop {
-  position: absolute; bottom: 64px; right: 0; width: 224px; padding: 14px;
+  position: absolute; top: calc(100% + 12px); left: 0; width: 224px; padding: 14px;
   background: var(--c-surface); border: 1px solid var(--c-card-border); border-radius: var(--r-md);
   box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px) scale(.96);
   pointer-events: none; transition: opacity .25s, transform .25s cubic-bezier(.22,1,.36,1);
@@ -568,3 +575,18 @@ p { color: var(--c-ink-2); }
   .hero-float.c2 { left: 4px; }
   .footer-grid { flex-direction: column; align-items: flex-start; }
 }
+
+/* ===== Qualifications / Certificates ===== */
+.cert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.cert-card { text-align: center; }
+.cert-card .icon-tile { margin-left: auto; margin-right: auto; }
+.cert-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.cert-card p { margin: 0 0 14px; font-size: 0.92rem; color: var(--c-ink-2, #4B5563); }
+.cert-year {
+  display: inline-block; font-size: 0.82rem; font-weight: 800;
+  padding: 5px 14px; border-radius: 999px;
+  background: var(--c-soft, #F9FAFB); color: var(--c-accent, #4F46E5);
+  border: 1px solid var(--c-border, #E5E7EB);
+}
+@media (max-width: 900px) { .cert-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .cert-grid { grid-template-columns: 1fr; } }

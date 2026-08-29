@@ -5,9 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ahmed English — Embedded</title>
   <style>
-    html, body { margin: 0; padding: 0; background: #ffffff; }
-    #stage { position: relative; }
-    iframe { display: block; border: 0; }
+    html, body { margin: 0; padding: 0; background: #ffffff; overflow: hidden; }
+    #stage { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+    iframe { display: block; border: 0; position: absolute; top: 0; left: 0; transform-origin: top left; }
+    #zoombar {
+      position: fixed; top: 10px; right: 10px; z-index: 99999;
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,.92); border: 1px solid #ddd;
+      border-radius: 999px; padding: 4px 8px; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+      font-family: Arial, sans-serif;
+    }
+    #zoombar button {
+      width: 30px; height: 30px; border: 0; border-radius: 50%;
+      background: #4F46E5; color: #fff; font-size: 18px; line-height: 1;
+      cursor: pointer; font-weight: 700;
+    }
+    #zoombar button:hover { background: #4338CA; }
+    #zoombar .zval { font-size: 12px; font-weight: 700; color: #333; min-width: 40px; text-align: center; }
+    #zoombar .zfit { font-size: 12px; width: auto; padding: 0 10px; border-radius: 999px; }
   </style>
 </head>
 <body>
@@ -15,46 +30,53 @@
     <iframe id="app"
       src="https://ahmedashrafgeith-ctrl.github.io/ahmed-english/"
       title="Ahmed English Tutoring"
-      scrolling="yes"></iframe>
+      scrolling="no"></iframe>
+  </div>
+  <div id="zoombar">
+    <button type="button" id="zminus" title="Zoom out">−</button>
+    <span class="zval" id="zval">100%</span>
+    <button type="button" id="zplus" title="Zoom in">+</button>
+    <button type="button" class="zfit" id="zfit" title="Fit to screen">Fit</button>
   </div>
   <script>
-    // Fit the full desktop site into whatever width the host iframe gives us
-    // (Google Sites code embed) so it fills the box instead of zooming out.
     (function () {
       var iframe = document.getElementById('app');
       var stage = document.getElementById('stage');
-      var DESIGN = 1366;        // the site's designed desktop width
-      var HEIGHT_PX = 2400;     // approximate full page height at 1x
-      var last = '';
+      var zval = document.getElementById('zval');
+      var DESIGN = 1366;   // the site's designed desktop width
+      var FULL_H = 2600;   // full desktop page height at 1x
+      var ratio = 1;       // manual zoom multiplier
+      var fitScale = 0;    // last auto "fit" scale
+      var lastKey = '';
 
-      function fit() {
-        var w = document.documentElement.clientWidth || window.innerWidth || DESIGN;
-        if (!w) { w = DESIGN; }
-        var scale = w / DESIGN;
-        var key = w + '|' + scale;
-        if (key === last) return;
-        last = key;
-
+      function apply(scale) {
+        ratio = scale;
         iframe.style.width = DESIGN + 'px';
-        iframe.style.height = HEIGHT_PX + 'px';
+        iframe.style.height = FULL_H + 'px';
         iframe.style.transform = 'scale(' + scale + ')';
-        iframe.style.transformOrigin = 'top left';
-
-        // Counter-act the visual scale so the host box is the right size.
         stage.style.width = (DESIGN * scale) + 'px';
-        stage.style.height = (HEIGHT_PX * scale) + 'px';
-        // Keep the scaled iframe pinned inside its (now-scaled) stage.
-        iframe.style.position = 'relative';
-        iframe.style.verticalAlign = 'top';
-        stage.style.overflow = 'hidden';
+        stage.style.height = (FULL_H * scale) + 'px';
+        zval.textContent = Math.round(scale * 100) + '%';
       }
 
-      window.addEventListener('resize', fit);
-      window.addEventListener('load', fit);
-      window.addEventListener('DOMContentLoaded', fit);
-      setTimeout(fit, 300);
-      setTimeout(fit, 800);
-      fit();
+      function autoFit() {
+        var availW = document.documentElement.clientWidth || window.innerWidth || DESIGN;
+        var availH = document.documentElement.clientHeight || window.innerHeight || FULL_H;
+        var s = Math.min(availW / DESIGN, availH / FULL_H);
+        fitScale = s;
+        apply(s);
+      }
+
+      document.getElementById('zplus').addEventListener('click', function () { apply(ratio * 1.1); });
+      document.getElementById('zminus').addEventListener('click', function () { apply(ratio / 1.1); });
+      document.getElementById('zfit').addEventListener('click', autoFit);
+
+      window.addEventListener('resize', function () {
+        // Only auto re-fit on the "Fit" control; keep it stable otherwise.
+      });
+      window.addEventListener('load', function () { setTimeout(autoFit, 200); setTimeout(autoFit, 700); });
+      document.addEventListener('DOMContentLoaded', function () { setTimeout(autoFit, 100); });
+      autoFit();
     })();
   </script>
 </body>

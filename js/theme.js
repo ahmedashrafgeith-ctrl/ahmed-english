@@ -115,9 +115,22 @@ function buildThemeWidget() {
           <span>${t.name}</span>
         </button>`).join('')}
     </div>`;
-  document.body.appendChild(el);
+  // Place the widget inline in the nav as its own flex child between the
+  // menu ("Student Login") and the CTA ("Book Free Trial") so it sits evenly
+  // centered between both; otherwise fall back to a fixed corner widget.
+  var nav = document.querySelector('.nav');
+  var cta = document.querySelector('.nav-cta');
+  var placed = false;
+  if (nav && cta) {
+    nav.insertBefore(el, cta);
+    el.classList.add('in-nav');
+    placed = true;
+  } else {
+    document.body.appendChild(el);
+    el.classList.add('floating');
+  }
 
-  const btn = document.getElementById('theme-toggle-btn');
+  var btn = document.getElementById('theme-toggle-btn');
   const pop = document.getElementById('theme-pop');
   btn.addEventListener('click', e => { e.stopPropagation(); pop.classList.toggle('open'); });
   document.addEventListener('click', e => {
