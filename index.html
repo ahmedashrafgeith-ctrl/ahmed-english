@@ -218,5 +218,22 @@
     </div>
   </footer>
 
+<script>
+  // Auto-adapt height when embedded in a parent iframe (e.g. Google Sites)
+  // so the page shows at full size instead of being zoomed out/shrunk.
+  (function () {
+    if (window.self === window.top) return; // not in an iframe — do nothing
+    function resize() {
+      try {
+        var f = window.frameElement;
+        if (f) f.style.height = document.documentElement.scrollHeight + 'px';
+      } catch (e) {}
+    }
+    window.addEventListener('load', resize);
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 300);
+    setTimeout(resize, 800);
+  })();
+</script>
 </body>
 </html>
