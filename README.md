@@ -26,7 +26,7 @@ Includes:
 10. Deploy `supabase/stripe-webhook/index.ts` as a Supabase Edge Function.
 11. Add STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET and SUPABASE_SERVICE_ROLE_KEY as server secrets only.
 12. Configure Stripe webhook events: checkout.session.completed, customer.subscription.created, customer.subscription.updated, customer.subscription.deleted and invoice.paid.
-13. Deploy the frontend to a static host.
-14. Embed the public page into Google Sites if desired.
+13. Deploy the frontend to a static host (e.g. GitHub Pages, repo root with `.nojekyll`).
+14. Embed the public page into Google Sites if desired (`google-sites-embed.html`).
 
 Never expose Stripe secret keys or the Supabase service-role key in browser code.
