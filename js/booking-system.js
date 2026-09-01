@@ -20,11 +20,12 @@
 
   let sb = null;
   let accessToken = "";
-  let selectedEvent = EVENTS[0].key;
+  let selectedEvent = "60min";
   let weekStart = null; // Monday of the displayed week (local)
   let user = null;
   let packLeft = null;
   let busyChanel = null;
+  let lastPick = null; // summary for the success modal
 
   const els = {};
 
@@ -91,6 +92,7 @@
     const card = document.createElement("div");
     card.className = "bk-modal";
     card.innerHTML = html;
+    card.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
     ov.appendChild(card);
     document.body.appendChild(ov);
     ov.addEventListener("click", (e) => { if (e.target === ov) closeModal(); });
@@ -137,19 +139,12 @@
           <div>
             <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Schedule Your Lesson</span>
             <h2 style="margin:0;font-size:1.4rem;">Book Your <span class="grad-text">Lesson</span></h2>
-            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Check Ahmed's live calendar and lock in a free slot. Confirmed bookings show below and in your account.</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time — everything else gets pre-filled, so you finish with one tap on the calendar. Confirmed bookings show below and in your account.</p>
           </div>
           <div id="bk-pack-badge" style="font-size:.85rem;font-weight:700;color:var(--c-ink-3);"></div>
         </div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 0;">
-          ${EVENTS.map((e, i) => `
-            <button type="button" class="btn btn-sm ${i === 0 ? 'btn-primary' : 'btn-secondary'}" data-evt="${e.key}">
-              ${esc(e.label)} · ${e.minutes}m
-            </button>`).join('')}
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 4px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 4px;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span class="muted" style="font-size:.9rem;font-weight:600;" id="bk-range"></span>
             <span class="badge badge-acc" id="bk-tz-label" style="font-size:.68rem;font-weight:700;"></span>
@@ -284,22 +279,39 @@
     const leftText = packLeft == null
       ? "You can book without a plan — pay when you're ready."
       : `Lessons remaining on your plan: <b>${packLeft}</b>`;
+    lastPick = { event, date, time, leftText, tz };
 
     openModal(`
-      <h3>Confirm this slot?</h3>
-      <p class="bk-sub">One last step — lock it in on the shared calendar.</p>
+      <h3>Review your booking</h3>
+      <p class="bk-sub">Pick the lesson type, then confirm — Ahmed's calendar opens pre-filled, so it's just one final tap.</p>
       <div class="bk-sum">
-        <div><span class="muted">Lesson</span><b>${esc(event.label)}</b></div>
+        <div><span class="muted">Lesson</span><b id="bk-sum-type">${esc(event.label)}</b></div>
         <div><span class="muted">Date</span><b>${esc(date)}</b></div>
-        <div><span class="muted">Time</span><b>${esc(time)} (${esc(tz)})</b></div>
+        <div><span class="muted">Time</span><b>${esc(time)} · ${esc(tz)}</b></div>
         <div><span class="muted">Plan</span><b>${leftText}</b></div>
+      </div>
+      <div class="bk-type">
+        <span class="muted" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Lesson type</span>
+        <div class="seg">
+          ${EVENTS.map(e => `
+            <button type="button" class="btn btn-sm ${e.key === selectedEvent ? 'btn-primary' : 'btn-secondary'}" data-type="${e.key}">${esc(e.label)}<span style="opacity:.7;margin-left:4px;">${e.minutes}m</span></button>`).join('')}
+        </div>
       </div>
       <div class="bk-actions">
         <button type="button" class="btn btn-secondary" data-close>Go back</button>
-        <button type="button" class="btn btn-primary" id="bk-confirm">Confirm</button>
+        <button type="button" class="btn btn-primary" id="bk-confirm">Reserve and continue →</button>
       </div>
-      <p class="bk-note">You'll finish on Cal.com (Ahmed's calendar) to make it official — that keeps the shared calendar accurate for everyone.</p>
+      <p class="bk-note">Your name, email, date and time are handed to Cal.com automatically — you won't re-enter anything.</p>
     `);
+
+    qs("[data-type]").forEach(b => b.addEventListener("click", () => {
+      selectedEvent = b.dataset.type;
+      qs("[data-type]").forEach(x => x.className = "btn btn-sm " + (x === b ? "btn-primary" : "btn-secondary"));
+      const ev = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
+      lastPick.event = ev;
+      const t = q("#bk-sum-type");
+      if (t) t.textContent = ev.label;
+    }));
 
     const btn = q("#bk-confirm");
     const finish = async () => {
@@ -321,19 +333,27 @@
         return;
       }
       if (r.bookingUrl) {
+        const p = lastPick;
         setModal(`
-          <h3 style="color:#059669;">Almost there! ✓</h3>
-          <p class="bk-sub" style="margin-top:10px;">Your slot is reserved. Finish on Cal.com so it lands on the shared calendar — then it appears below and in both of your accounts.</p>
+          <h3 style="color:#059669;">Slot reserved ✓</h3>
+          <p class="bk-sub">One tap left — press <b>Confirm</b> on the calendar page. Your details are already filled in.</p>
+          <div class="bk-sum">
+            <div><span class="muted">Lesson</span><b>${p ? esc(p.event.label) : ""}</b></div>
+            <div><span class="muted">Date</span><b>${p ? esc(p.date) : ""}</b></div>
+            <div><span class="muted">Time</span><b>${p ? esc(p.time) + " · " + esc(p.tz) : ""}</b></div>
+            <div><span class="muted">Plan</span><b>${p ? p.leftText : ""}</b></div>
+          </div>
           <div class="bk-actions">
             <button type="button" class="btn btn-secondary" data-close>Done</button>
             <button type="button" class="btn btn-primary" id="bk-open-cal">
-              Open Cal.com <span style="font-size:.8rem;">↗</span>
+              Confirm on Cal.com →
             </button>
           </div>
+          <p class="bk-note">The lesson appears below the moment it's confirmed — no need to email Ahmed.</p>
         `);
         q("#bk-open-cal").addEventListener("click", () => {
           window.open(r.bookingUrl, "_blank", "noopener");
-          toast("Opened Cal.com — confirm there to finish.", true);
+          toast("Opened Cal.com — tap Confirm there to finish.", true);
         });
       } else {
         setModal(`
@@ -450,11 +470,6 @@
     const loggedIn = await ensureAuth();
     weekStart = startOfWeek(new Date());
 
-    qs("[data-evt]").forEach(b => b.addEventListener("click", () => {
-      selectedEvent = b.dataset.evt;
-      qs("[data-evt]").forEach(x => x.className = "btn btn-sm " + (x === b ? "btn-primary" : "btn-secondary"));
-      loadSlots();
-    }));
     els.prev.addEventListener("click", () => { weekStart = addDays(weekStart, -7); loadSlots(); });
     els.next.addEventListener("click", () => { weekStart = addDays(weekStart, 7); loadSlots(); });
     els.now.addEventListener("click", () => { weekStart = startOfWeek(new Date()); loadSlots(); });

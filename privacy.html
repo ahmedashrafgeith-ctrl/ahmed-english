@@ -23,7 +23,9 @@
         <a class="nav-link" href="lessons.html">Lessons</a>
         <a class="nav-link" href="packages.html">Packages</a>
         <a class="nav-link" href="booking.html">Book a Lesson</a>
-        <a class="nav-link" href="login.html">Student Login</a>
+        <a class="nav-link" href="login.html" data-auth="guest">Student Login</a>
+        <a class="nav-link" href="student.html" data-nav="dashboard" data-auth="user" style="display:none;">Dashboard</a>
+        <a class="nav-link" href="#" data-auth="user" onclick="signOut(); return false;" style="display:none;">Sign Out</a>
       </div>
       <div class="nav-cta">
         <a class="btn btn-primary btn-sm btn-cta-nav" href="booking.html">

@@ -13,6 +13,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   }
 
+  // ── Auth-aware header ──
+  // When signed in: hide any [data-auth="guest"] links (Student Login)
+  // and show [data-auth="user"] links (Dashboard + Sign Out). The
+  // Dashboard link is pointed at the right portal for the user's role.
+  const navSb = (typeof getSupabase === 'function') ? getSupabase() : null;
+
+  function applyAuthNav(loggedIn) {
+    document.querySelectorAll('[data-auth="guest"]').forEach(el => {
+      el.style.display = loggedIn ? 'none' : '';
+    });
+    document.querySelectorAll('[data-auth="user"]').forEach(el => {
+      el.style.display = loggedIn ? '' : 'none';
+    });
+  }
+
+  async function refreshAuthNav() {
+    if (!navSb) { applyAuthNav(false); return; }
+    try {
+      const { data } = await navSb.auth.getSession();
+      const loggedIn = !!(data.session && data.session.access_token);
+      applyAuthNav(loggedIn);
+      if (loggedIn) {
+        const dash = document.querySelector('[data-nav="dashboard"]');
+        if (dash) {
+          let href = 'student.html';
+          try {
+            const { data: { user } } = await navSb.auth.getUser();
+            if (user) {
+              const { data: prof } = await navSb.from('profiles').select('role').eq('id', user.id).maybeSingle();
+              if (prof && prof.role === 'admin') href = 'admin.html';
+              else if (prof && prof.role === 'tutor') href = 'dashboard.html';
+            }
+          } catch { /* keep default */ }
+          dash.href = href;
+        }
+      }
+    } catch { applyAuthNav(false); }
+  }
+  refreshAuthNav();
+  if (navSb && navSb.auth) {
+    navSb.auth.onAuthStateChange(() => refreshAuthNav());
+  }
+
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
       if (entry.isIntersecting) {

@@ -1,11 +1,11 @@
 // ============================================================
-// Ahmed English — Book Lesson (Supabase Edge Function)
+// Ahmed English - Book Lesson (Supabase Edge Function)
 // ------------------------------------------------------------
 // Internal booking system linked to Cal.com.
 //
 //  - GET  /book-lesson?eventSlug=...&start=...&end=...&tz=...
 //        -> computes available slots from Ahmed's Cal.com schedule
-//           (18:00–22:00 GMT+8 daily), minus existing bookings.
+//           (18:00-22:00 GMT+8 daily), minus existing bookings.
 //           NOTE: Cal.com's own GET /v2/slots is currently broken,
 //           so we compute availability ourselves from the schedule
 //           (verified via /v2/schedules) and existing bookings
@@ -46,8 +46,8 @@ const SLUG_MAP = {
   "60min":       { slug: "60min",       minutes: 60 },
 };
 
-// Ahmed's working window: 18:00 – 22:00 (GMT+8). Verified against the
-// Cal.com schedule (Asia/Kuala_Lumpur, 18:00–22:00, all days).
+// Ahmed's working window: 18:00 - 22:00 (GMT+8). Verified against the
+// Cal.com schedule (Asia/Kuala_Lumpur, 18:00-22:00, all days).
 const WIN_START_MIN = 18 * 60;
 const WIN_END_MIN = 22 * 60;
 
@@ -135,7 +135,7 @@ async function fetchBusy(startIso, endIso) {
   }
 }
 
-// Compute free slots inside 18:00–22:00 (GMT+8) for each date.
+// Compute free slots inside 18:00-22:00 (GMT+8) for each date.
 function computeSlots(eventSlug, start, end, busy) {
   const minutes = SLUG_MAP[eventSlug].minutes;
   const startDate = new Date(start + "T00:00:00Z");
@@ -194,13 +194,21 @@ async function createBooking(user, body) {
   const calSlug = SLUG_MAP[eventSlug].slug;
 
   const date = String(start).slice(0, 10);
-  const bookingUrl =
-    `https://cal.com/${USERNAME}/${calSlug}?date=${encodeURIComponent(date)}` +
-    (timeZone ? `&tz=${encodeURIComponent(timeZone)}` : "");
+  const startMs = Math.floor(new Date(start).getTime());
+  const minutes = SLUG_MAP[eventSlug].minutes;
+  const q = new URLSearchParams({
+    date,
+    dateTime: String(startMs),
+    duration: String(minutes),
+    tz: timeZone || "UTC",
+    name: user.full_name || "",
+    email: user.email || "",
+  });
+  const bookingUrl = `https://cal.com/${USERNAME}/${calSlug}?${q.toString()}`;
 
   return json("success", {
     bookingUrl,
-    message: "Confirm your lesson on Cal.com to finish booking.",
+    message: "Everything is pre-filled - confirm once on Cal.com to finish booking.",
   }, 200);
 }
 
