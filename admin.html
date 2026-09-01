@@ -44,6 +44,11 @@
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Activity
         </a>
+        <a class="side-link" href="#chat-inbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Inbox
+          <span id="inbox-badge" class="side-badge" style="display:none;">0</span>
+        </a>
         <a class="side-link" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Cal.com Bookings
@@ -324,6 +329,24 @@
             <thead><tr><th>Student</th><th>Package</th><th>Total</th><th>Used</th><th>Remaining</th><th></th></tr></thead>
             <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptions…</td></tr></tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- CHAT INBOX -->
+      <section class="panel" id="chat-inbox">
+        <div class="panel-head">
+          <div>
+            <h3>Student Inbox</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students. Reply here — the student sees it instantly and gets an email.</p>
+          </div>
+        </div>
+        <div id="inbox-wrap" style="display:grid;gap:18px;grid-template-columns:minmax(240px,300px) 1fr;">
+          <div id="inbox-list" style="border:1px solid var(--c-card-border);border-radius:12px;overflow:hidden;max-height:540px;overflow-y:auto;">
+            <p class="muted" style="padding:18px;text-align:center;">Loading conversations…</p>
+          </div>
+          <div id="inbox-thread" style="border:1px solid var(--c-card-border);border-radius:12px;display:flex;flex-direction:column;min-height:540px;justify-content:center;">
+            <p class="muted" style="padding:18px;text-align:center;">Select a conversation to read and reply.</p>
+          </div>
         </div>
       </section>
     </main>

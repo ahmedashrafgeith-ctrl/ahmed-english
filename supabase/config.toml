@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.book-lesson]
 verify_jwt = true
+
+[functions.cal-webhook]
+verify_jwt = false
+
+[functions.chat]
+verify_jwt = true

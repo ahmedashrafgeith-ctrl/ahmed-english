@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <h1>Monthly Progress Report</h1>
       <div class="sub">${esc(periodLabel)}</div>
     </div>
-    <div class="sub" style="text-align:right;">Prepared by<br><b>Ahmed — English Tutor</b><br><small>contact@ahmedenglish.com</small></div>
+    <div class="sub" style="text-align:right;">Prepared by<br><b>Ahmed — English Tutor</b><br><small>ahmedashrafgeith@gmail.com</small></div>
   </div>
 
   <div class="meta">

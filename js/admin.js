@@ -555,6 +555,157 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ==========================================
+  // 6. CHAT INBOX (admin / main controller)
+  // ==========================================
+  const CHAT_FN = (window.APP_CONFIG && window.APP_CONFIG.booking && window.APP_CONFIG.booking.chatUrl) || '';
+  let inboxToken = '';
+  let activeChatId = null;
+  let inboxChannel = null;
+  let inboxChannel2 = null;
+
+  function inh(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async function inboxApi(path, options) {
+    try {
+      const res = await fetch(CHAT_FN + path, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + inboxToken, ...(options && options.headers) },
+      });
+      return await res.json();
+    } catch (e) { return { status: 'error', message: e && e.message || 'Network error' }; }
+  }
+
+  async function setInboxBadge() {
+    const badge = document.getElementById('inbox-badge');
+    if (!badge || !inboxToken) return;
+    const r = await inboxApi('?action=chats', { method: 'GET' });
+    if (r.status !== 'success') return;
+    const total = (r.chats || []).reduce((n, c) => n + (c.unread_admin || 0), 0);
+    badge.textContent = total > 99 ? '99+' : total;
+    badge.style.display = total > 0 ? 'inline-block' : 'none';
+  }
+
+  async function loadInboxList() {
+    const list = document.getElementById('inbox-list');
+    if (!list || !inboxToken) return;
+    const r = await inboxApi('?action=chats', { method: 'GET' });
+    if (r.status !== 'success') {
+      list.innerHTML = '<p class="muted" style="padding:18px;text-align:center;">Could not load conversations.</p>';
+      return;
+    }
+    const chats = r.chats || [];
+    if (!chats.length) {
+      list.innerHTML = '<p class="muted" style="padding:18px;text-align:center;">No conversations yet. Students can chat from any page.</p>';
+      return;
+    }
+    list.innerHTML = chats.map(c => `
+      <div class="inbox-row ${activeChatId === c.id ? 'active' : ''}" data-chat="${c.id}" style="padding:12px 14px;border-bottom:1px solid var(--c-card-border);cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <strong style="font-size:.9rem;">${inh(c.student_name || 'Student')}</strong>
+          ${c.unread_admin > 0 ? `<span style="background:#e5484d;color:#fff;border-radius:12px;font-size:.68rem;font-weight:800;padding:2px 8px;">${c.unread_admin}</span>` : ''}
+        </div>
+        <div class="muted" style="font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${inh(c.last_message ? c.last_message.body : (c.subject || ''))}</div>
+        <div class="muted" style="font-size:.68rem;margin-top:2px;">${c.last_message ? new Date(c.last_message.created_at).toLocaleString() : ''}</div>
+      </div>`).join('');
+    list.querySelectorAll('[data-chat]').forEach(row => row.addEventListener('click', () => openInboxThread(row.dataset.chat)));
+  }
+
+  async function openInboxThread(chatId) {
+    activeChatId = chatId;
+    const thread = document.getElementById('inbox-thread');
+    if (!thread) return;
+    thread.style.justifyContent = 'flex-start';
+    thread.innerHTML = '<p class="muted" style="text-align:center;">Loading…</p>';
+    loadInboxList();
+    subscribeInboxThread(chatId);
+    const { data: msgs, error } = await sb.from('chat_messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true });
+    if (error) { thread.innerHTML = '<p class="muted" style="text-align:center;">Could not load messages.</p>'; return; }
+    thread.innerHTML = `
+      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:10px;" id="admin-thread-body"></div>
+      <div style="display:flex;gap:8px;border-top:1px solid var(--c-card-border);padding-top:10px;">
+        <input class="field" id="inbox-reply" placeholder="Type your reply…" autocomplete="off" style="margin:0;">
+        <button type="button" class="btn btn-primary btn-sm" id="inbox-send">Send</button>
+      </div>`;
+    const bodyEl = document.getElementById('admin-thread-body');
+    (msgs || []).forEach(m => {
+      const mine = m.sender === 'admin';
+      const b = document.createElement('div');
+      b.style.cssText = `align-self:${mine ? 'flex-end' : 'flex-start'};max-width:82%;background:${mine ? '#0b3b2c' : '#fff'};color:${mine ? '#fff' : '#111'};padding:9px 12px;border-radius:12px;font-size:.86rem;white-space:pre-wrap;${mine ? '' : 'border:1px solid var(--c-card-border);'}`;
+      b.textContent = m.body;
+      bodyEl.appendChild(b);
+    });
+    bodyEl.scrollTop = bodyEl.scrollHeight;
+    const field = document.getElementById('inbox-reply');
+    const send = document.getElementById('inbox-send');
+    function doSend() {
+      const text = (field.value || '').trim();
+      if (!text) return;
+      if (send) send.disabled = true;
+      inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'send', chatId, body: text }) }).then(r => {
+        if (send) send.disabled = false;
+        if (r.status !== 'success') { field.placeholder = r.message || 'Could not send'; return; }
+        field.value = '';
+        const b = document.createElement('div');
+        b.style.cssText = 'align-self:flex-end;max-width:82%;background:#0b3b2c;color:#fff;padding:9px 12px;border-radius:12px;font-size:.86rem;white-space:pre-wrap;';
+        b.textContent = text;
+        bodyEl.appendChild(b);
+        bodyEl.scrollTop = bodyEl.scrollHeight;
+        loadInboxList(); setInboxBadge();
+      });
+    }
+    send.addEventListener('click', doSend);
+    field.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
+    await inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'read', chatId }) });
+    loadInboxList(); setInboxBadge();
+  }
+
+  function subscribeInbox() {
+    if (inboxChannel) { try { sb.removeChannel(inboxChannel); } catch {} }
+    inboxChannel = sb.channel('inbox-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chats' }, () => { loadInboxList(); setInboxBadge(); })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => { loadInboxList(); setInboxBadge(); })
+      .subscribe();
+  }
+
+  function subscribeInboxThread(chatId) {
+    if (inboxChannel2) { try { sb.removeChannel(inboxChannel2); } catch {} }
+    inboxChannel2 = sb.channel('inbox-thread-' + chatId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: 'chat_id=eq.' + chatId }, payload => {
+        const bodyEl = document.getElementById('admin-thread-body');
+        if (!bodyEl) return;
+        const m = payload.new;
+        if (m.sender === 'admin') return;
+        const b = document.createElement('div');
+        b.style.cssText = 'align-self:flex-start;max-width:82%;background:#fff;color:#111;padding:9px 12px;border-radius:12px;font-size:.86rem;white-space:pre-wrap;border:1px solid var(--c-card-border);';
+        b.textContent = m.body;
+        bodyEl.appendChild(b);
+        bodyEl.scrollTop = bodyEl.scrollHeight;
+        inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'read', chatId }) });
+        loadInboxList(); setInboxBadge();
+      })
+      .subscribe();
+  }
+
+  async function initChatInbox() {
+    if (!CHAT_FN) return;
+    const style = document.createElement('style');
+    style.textContent = '.side-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;border-radius:18px;background:#e5484d;color:#fff;font-size:.65rem;font-weight:800;text-align:center;margin-left:auto;padding:0 5px}.inbox-row.active{background:rgba(11,59,44,.08)}.inbox-row:hover{background:rgba(11,59,44,.04)}#inbox-wrap{grid-template-columns:minmax(240px,300px) 1fr}#inbox-wrap{display:grid;gap:18px}@media(max-width:900px){#inbox-wrap{grid-template-columns:1fr}}';
+    document.head.appendChild(style);
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.access_token) inboxToken = session.access_token;
+    if (!inboxToken) return;
+    subscribeInbox();
+    await loadInboxList();
+    await setInboxBadge();
+    setInterval(() => { loadInboxList(); setInboxBadge(); }, 60000);
+  }
+
+  initChatInbox();
+
   loadAdminBookings();
   renderUsageList();
 });

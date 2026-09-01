@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-contact-email]').forEach(el => {
-    el.textContent = window.APP_CONFIG.contactEmail || 'contact@ahmedenglish.com';
+    el.textContent = window.APP_CONFIG.contactEmail || 'ahmedashrafgeith@gmail.com';
   });
   document.querySelectorAll('[data-footer-brand]').forEach(el => {
     el.textContent = 'Ahmed English';

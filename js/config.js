@@ -59,9 +59,10 @@
       evt30: "30min",
       evt60: "60min",
       durationMinutes: { "30min-trial": 30, "30min": 30, "60min": 60 },
-      functionUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/book-lesson"
+      functionUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/book-lesson",
+      chatUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/chat"
     },
     drive: "https://drive.google.com",
-    contactEmail: "contact@ahmedenglish.com"
+    contactEmail: "ahmedashrafgeith@gmail.com"
   };
 })();
