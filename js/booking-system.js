@@ -66,9 +66,9 @@
       <div class="card" style="padding:24px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
           <div>
-            <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Internal Booking</span>
+            <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Schedule Your Lesson</span>
             <h2 style="margin:0;font-size:1.4rem;">Book Your <span class="grad-text">Lesson</span></h2>
-            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Picks appear straight from Ahmed's real Cal.com calendar.</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Select a date and time that works for you. Sessions are 1-on-1 with Ahmed.</p>
           </div>
           <div id="bk-pack-badge" style="font-size:.85rem;font-weight:700;color:var(--c-ink-3);"></div>
         </div>

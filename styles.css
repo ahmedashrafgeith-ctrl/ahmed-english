@@ -244,6 +244,7 @@ p { color: var(--c-ink-2); }
 .pkg.featured:hover { transform: scale(1.03) translateY(-6px); }
 .pkg-tag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--c-hero); color: #fff; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 7px 18px; border-radius: var(--r-full); box-shadow: var(--shadow-accent); white-space: nowrap; }
 .pkg-price { font-family: var(--font-h); font-weight: 800; font-size: 2rem; margin: 14px 0 2px; }
+.pkg-old { font-size: 1.1rem; font-weight: 600; color: var(--c-ink-3); text-decoration: line-through; text-decoration-thickness: 2px; margin-right: 10px; vertical-align: middle; }
 .pkg-sub { color: var(--c-ink-3); font-size: .84rem; font-weight: 600; }
 .pkg-note { display: inline-block; color: var(--c-accent); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; background: color-mix(in srgb, var(--c-accent) 10%, transparent); padding: 3px 10px; border-radius: var(--r-full); }
 .checks { list-style: none; margin: 20px 0 26px; display: grid; gap: 11px; }

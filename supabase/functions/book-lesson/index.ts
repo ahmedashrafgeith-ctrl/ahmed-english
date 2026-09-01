@@ -37,10 +37,17 @@ const SLUG_MAP = {
 
 const supabase = createClient(SB_URL, SB_SERVICE);
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+  "Access-Control-Max-Age": "86400",
+};
+
 function json(status, body, statusCode = 200) {
   return new Response(JSON.stringify({ status, ...body }), {
     status: statusCode,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS },
   });
 }
 
@@ -59,6 +66,13 @@ async function requireStudent(req) {
 }
 
 // ---- GET: available slots for an event type ----
+// Slots are limited to Ahmed's working window: 6:00 PM – 10:00 PM (GMT+8).
+function inWorkingWindow(iso) {
+  const d = new Date(iso);
+  const h = (d.getUTCHours() + 8) % 24; // hour in GMT+8 (no DST)
+  return h >= 18 && h < 22;
+}
+
 async function getSlots(url) {
   const params = new URLSearchParams(url.searchParams);
   const eventSlug = params.get("eventSlug") || "60min";
@@ -89,7 +103,16 @@ async function getSlots(url) {
   if (!res.ok) {
     return json("error", { message: body?.error?.message || body?.message || "Cal slots failed", detail: body }, res.status);
   }
-  return json("success", { data: body.data || {} });
+
+  // Keep only slots inside the 18:00–22:00 GMT+8 window.
+  const raw = body.data || {};
+  const data = {};
+  for (const [date, slots] of Object.entries(raw)) {
+    const kept = (slots || []).filter(s => s && s.start && inWorkingWindow(s.start));
+    if (kept.length) data[date] = kept;
+  }
+
+  return json("success", { data });
 }
 
 // ---- POST: create a real Cal.com booking + record + consume lesson ----
@@ -210,7 +233,7 @@ async function cancelBooking(user, body) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" } });
+    return new Response("ok", { headers: CORS });
   }
 
   const user = await requireStudent(req);

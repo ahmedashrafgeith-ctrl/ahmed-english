@@ -46,9 +46,9 @@
       dashboardUrl: "https://cal.com/ahmed-ghaith-fbjoax"
     },
     stripe: {
-      starterPaymentLink: "https://book.stripe.com/9B6cN480O5jI5Rd3pSgrS05",
-      progressPaymentLink: "https://book.stripe.com/5kQ8wO6WKcMa0wTbWogrS04",
-      intensivePaymentLink: "https://book.stripe.com/fZufZg4OC8vUbbxd0sgrS03",
+      starterPaymentLink: "https://book.stripe.com/5kQ14mch4eUibbxgcEgrS06",
+      progressPaymentLink: "https://book.stripe.com/6oUfZgepc8vUcfB1hKgrS07",
+      intensivePaymentLink: "https://book.stripe.com/00w00i4OC5jIcfBd0sgrS08",
       dashboardUrl: "https://dashboard.stripe.com"
     },
     booking: {
