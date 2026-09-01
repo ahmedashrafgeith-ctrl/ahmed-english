@@ -171,14 +171,15 @@
   }
 
   async function pickSlot(start, end) {
-    if (!confirm(`Book this ${EVENTS.find(e => e.key === selectedEvent)?.label} slot?\n\n${new Date(start).toLocaleString()}\n\nYour Cal.com booking will be created and 1 lesson used from your plan.`)) return;
-    showMsg("Creating your booking…", true);
+    if (!confirm(`Open Cal.com to book this ${EVENTS.find(e => e.key === selectedEvent)?.label}?\n\n${new Date(start).toLocaleString()}\n\nYou'll confirm the exact slot on Cal.com — your lesson is counted from your plan once confirmed.`)) return;
+    showMsg("Opening Cal.com to confirm…", true);
     const r = await callFn("", {
       method: "POST",
       body: JSON.stringify({ eventSlug: selectedEvent, start, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" }),
     });
-    if (!r.ok) { showMsg(r.message || "Booking failed.", false); return; }
-    showMsg("✓ Booked! Check your calendar and emails for the confirmation.", true);
+    if (!r.ok) { showMsg(r.message || "Could not open Cal.com.", false); return; }
+    if (r.bookingUrl) window.open(r.bookingUrl, "_blank", "noopener");
+    showMsg(r.message || "Confirm your lesson on the opened Cal.com page — your lesson is counted from your plan once confirmed.", true);
     await loadSlots();
     await loadMyBookings();
     await loadPack();

@@ -2,21 +2,32 @@
 // Ahmed English — Book Lesson (Supabase Edge Function)
 // ------------------------------------------------------------
 // Internal booking system linked to Cal.com.
+//
 //  - GET  /book-lesson?eventSlug=...&start=...&end=...&tz=...
-//        -> proxies Cal.com available slots for that event type.
+//        -> computes available slots from Ahmed's Cal.com schedule
+//           (18:00–22:00 GMT+8 daily), minus existing bookings.
+//           NOTE: Cal.com's own GET /v2/slots is currently broken,
+//           so we compute availability ourselves from the schedule
+//           (verified via /v2/schedules) and existing bookings
+//           (/v2/bookings), which both work.
+//
 //  - POST /book-lesson  {eventSlug, start, timeZone}
-//        -> creates a REAL Cal.com booking on Ahmed's calendar,
-//           records it in the `bookings` table, and auto-consumes
-//           one lesson from the student's active subscription.
+//        -> no longer creates the booking directly through the API
+//           (POST /v2/bookings is failing with a generic 400 from
+//           Cal.com right now / API-key write access). Instead it
+//           returns a deep link to Ahmed's Cal.com booking page,
+//           pre-filled with the chosen date. The student confirms
+//           there (Cal.com's own web flow, which always works).
+//           The booking is then mirrored into Supabase and a lesson
+//           is consumed via the `cal-webhook` function.
+//
+//  - POST /book-lesson  {action:"cancel", bookingId}
+//        -> best-effort cancel on Cal.com; credits the lesson back
+//           (also handled by the BOOKING_CANCELLED cal-webhook).
 //
 // SECURITY: verify_jwt = true (see config.toml) means the caller
 // MUST be a signed-in student. CAL_API_KEY is a server secret only
 // (never in the browser). Writes go through the service_role key.
-//
-// Server secrets (Dashboard > Edge Functions > book-lesson):
-//   CAL_API_KEY                 -> cal_live_... (owner API key)
-//   SUPABASE_URL                -> https://gggziewyeqsnuixwhvoe.supabase.co
-//   SUPABASE_SERVICE_ROLE_KEY   -> Dashboard > Settings > API (service_role)
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -25,7 +36,7 @@ const CAL_API_KEY = Deno.env.get("CAL_API_KEY") || "";
 const SB_URL = Deno.env.get("SUPABASE_URL") || "";
 const SB_SERVICE = Deno.env.get("SERVICE_ROLE_KEY") || "";
 const CAL_BASE = "https://api.cal.com";
-const CAL_VER = "2026-02-25";
+const CAL_VER = "2026-07-27";
 const USERNAME = "ahmed-ghaith-fbjoax";
 
 // Map our event slugs to Cal.com event slugs (and their durations).
@@ -34,6 +45,11 @@ const SLUG_MAP = {
   "30min":       { slug: "30min",       minutes: 30 },
   "60min":       { slug: "60min",       minutes: 60 },
 };
+
+// Ahmed's working window: 18:00 – 22:00 (GMT+8). Verified against the
+// Cal.com schedule (Asia/Kuala_Lumpur, 18:00–22:00, all days).
+const WIN_START_MIN = 18 * 60;
+const WIN_END_MIN = 22 * 60;
 
 const supabase = createClient(SB_URL, SB_SERVICE);
 
@@ -66,11 +82,73 @@ async function requireStudent(req) {
 }
 
 // ---- GET: available slots for an event type ----
-// Slots are limited to Ahmed's working window: 6:00 PM – 10:00 PM (GMT+8).
 function inWorkingWindow(iso) {
   const d = new Date(iso);
   const h = (d.getUTCHours() + 8) % 24; // hour in GMT+8 (no DST)
   return h >= 18 && h < 22;
+}
+
+// Fetch Ahmed's existing bookings (the reliable, working read API).
+async function fetchBusy(startIso, endIso) {
+  try {
+    const params = new URLSearchParams({ limit: "100" });
+    // start/end are the UTC slice of the whole window we display.
+    params.set("status", "upcoming");
+    const res = await fetch(`${CAL_BASE}/v2/bookings?${params}`, {
+      headers: {
+        Authorization: `Bearer ${CAL_API_KEY}`,
+        "cal-api-version": CAL_VER,
+        Accept: "application/json",
+      },
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    const bookings = (body?.data?.bookings) || [];
+    const busy = [];
+    for (const b of bookings) {
+      const s = b.start ? new Date(b.start) : null;
+      const e = b.end ? new Date(b.end) : null;
+      if (s && e && !isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        busy.push({ start: s, end: e });
+      }
+    }
+    return busy;
+  } catch (e) {
+    console.error("fetch busy error:", e.message);
+    return [];
+  }
+}
+
+// Compute free slots inside 18:00–22:00 (GMT+8) for each date.
+function computeSlots(eventSlug, start, end, busy) {
+  const minutes = SLUG_MAP[eventSlug].minutes;
+  const startDate = new Date(start + "T00:00:00Z");
+  const endDate = new Date(end + "T23:59:59.000Z");
+  const data = {};
+
+  for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
+    const dateKey = d.toISOString().slice(0, 10);
+    // 18:00 GMT+8 == 10:00 UTC on the same calendar date.
+    const dayUTC = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    const winStart = new Date(dayUTC + (WIN_START_MIN - 8 * 60) * 60000);
+    const winEnd = new Date(dayUTC + (WIN_END_MIN - 8 * 60) * 60000);
+
+    const step = minutes === 60 ? 60 : 30;
+    const slots = [];
+    const nowMs = Date.now();
+    for (let s = new Date(winStart); s.getTime() + minutes * 60000 <= winEnd.getTime(); s = new Date(s.getTime() + step * 60000)) {
+      const sMs = s.getTime();
+      const eMs = sMs + minutes * 60000;
+      if (eMs <= nowMs) continue; // already past
+      const overlaps = busy.some(b => sMs < b.end.getTime() && eMs > b.start.getTime());
+      if (overlaps) continue;
+      const iso = s.toISOString();
+      if (!inWorkingWindow(iso)) continue; // safety
+      slots.push({ start: iso, end: new Date(eMs).toISOString() });
+    }
+    if (slots.length) data[dateKey] = slots;
+  }
+  return data;
 }
 
 async function getSlots(url) {
@@ -81,41 +159,15 @@ async function getSlots(url) {
   const tz = params.get("tz") || "UTC";
 
   if (!SLUG_MAP[eventSlug]) return json("error", { message: "Unknown event type" }, 400);
-  const calSlug = SLUG_MAP[eventSlug].slug;
 
-  // Default window: next 14 days if no end given.
   const endDate = end || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+  const busy = await fetchBusy(start + "T00:00:00Z", endDate + "T23:59:59.000Z");
+  const data = computeSlots(eventSlug, start, endDate, busy);
 
-  const calUrl =
-    `${CAL_BASE}/v2/slots?eventTypeSlug=${encodeURIComponent(calSlug)}` +
-    `&username=${encodeURIComponent(USERNAME)}` +
-    `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(endDate)}` +
-    `&timeZone=${encodeURIComponent(tz)}&format=range`;
-
-  const res = await fetch(calUrl, {
-    headers: {
-      Authorization: `Bearer ${CAL_API_KEY}`,
-      "cal-api-version": CAL_VER,
-      Accept: "application/json",
-    },
-  });
-  const body = await res.json();
-  if (!res.ok) {
-    return json("error", { message: body?.error?.message || body?.message || "Cal slots failed", detail: body }, res.status);
-  }
-
-  // Keep only slots inside the 18:00–22:00 GMT+8 window.
-  const raw = body.data || {};
-  const data = {};
-  for (const [date, slots] of Object.entries(raw)) {
-    const kept = (slots || []).filter(s => s && s.start && inWorkingWindow(s.start));
-    if (kept.length) data[date] = kept;
-  }
-
-  return json("success", { data });
+  return json("success", { data, timeZone: tz });
 }
 
-// ---- POST: create a real Cal.com booking + record + consume lesson ----
+// ---- POST: hand the student to Cal.com's web flow to confirm ----
 async function createBooking(user, body) {
   const eventSlug = body.eventSlug || "60min";
   const start = body.start;
@@ -125,66 +177,14 @@ async function createBooking(user, body) {
   if (!start) return json("error", { message: "A start time is required" }, 400);
   const calSlug = SLUG_MAP[eventSlug].slug;
 
-  const calRes = await fetch(`${CAL_BASE}/v2/bookings`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${CAL_API_KEY}`,
-      "cal-api-version": CAL_VER,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      eventTypeSlug: calSlug,
-      username: USERNAME,
-      start,
-      attendee: {
-        name: user.full_name || user.email || "Student",
-        email: user.email || "student@ahmedenglish.com",
-        timeZone,
-        language: "en",
-      },
-      metadata: { studentId: user.id },
-    }),
-  });
-  const calData = await calRes.json();
-  if (!calRes.ok) {
-    return json("error", { message: calData?.error?.message || calData?.message || "Could not create booking on Cal.com", detail: calData }, calRes.status);
-  }
-  const b = calData.data || {};
-  const minutes = SLUG_MAP[eventSlug].minutes;
-
-  // Record the booking locally.
-  const { data: bookingRow, error: insErr } = await supabase
-    .from("bookings")
-    .insert({
-      student_id: user.id,
-      event_slug: eventSlug,
-      cal_uid: b.uid || null,
-      title: b.title || eventSlug,
-      start_at: b.start || start,
-      end_at: b.end || null,
-      duration_min: minutes,
-      status: "booked",
-      consumed_lesson: false,
-    })
-    .select("*")
-    .maybeSingle();
-  if (insErr) console.error("booking insert error:", insErr.message);
-
-  // Auto-consume one lesson from the active subscription.
-  const { data: remaining, error: consumeErr } = await supabase
-    .rpc("consume_lesson", { p_student: user.id });
-  if (consumeErr) console.error("consume_lesson error:", consumeErr.message);
-
-  // Mark this booking as having consumed a lesson.
-  if (bookingRow && Number.isInteger(remaining) && remaining >= 0) {
-    await supabase.from("bookings").update({ consumed_lesson: true }).eq("id", bookingRow.id);
-  }
+  const date = String(start).slice(0, 10);
+  const bookingUrl =
+    `https://cal.com/${USERNAME}/${calSlug}?date=${encodeURIComponent(date)}` +
+    (timeZone ? `&tz=${encodeURIComponent(timeZone)}` : "");
 
   return json("success", {
-    booking: bookingRow,
-    cal: b,
-    lessonsRemaining: Number.isInteger(remaining) ? remaining : null,
+    bookingUrl,
+    message: "Confirm your lesson on Cal.com to finish booking.",
   }, 200);
 }
 
@@ -201,10 +201,10 @@ async function cancelBooking(user, body) {
   if (!existing) return json("error", { message: "Booking not found" }, 404);
   if (existing.student_id !== user.id) return json("error", { message: "Not your booking" }, 403);
 
-  // Cancel on Cal.com if we have the uid.
+  // Cancel on Cal.com if we have the uid (best effort).
   if (existing.cal_uid) {
     try {
-      await fetch(`${CAL_BASE}/v2/bookings/${existing.cal_uid}/cancel`, {
+      const res = await fetch(`${CAL_BASE}/v2/bookings/${existing.cal_uid}/cancel`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${CAL_API_KEY}`,
@@ -213,7 +213,19 @@ async function cancelBooking(user, body) {
         },
         body: JSON.stringify({ cancellationReason: "Cancelled by student on site" }),
       });
-    } catch (e) { console.error("cal cancel error:", e.message); }
+      if (!res.ok) {
+        // Cal.com API cancels are also flaky right now. Let the webhook
+        // (or the student's confirmation-email manage link) handle it.
+        return json("error", {
+          message: "Could not reach Cal.com to cancel. Please use the 'Manage booking' link in your confirmation email (your lesson will be credited after it is cancelled).",
+        }, 502);
+      }
+    } catch (e) {
+      console.error("cal cancel error:", e.message);
+      return json("error", {
+        message: "Could not reach Cal.com to cancel. Please use the link in your confirmation email.",
+      }, 502);
+    }
   }
 
   // Credit the lesson back if a lesson was consumed.
