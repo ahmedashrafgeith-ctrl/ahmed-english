@@ -78,12 +78,18 @@
     if (ringTitle) ringTitle.textContent = pkgName;
     if (ringSub)   ringSub.textContent   = `${used} of ${total} lessons completed`;
 
-    // ── 2. Lesson Notes Timeline ──
+// ── 2. Upcoming lessons ──
+    const { data: upcoming } = await sb.from('bookings')
+      .select('*').eq('student_id', user.id).eq('status', 'booked').gte('start_at', new Date().toISOString())
+      .order('start_at', { ascending: true }).limit(5);
+    renderUpcoming(upcoming || [], user);
+
+    // ── 3. Lesson Notes Timeline ──
     const { data: notes } = await sb.from('lesson_notes')
       .select('*').eq('student_id', user.id).order('created_at', { ascending: false }).limit(10);
     renderTimeline(notes, user);
 
-    // ── 3. Homework Checklist ──
+    // ── 4. Homework Checklist ──
     const { data: hwAll } = await sb.from('homework')
       .select('*').eq('student_id', user.id).order('created_at', { ascending: false }).limit(50);
     const hw = hwAll || [];
@@ -105,6 +111,33 @@
     console.error('Error loading student dashboard data:', err);
   }
 });
+
+// ── Upcoming lessons renderer ──
+function renderUpcoming(bookings, user) {
+  const el = document.getElementById('student-upcoming');
+  if (!el) return;
+  if (!user) {
+    el.innerHTML = '<p class="muted">Sign in to see your upcoming lessons.</p>';
+    return;
+  }
+  if (!bookings.length) {
+    el.innerHTML = '<p class="muted">No upcoming lessons yet. Book your next session on the booking page.</p>';
+    return;
+  }
+  el.innerHTML = bookings.map(b => {
+    const when = new Date(b.start_at).toLocaleString('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    });
+    return `
+      <div class="tl-item">
+        <div class="tl-dot-col"><div class="tl-dot"></div></div>
+        <div class="tl-content">
+          <div class="tl-title">${b.title || b.event_slug || 'Private Lesson'}</div>
+          <div class="tl-meta">${when}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
 
 // ── Timeline renderer ──
 function renderTimeline(notes, user) {

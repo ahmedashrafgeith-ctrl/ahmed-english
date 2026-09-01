@@ -21,9 +21,10 @@
 // are scoped to the authenticated user (never cross-account unless
 // the caller is staff/admin).
 //
-// EMAIL: uses Resend when RESEND_API_KEY is set. Without a provider
-// configured the function still works (messages are stored) and only
-// the email notification is skipped.
+// EMAIL: uses Resend when RESEND_API_KEY is set, otherwise a generic
+// SMTP server (SMTP_HOST/SMTP_USER/SMTP_PASS — e.g. a free Gmail App
+// Password) when configured. Without any provider the function still
+// works (messages are stored) and only the email is skipped.
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,6 +34,13 @@ const SB_SERVICE = Deno.env.get("SERVICE_ROLE_KEY") || "";
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY") || "";
 const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "Ahmed English <onboarding@resend.dev>";
 const SITE_URL = Deno.env.get("SITE_URL") || "https://www.proenglishtutor.online";
+
+// SMTP provider (free option — e.g. Gmail App Password, no domain needed).
+const SMTP_HOST = Deno.env.get("SMTP_HOST") || "";
+const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465", 10);
+const SMTP_USER = Deno.env.get("SMTP_USER") || "";
+const SMTP_PASS = Deno.env.get("SMTP_PASS") || "";
+const SMTP_FROM = Deno.env.get("SMTP_FROM") || SMTP_USER;
 
 const supabase = createClient(SB_URL, SB_SERVICE);
 
@@ -95,38 +103,70 @@ function escHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-// -------- email notifications (Resend when configured) --------
+// -------- email notifications (Resend or SMTP when configured) --------
 async function sendEmail(to, subject, html) {
-  if (!RESEND_KEY) {
-    console.log("[chat] email skipped (no RESEND_API_KEY)");
+  const haveResend = !!RESEND_KEY;
+  const haveSmtp = !!SMTP_HOST && !!SMTP_USER && !!SMTP_PASS;
+  if (!haveResend && !haveSmtp) {
+    console.log("[chat] email skipped (no RESEND_API_KEY / SMTP_* configured)");
     return "skipped";
   }
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: EMAIL_FROM,
-        to,
-        subject,
-        html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e5e5;border-radius:12px;">
-          <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">Ahmed English</div>
-          <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">${sanitizeTitle(subject)}</div>
-          ${html}
-        </div>`,
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("[chat] email error:", res.status, errText.slice(0, 400));
+
+  if (haveResend) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: EMAIL_FROM,
+          to,
+          subject,
+          html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e5e5;border-radius:12px;">
+            <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">Ahmed English</div>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">${sanitizeTitle(subject)}</div>
+            ${html}
+          </div>`,
+        }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("[chat] email error:", res.status, errText.slice(0, 400));
+        return "error";
+      }
+      return "sent";
+    } catch (e) {
+      console.error("[chat] email error:", e.message);
       return "error";
     }
+  }
+
+  try {
+    const { SmtpClient } = await import("https://deno.land/x/smtp@v0.7.0/mod.ts");
+    const client = new SmtpClient();
+    await client.connect({
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      username: SMTP_USER,
+      password: SMTP_PASS,
+      tls: SMTP_PORT === 465,
+    });
+    await client.send({
+      from: SMTP_FROM,
+      to,
+      subject,
+      html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e5e5;border-radius:12px;">
+        <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">Ahmed English</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">${sanitizeTitle(subject)}</div>
+        ${html}
+      </div>`,
+    });
+    await client.close();
     return "sent";
   } catch (e) {
-    console.error("[chat] email error:", e.message);
+    console.error("[chat] smtp error:", e.message);
     return "error";
   }
 }

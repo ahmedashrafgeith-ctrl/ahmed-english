@@ -578,6 +578,63 @@ p { color: var(--c-ink-2); }
   .footer-grid { flex-direction: column; align-items: flex-start; }
 }
 
+/* ============ Booking page: toasts ============ */
+.bk-toast-wrap {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  z-index: 1400; display: flex; flex-direction: column; gap: 10px; align-items: center;
+  pointer-events: none; width: max-content; max-width: 92vw;
+}
+.bk-toast {
+  pointer-events: auto; background: var(--c-ink); color: #fff;
+  padding: 12px 20px; border-radius: 999px; font-size: .9rem; font-weight: 600;
+  box-shadow: var(--shadow-lg); animation: bkToastIn .22s ease; line-height: 1.4;
+}
+.bk-toast.ok { background: #065F46; }
+.bk-toast.err { background: #9F1239; }
+@keyframes bkToastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ Booking page: confirm modal ============ */
+.bk-overlay {
+  position: fixed; inset: 0; z-index: 1250; display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 23, 42, 0.55); padding: 20px;
+}
+.bk-overlay[hidden] { display: none; }
+.bk-modal {
+  background: var(--c-surface); color: var(--c-ink); border-radius: 20px;
+  width: 100%; max-width: 440px; padding: 26px; box-shadow: var(--shadow-lg);
+  border: 1px solid var(--c-card-border); text-align: center;
+}
+.bk-modal h3 { margin: 0; font-size: 1.25rem; }
+.bk-modal .bk-sub { color: var(--c-ink-3); font-size: .9rem; margin: 6px 0 0; }
+.bk-sum { display: grid; gap: 10px; margin: 20px 0 4px; text-align: left; }
+.bk-sum > div {
+  display: flex; justify-content: space-between; gap: 12px; font-size: .92rem;
+  padding: 11px 14px; background: var(--c-soft); border-radius: 12px;
+  border: 1px solid var(--c-card-border);
+}
+.bk-sum b { color: var(--c-ink); }
+.bk-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+.bk-actions .btn { min-width: 120px; }
+.bk-note { font-size: .78rem; color: var(--c-ink-3); margin-top: 13px; line-height: 1.55; }
+
+/* ============ Booking page: week calendar ============ */
+.bk-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 14px 0 6px; }
+.bk-day {
+  border: 1px solid var(--c-card-border); border-radius: 14px;
+  background: var(--c-surface); padding: 9px 8px; min-width: 0;
+}
+.bk-day.today { border-color: var(--c-accent); box-shadow: 0 0 0 1px var(--c-accent); }
+.bk-day-head { text-align: center; padding: 2px 0 8px; border-bottom: 1px dashed var(--c-card-border); margin-bottom: 8px; }
+.bk-day-head .dw { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-3); }
+.bk-day-head .dd { font-size: .95rem; font-weight: 800; margin-top: 1px; }
+.bk-day.today .bk-day-head .dd { color: var(--c-accent); }
+.bk-slot { display: block; width: 100%; margin: 5px 0; }
+.bk-slot.is-past { opacity: .42; pointer-events: none; }
+.bk-day .bk-empty { font-size: .78rem; color: var(--c-ink-3); text-align: center; padding: 14px 0 6px; }
+@media (max-width: 900px) {
+  .bk-week { grid-template-columns: repeat(7, minmax(88px, 1fr)); overflow-x: auto; padding-bottom: 6px; }
+}
+
 /* ===== Qualifications / Certificates ===== */
 .cert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .cert-card { text-align: center; }
