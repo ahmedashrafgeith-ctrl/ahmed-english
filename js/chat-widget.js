@@ -38,6 +38,8 @@
 #ahm-chat-head .ahm-avatar{width:34px;height:34px;border-radius:50%;background:#fff;color:#0b3b2c;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:.95rem}
 #ahm-chat-head .ahm-name{font-weight:800;font-size:.95rem}
 #ahm-chat-head .ahm-status{font-size:.72rem;opacity:.85}
+#ahm-chat-close{flex:0 0 auto;margin-left:auto;background:rgba(255,255,255,.16);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;padding:0;transition:background .15s}
+#ahm-chat-close:hover{background:rgba(255,255,255,.32)}
 #ahm-chat-body{flex:1;overflow-y:auto;padding:14px;min-height:160px;background:#f8fafb;display:flex;flex-direction:column;gap:8px}
 #ahm-chat-msg{display:flex;flex-direction:column;gap:2px;max-width:82%}
 #ahm-chat-msg.s{align-self:flex-end;align-items:flex-end}
@@ -88,6 +90,7 @@
             <div class="ahm-name">Ahmed English</div>
             <div class="ahm-status" id="ahm-state">Connecting…</div>
           </div>
+          <button id="ahm-chat-close" title="Close chat" aria-label="Close chat">${CLOSE_SVG}</button>
         </div>
         <div id="ahm-chat-body"></div>
         <div id="ahm-chat-note">Messages go straight to Ahmed's inbox</div>
@@ -106,6 +109,9 @@
     fab.addEventListener("click", function () {
       if (panel.classList.contains("open")) close(); else open();
     });
+
+    var closeBtn = document.getElementById("ahm-chat-close");
+    if (closeBtn) closeBtn.addEventListener("click", close);
 
     var field = document.getElementById("ahm-field");
     var send = document.getElementById("ahm-send");
@@ -311,7 +317,10 @@
     // auto-open if the page was reached via an email/chat link
     if (window.location.hash && window.location.hash.toLowerCase().indexOf("chat") !== -1) {
       var p = document.getElementById("ahm-chat-panel");
-      if (p) setTimeout(function () { p.classList.add("open"); }, 500);
+      if (p) setTimeout(function () {
+        p.classList.add("open");
+        setFab(false);
+      }, 500);
     }
     // periodic unread refresh while not open
     setInterval(function () {

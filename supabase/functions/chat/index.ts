@@ -196,7 +196,7 @@ async function notifyAdminsOfStudentMessage(student, body, chatId) {
       Student: ${escHtml(student.email || "")}<br>
       ${escHtml(name)}
     </p>
-    <a href="${SITE_URL}/admin.html#chat" style="display:inline-block;background:#0b3b2c;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:8px;">Open Chat in Admin Dashboard</a>`;
+    <a href="${SITE_URL}/admin.html#chat-inbox" style="display:inline-block;background:#0b3b2c;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:8px;">Open Chat in Admin Dashboard</a>`;
   return sendEmail(targets, "New message from " + name, html);
 }
 
