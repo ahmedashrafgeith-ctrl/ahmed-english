@@ -73,11 +73,27 @@ async function requireStudent(req) {
   if (!token) return null;
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) return null;
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+  if (!profile) {
+    // Self-heal accounts registered before the on_auth_user_created
+    // trigger existed (or created via the admin API).
+    const meta = user.user_metadata || {};
+    const { data: created } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        email: String(user.email || "").toLowerCase(),
+        full_name: meta.full_name || meta.name || null,
+        role: "student",
+      })
+      .select("*")
+      .maybeSingle();
+    profile = created || null;
+  }
   return profile || null;
 }
 
