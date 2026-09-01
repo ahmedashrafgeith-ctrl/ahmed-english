@@ -108,6 +108,8 @@
           title: "Starter",
           lessons: "4 Lessons",
           subtext: "/ month · 1 lesson per week",
+          price: "$48",
+          perLesson: "$12 per 60-min lesson",
           desc: "Ideal for steady progress, maintaining your skills, and addressing key speaking challenges.",
           stripeLink: stripeCfg.starterPaymentLink,
           calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent60}`,
@@ -118,6 +120,8 @@
           title: "Progress",
           lessons: "8 Lessons",
           subtext: "/ month · 2 lessons per week",
+          price: "$96",
+          perLesson: "$12 per 60-min lesson",
           desc: "Recommended for rapid fluency gains, job interview prep, workplace confidence, and pronunciation.",
           stripeLink: stripeCfg.progressPaymentLink,
           calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent60}`,
@@ -129,6 +133,8 @@
           title: "Intensive",
           lessons: "12 Lessons",
           subtext: "/ month · 3 lessons per week",
+          price: "$144",
+          perLesson: "$12 per 60-min lesson",
           desc: "Fast-track your fluency for urgent career advancement, relocation, or executive interviews.",
           stripeLink: stripeCfg.intensivePaymentLink,
           calLink: `${calCfg.base}/${calCfg.username}/${calCfg.lessonEvent60}`,
@@ -142,8 +148,9 @@
           ${p.tag ? `<span class="pkg-tag">${p.tag}</span>` : ''}
           <div>
             <h3>${p.title}</h3>
-            <div class="pkg-price">${p.lessons}</div>
-            <div class="pkg-sub">${p.subtext}</div>
+            <div class="pkg-price">${p.price}</div>
+            <div class="pkg-sub">${p.lessons} ${p.subtext}</div>
+            <div class="pkg-note">${p.perLesson}</div>
             <p style="margin-top:14px;font-size:.95rem;">${p.desc}</p>
             <ul class="checks">${p.features.map(f => `<li><span class="ck">✓</span>${f}</li>`).join('')}</ul>
           </div>

@@ -245,6 +245,7 @@ p { color: var(--c-ink-2); }
 .pkg-tag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--c-hero); color: #fff; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 7px 18px; border-radius: var(--r-full); box-shadow: var(--shadow-accent); white-space: nowrap; }
 .pkg-price { font-family: var(--font-h); font-weight: 800; font-size: 2rem; margin: 14px 0 2px; }
 .pkg-sub { color: var(--c-ink-3); font-size: .84rem; font-weight: 600; }
+.pkg-note { display: inline-block; color: var(--c-accent); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; background: color-mix(in srgb, var(--c-accent) 10%, transparent); padding: 3px 10px; border-radius: var(--r-full); }
 .checks { list-style: none; margin: 20px 0 26px; display: grid; gap: 11px; }
 .checks li { display: flex; gap: 10px; font-size: .9rem; color: var(--c-ink-2); align-items: flex-start; }
 .checks .ck { width: 20px; height: 20px; border-radius: 50%; background: var(--c-soft); color: var(--c-accent); display: grid; place-items: center; flex-shrink: 0; font-weight: 800; font-size: .7rem; }

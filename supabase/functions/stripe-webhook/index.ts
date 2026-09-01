@@ -30,12 +30,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Programming-Price-Lookups from your Stripe payment link line items
 // are matched here. Add/remove entries to match your live amounts.
 const PLAN_MAP: Record<number, { name: string; lessons: number }> = {
-  // Starter $149.00
-  14900: { name: "Starter", lessons: 4 },
-  // Progress $579.00
-  57900: { name: "Progress", lessons: 8 },
-  // Intensive $1299.00
-  129900: { name: "Intensive", lessons: 12 },
+  // Starter $48.00
+  4800: { name: "Starter", lessons: 4 },
+  // Progress $96.00
+  9600: { name: "Progress", lessons: 8 },
+  // Intensive $144.00
+  14400: { name: "Intensive", lessons: 12 },
 };
 
 function planFromAmount(amount: number) {
