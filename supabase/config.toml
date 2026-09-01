@@ -2,3 +2,6 @@ project_id = "gggziewyeqsnuixwhvoe"
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.book-lesson]
+verify_jwt = true

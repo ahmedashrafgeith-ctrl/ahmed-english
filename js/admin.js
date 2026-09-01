@@ -463,6 +463,100 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error refreshing admin data:', e);
     }
   }
+
+  // ==========================================
+  // 5. BOOKINGS & LESSON USAGE (admin)
+  // ==========================================
+  async function loadAdminBookings() {
+    const el = document.getElementById('admin-bookings');
+    if (!el) return;
+    try {
+      const { data: rows } = await sb.from('bookings').select('*').order('start_at', { ascending: false }).limit(30);
+      if (!rows || !rows.length) {
+        el.innerHTML = '<p class="muted">No on-site bookings recorded yet.</p>';
+        return;
+      }
+      const byId = {};
+      (await sb.from('profiles').select('id,full_name,email')).data.forEach(p => byId[p.id] = p);
+      el.innerHTML = rows.map(b => `
+        <div class="act-item">
+          <div class="a-body">
+            <strong>${b.title || b.event_slug} <span class="muted" style="font-weight:400;">· ${(byId[b.student_id] && (byId[b.student_id].full_name || byId[b.student_id].email)) || '—'}</span></strong>
+            <p>${new Date(b.start_at).toLocaleString()}</p>
+            <span class="badge ${b.status === 'booked' ? 'badge-ok' : 'badge-warn'}" style="font-size:0.7rem;">${b.status}${b.consumed_lesson ? ' · lesson used' : ''}</span>
+          </div>
+        </div>`).join('');
+    } catch (e) { console.error('load bookings error:', e); }
+  }
+
+  async function renderUsageList() {
+    const list = document.getElementById('usage-list');
+    if (!list) return;
+    try {
+      const { data: subs } = await sb.from('subscriptions').select('*').order('created_at', { ascending: false });
+      if (!subs || !subs.length) {
+        list.innerHTML = '<tr><td colspan="6" class="muted">No subscriptions yet.</td></tr>';
+        return;
+      }
+      const byId = {};
+      (await sb.from('profiles').select('id,full_name,email')).data.forEach(p => byId[p.id] = p);
+      list.innerHTML = subs.map(s => {
+        const name = (byId[s.student_id] && (byId[s.student_id].full_name || byId[s.student_id].email)) || '—';
+        const total = s.lessons_total || 0, used = s.lessons_used || 0, left = Math.max(total - used, 0);
+        return `<tr>
+          <td><strong>${name}</strong></td>
+          <td>${s.package_name || '—'}</td>
+          <td>${total}</td>
+          <td>${used}</td>
+          <td><span class="badge ${left > 0 ? 'badge-ok' : 'badge-warn'}">${left}</span></td>
+          <td><button type="button" class="btn btn-sm btn-soft" data-edi="${s.id}">Edit</button></td>
+        </tr>`;
+      }).join('');
+      list.querySelectorAll('[data-edi]').forEach(b => b.addEventListener('click', () => openUsageEditor(b.dataset.edi, subs)));
+    } catch (e) { console.error('usage list error:', e); }
+  }
+
+  function openUsageEditor(id, subs) {
+    const s = subs.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('eu-id').value = s.id;
+    document.getElementById('eu-student').value = '';
+    (async () => {
+      const { data: p } = await sb.from('profiles').select('full_name,email').eq('id', s.student_id).maybeSingle();
+      document.getElementById('eu-student').value = (p && (p.full_name || p.email)) || s.student_id;
+    })();
+    document.getElementById('eu-total').value = s.lessons_total || 0;
+    document.getElementById('eu-used').value = s.lessons_used || 0;
+    const m = document.getElementById('modal-edit-usage');
+    if (m) m.hidden = false;
+  }
+
+  const editUsageForm = document.getElementById('edit-usage-form');
+  if (editUsageForm) {
+    editUsageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('eu-id').value;
+      const total = parseInt(document.getElementById('eu-total').value, 10) || 0;
+      const used = parseInt(document.getElementById('eu-used').value, 10) || 0;
+      const msg = document.getElementById('eu-msg');
+      const btn = document.getElementById('eu-submit');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+      try {
+        const { error } = await sb.from('subscriptions').update({ lessons_total: total, lessons_used: used }).eq('id', id);
+        if (error) throw error;
+        if (msg) { msg.style.display = 'block'; msg.style.color = '#059669'; msg.textContent = '✓ Lesson balance updated.'; }
+        document.getElementById('modal-edit-usage').hidden = true;
+        await renderUsageList();
+      } catch (err) {
+        if (msg) { msg.style.display = 'block'; msg.style.color = '#DC2626'; msg.textContent = '✕ ' + ((err && err.message) || 'Failed to update'); }
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+      }
+    });
+  }
+
+  loadAdminBookings();
+  renderUsageList();
 });
 
 // ── Change a user's account type (student / tutor / admin) ──

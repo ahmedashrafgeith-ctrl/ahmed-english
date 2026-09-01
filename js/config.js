@@ -51,6 +51,16 @@
       intensivePaymentLink: "https://book.stripe.com/fZufZg4OC8vUbbxd0sgrS03",
       dashboardUrl: "https://dashboard.stripe.com"
     },
+    booking: {
+      // Non-secret booking config. CAL_API_KEY lives only in the Supabase
+      // Edge Function secrets, never here (it must not be exposed publicly).
+      username: "ahmed-ghaith-fbjoax",
+      evtTrial: "30min-trial",
+      evt30: "30min",
+      evt60: "60min",
+      durationMinutes: { "30min-trial": 30, "30min": 30, "60min": 60 },
+      functionUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/book-lesson"
+    },
     drive: "https://drive.google.com",
     contactEmail: "contact@ahmedenglish.com"
   };

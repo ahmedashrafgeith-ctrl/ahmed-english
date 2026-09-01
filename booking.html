@@ -14,6 +14,7 @@
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/booking-system.js"></script>
 </head>
 <body>
 
@@ -69,6 +70,19 @@
       </div>
     </div>
   </section>
+
+  <!-- INTERNAL BOOKING SYSTEM (for logged-in students on a plan) -->
+  <section class="section section-alt" id="internal-booking" style="margin-top:0;">
+    <div class="wrap">
+      <div id="booking-mount"></div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.initBookingSystem) window.initBookingSystem("#booking-mount");
+    });
+  </script>
 
   <footer class="footer">
     <div class="wrap footer-grid">

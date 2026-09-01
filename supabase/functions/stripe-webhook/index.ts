@@ -21,7 +21,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY") || "";
 
 const stripe = new Stripe(stripeSecret, { apiVersion: "2023-10-16" });
 const supabase = createClient(supabaseUrl, supabaseKey);

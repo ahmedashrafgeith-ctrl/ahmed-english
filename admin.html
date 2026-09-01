@@ -309,7 +309,49 @@
           </a>
         </div>
       </section>
+
+      <!-- BOOKINGS & LESSON USAGE PANEL -->
+      <section class="panel" id="bookings-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Bookings &amp; Lesson Usage</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">On-site Cal.com bookings and package lesson balance control. Edit a plan to top up or adjust used lessons (for cancellations / reschedules).</p>
+          </div>
+        </div>
+        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookings…</p></div>
+        <div style="overflow-x:auto;">
+          <table class="table">
+            <thead><tr><th>Student</th><th>Package</th><th>Total</th><th>Used</th><th>Remaining</th><th></th></tr></thead>
+            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptions…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- ==================== EDIT LESSON USAGE MODAL ==================== -->
+  <div class="modal-overlay" id="modal-edit-usage" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Adjust Lesson Balance</h3>
+        <button type="button" class="modal-x" data-close="modal-edit-usage" aria-label="Close">&times;</button>
+      </div>
+      <form id="edit-usage-form">
+        <p class="muted" style="margin:0 0 14px;font-size:.9rem;">Top up a package (e.g. after a renewal) or fix the used count (e.g. after a cancellation / reschedule).</p>
+        <input type="hidden" id="eu-id">
+        <label class="kpi-label">Student</label>
+        <input class="field" id="eu-student" disabled>
+        <label class="kpi-label">Total Lessons</label>
+        <input class="field" id="eu-total" type="number" min="0" required>
+        <label class="kpi-label">Lessons Used</label>
+        <input class="field" id="eu-used" type="number" min="0" required>
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn btn-ghost" data-close="modal-edit-usage">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="eu-submit">Save</button>
+        </div>
+        <div id="eu-msg" style="margin-top:10px;font-size:0.85rem;font-weight:600;display:none;"></div>
+      </form>
+    </div>
   </div>
 
   <!-- ==================== ADD STUDENT MODAL ==================== -->
