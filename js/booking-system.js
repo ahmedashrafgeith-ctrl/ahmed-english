@@ -148,7 +148,7 @@
     const hostLine = (user && user.user_metadata && user.user_metadata.full_name) ? "" : "";
     const activeEvent = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
     container.innerHTML = `
-      <div class="bk-cal reveal">
+      <div class="bk-cal">
         <div class="bk-cal-side">
           <div class="bk-cal-avatar"><img src="${esc(photo)}" alt="Tutor" onerror="this.style.display='none'"><span>${esc("TG")}</span></div>
           <p class="bk-cal-who">Ahmed Ghaith · English Tutor</p>

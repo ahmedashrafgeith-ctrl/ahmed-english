@@ -778,7 +778,7 @@ p { color: var(--c-ink-2); }
   background: var(--c-surface, #fff); color: var(--c-ink, #111); font: inherit;
   transition: all .15s cubic-bezier(.22,1,.36,1);
 }
-.bk-cal-event:hover { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 5%, #fff); }
+.bk-cal-event:hover { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 5%, var(--c-surface)); }
 .bk-cal-event.is-active { border-color: var(--c-accent, #0b3b2c); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 20%, transparent); }
 .bk-cal-event-name { flex: 1; font-weight: 700; font-size: .86rem; }
 .bk-cal-event-dur { font-size: .76rem; color: var(--c-ink-3, #6b7280); font-weight: 600; }
@@ -803,7 +803,7 @@ p { color: var(--c-ink-2); }
   transition: all .15s cubic-bezier(.22,1,.36,1);
 }
 .bk-chip:hover { border-color: var(--c-accent, #0b3b2c); }
-.bk-chip.is-selected { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 10%, #fff); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 18%, transparent); }
+.bk-chip.is-selected { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 10%, var(--c-surface)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 18%, transparent); }
 .bk-chip.today .bk-chip-wd { color: var(--c-accent, #0b3b2c); }
 .bk-chip.empty { opacity: .45; cursor: default; }
 .bk-chip.empty:hover { border-color: var(--c-border, #e5e7eb); }
@@ -822,7 +822,7 @@ p { color: var(--c-ink-2); }
   background: var(--c-surface, #fff); color: var(--c-ink, #111);
   transition: all .15s cubic-bezier(.22,1,.36,1);
 }
-.bk-time:hover { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 7%, #fff); transform: translateY(-1px); box-shadow: 0 6px 18px color-mix(in srgb, var(--c-accent) 18%, transparent); }
+.bk-time:hover { border-color: var(--c-accent, #0b3b2c); background: color-mix(in srgb, var(--c-accent) 7%, var(--c-surface)); transform: translateY(-1px); box-shadow: 0 6px 18px color-mix(in srgb, var(--c-accent) 18%, transparent); }
 .bk-time-h { font-size: .98rem; font-weight: 800; }
 .bk-time-sub { font-size: .72rem; color: var(--c-ink-3, #6b7280); font-weight: 600; }
 .bk-empty2 { grid-column: 1 / -1; text-align: center; padding: 36px 0; }
