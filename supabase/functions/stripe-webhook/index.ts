@@ -1,5 +1,5 @@
-// ============================================================
-// Ahmed English — Stripe Webhook (Supabase Edge Function)
+﻿// ============================================================
+// TutorEnglishPro — Stripe Webhook (Supabase Edge Function)
 // ------------------------------------------------------------
 // Purpose: keeps the public `subscriptions` table in sync with
 // real Stripe payments so the admin "Revenue" and teacher
@@ -201,3 +201,4 @@ Deno.serve(async (req) => {
     headers: { "Content-Type": "application/json" },
   });
 });
+

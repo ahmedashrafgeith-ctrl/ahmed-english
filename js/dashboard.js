@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+﻿document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
   const user = sb ? await (async () => {
     try {
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     </div>
   </div>
 
-  <p class="foot">Ahmed English · 1-on-1 Personalized Online English Lessons</p>
+  <p class="foot">TutorEnglishPro · 1-on-1 Personalized Online English Lessons</p>
 </div>
 </body>
 </html>`;
@@ -382,3 +382,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (reportForm) reportForm.addEventListener('submit', (e) => { e.preventDefault(); generateReport(); });
   populateReportStudents();
 });
+

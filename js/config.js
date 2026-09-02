@@ -60,7 +60,8 @@
       evt60: "60min",
       durationMinutes: { "30min-trial": 30, "30min": 30, "60min": 60 },
       functionUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/book-lesson",
-      chatUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/chat"
+      chatUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/chat",
+      contactUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/contact"
     },
     drive: "https://drive.google.com",
     contactEmail: "ahmedashrafgeith@gmail.com"

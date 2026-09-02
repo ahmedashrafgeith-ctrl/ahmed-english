@@ -26,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-auth="user"]').forEach(el => {
       el.style.display = loggedIn ? '' : 'none';
     });
+    const chip = document.querySelector('[data-nav="user-chip"]');
+    if (chip) {
+      chip.style.display = loggedIn ? 'inline-flex' : 'none';
+      chip.style.pointerEvents = 'none';
+    }
   }
 
   async function refreshAuthNav() {
@@ -36,18 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
       applyAuthNav(loggedIn);
       if (loggedIn) {
         const dash = document.querySelector('[data-nav="dashboard"]');
-        if (dash) {
-          let href = 'student.html';
-          try {
-            const { data: { user } } = await navSb.auth.getUser();
-            if (user) {
-              const { data: prof } = await navSb.from('profiles').select('role').eq('id', user.id).maybeSingle();
-              if (prof && prof.role === 'admin') href = 'admin.html';
-              else if (prof && prof.role === 'tutor') href = 'dashboard.html';
+        const chip = document.querySelector('[data-nav="user-chip"]');
+        let href = 'student.html';
+        try {
+          const { data: { user } } = await navSb.auth.getUser();
+          if (user) {
+            const { data: prof } = await navSb.from('profiles').select('role, full_name').eq('id', user.id).maybeSingle();
+            if (prof && prof.role === 'admin') href = 'admin.html';
+            else if (prof && prof.role === 'tutor') href = 'dashboard.html';
+            if (chip) {
+              const name = (prof && prof.full_name) ? prof.full_name.split(' ')[0] : (user.email || '').split('@')[0];
+              chip.textContent = name;
             }
-          } catch { /* keep default */ }
-          dash.href = href;
-        }
+          }
+        } catch { /* keep default */ }
+        if (dash) dash.href = href;
       }
     } catch { applyAuthNav(false); }
   }

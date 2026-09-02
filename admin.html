@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard - Ahmed English</title>
+  <title>Admin Dashboard - TutorEnglishPro</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="components.css">
   <script src="js/config.js"></script>
@@ -20,8 +20,8 @@
   <div class="dash-shell">
     <aside class="sidebar">
       <a class="brand" href="index.html" style="text-decoration:none;">
-        <span class="brand-mark">A</span>
-        <span><span class="brand-name">Ahmed English</span><span class="brand-sub">Admin Console</span></span>
+        <span class="brand-mark">P</span>
+        <span><span class="brand-name">TutorEnglishPro</span><span class="brand-sub">Admin Console</span></span>
       </a>
       <nav class="side-nav">
         <a class="side-link active" href="#overview">
@@ -334,18 +334,36 @@
 
       <!-- CHAT INBOX -->
       <section class="panel" id="chat-inbox">
-        <div class="panel-head">
+        <div class="panel-head bk-inbox-head">
           <div>
-            <h3>Student Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students. Reply here — the student sees it instantly and gets an email.</p>
+            <h3>Inbox</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here — they see it instantly and get an email.</p>
+          </div>
+          <div class="bk-inbox-tools">
+            <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="inbox-refresh-btn">Refresh</button>
           </div>
         </div>
-        <div id="inbox-wrap" style="display:grid;gap:18px;grid-template-columns:minmax(240px,300px) 1fr;">
-          <div id="inbox-list" style="border:1px solid var(--c-card-border);border-radius:12px;overflow:hidden;max-height:540px;overflow-y:auto;">
-            <p class="muted" style="padding:18px;text-align:center;">Loading conversations…</p>
+
+        <div class="bk-inbox-tabs" role="tablist">
+          <button type="button" class="bk-tab is-on" data-tab="all" role="tab" aria-selected="true">All Chat</button>
+          <button type="button" class="bk-tab" data-tab="unread" role="tab" aria-selected="false">Unread</button>
+          <button type="button" class="bk-tab" data-tab="contacts" role="tab" aria-selected="false">Contact Form</button>
+        </div>
+
+        <div class="bk-inbox-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="inbox-search" placeholder="Search name, email, or message…" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+        </div>
+
+        <div id="inbox-wrap">
+          <div id="inbox-side">
+            <div id="inbox-list">
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversations…</p>
+            </div>
           </div>
-          <div id="inbox-thread" style="border:1px solid var(--c-card-border);border-radius:12px;display:flex;flex-direction:column;min-height:540px;justify-content:center;">
-            <p class="muted" style="padding:18px;text-align:center;">Select a conversation to read and reply.</p>
+          <div id="inbox-thread">
+            <p class="muted" style="padding:18px;text-align:center;">Select a conversation to read and reply. Chat archives are deleted automatically after 90 days.</p>
           </div>
         </div>
       </section>
@@ -456,3 +474,5 @@
 
 </body>
 </html>
+
+

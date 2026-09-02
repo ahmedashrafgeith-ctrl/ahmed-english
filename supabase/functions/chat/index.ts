@@ -1,5 +1,5 @@
-// ============================================================
-// Ahmed English — Live Chat (Supabase Edge Function)
+﻿// ============================================================
+// TutorEnglishPro - Live Chat (Supabase Edge Function)
 // ------------------------------------------------------------
 // Powering the student chat widget and the Admin Dashboard inbox.
 //
@@ -16,13 +16,21 @@
 //  - POST { action:"read", chatId }
 //      Marks the caller's side of the conversation as read.
 //
-// SECURITY: verify_jwt = true. Sending requires a signed-in user
-// with a profile. Reads/writes go through the service_role key and
-// are scoped to the authenticated user (never cross-account unless
-// the caller is staff/admin).
+//  - POST { action:"delete", chatId }
+//      Deletes a conversation (owner or staff only).
+//
+//  - POST { action:"purge" }
+//      Staff only: deletes conversations idle for 90+ days.
+//
+// SECURITY: verify_jwt = false. Callers may chat either as a
+// signed-in student (a valid Supabase token) OR as a guest who
+// provides {name, email}. Guests are scoped to conversations keyed
+// by their email address (never cross-account). Staff/admin see all.
+// Reads/writes go through the service_role key. A simple in-memory
+// rate limiter guards the public write path.
 //
 // EMAIL: uses Resend when RESEND_API_KEY is set, otherwise a generic
-// SMTP server (SMTP_HOST/SMTP_USER/SMTP_PASS — e.g. a free Gmail App
+// SMTP server (SMTP_HOST/SMTP_USER/SMTP_PASS - e.g. a free Gmail App
 // Password) when configured. Without any provider the function still
 // works (messages are stored) and only the email is skipped.
 // ============================================================
@@ -32,10 +40,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SB_URL = Deno.env.get("SUPABASE_URL") || "";
 const SB_SERVICE = Deno.env.get("SERVICE_ROLE_KEY") || "";
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY") || "";
-const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "Ahmed English <onboarding@resend.dev>";
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "TutorEnglishPro <onboarding@resend.dev>";
 const SITE_URL = Deno.env.get("SITE_URL") || "https://www.proenglishtutor.online";
 
-// SMTP provider (free option — e.g. Gmail App Password, no domain needed).
+// SMTP provider (free option - e.g. Gmail App Password, no domain needed).
 const SMTP_HOST = Deno.env.get("SMTP_HOST") || "";
 const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465", 10);
 const SMTP_USER = Deno.env.get("SMTP_USER") || "";
@@ -90,9 +98,24 @@ function isStaff(profile) {
   return profile && (profile.role === "admin" || profile.role === "staff");
 }
 
+function isValidEmail(e) {
+  return typeof e === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+}
+
+// In-memory rate limiter for the public (guest) write path.
+const recent = new Map();
+function rateLimited(key) {
+  const now = Date.now();
+  const list = (recent.get(key) || []).filter(t => now - t < 60000);
+  if (list.length >= 12) return true;
+  list.push(now);
+  recent.set(key, list).size; // keep map fresh
+  return false;
+}
+
 function preview(text) {
   const t = String(text || "").trim().replace(/\s+/g, " ");
-  return t.length > 60 ? t.slice(0, 60) + "…" : t;
+  return t.length > 60 ? t.slice(0, 60) + "..." : t;
 }
 
 function escHtml(s) {
@@ -125,7 +148,7 @@ async function sendEmail(to, subject, html) {
           to,
           subject,
           html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e5e5;border-radius:12px;">
-            <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">Ahmed English</div>
+            <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">TutorEnglishPro</div>
             <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">${sanitizeTitle(subject)}</div>
             ${html}
           </div>`,
@@ -158,7 +181,7 @@ async function sendEmail(to, subject, html) {
       to,
       subject,
       html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e5e5;border-radius:12px;">
-        <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">Ahmed English</div>
+        <div style="font-size:22px;font-weight:800;color:#0b3b2c;margin-bottom:4px;">TutorEnglishPro</div>
         <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">${sanitizeTitle(subject)}</div>
         ${html}
       </div>`,
@@ -205,7 +228,7 @@ async function notifyStudentOfAdminReply(student, body, chatId) {
   const html = `
     <p style="margin:0 0 12px;color:#111;font-size:15px;">Ahmed replied to your chat:</p>
     <div style="background:#eef3ff;border:1px solid #d6e0ff;border-radius:10px;padding:14px;color:#111;font-size:15px;white-space:pre-wrap;">${escHtml(body)}</div>
-    <p style="margin:16px 0 20px;color:#6b7280;font-size:13px;">Keep the conversation going — just open the chat and continue typing.</p>
+    <p style="margin:16px 0 20px;color:#6b7280;font-size:13px;">Keep the conversation going - just open the chat and continue typing.</p>
     <a href="${SITE_URL}/booking.html#chat" style="display:inline-block;background:#0b3b2c;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:8px;">Open Chat</a>`;
   return sendEmail(student.email, "Ahmed replied to your chat", html);
 }
@@ -213,7 +236,7 @@ async function notifyStudentOfAdminReply(student, body, chatId) {
 // -------- actions --------
 
 async function sendMessage(ctx, body) {
-  const { user, profile } = ctx;
+  const { user, profile, visitor } = ctx;
   const text = String(body.body || "").trim();
   if (!text) return json("error", { message: "Message is required" }, 400);
 
@@ -225,7 +248,9 @@ async function sendMessage(ctx, body) {
     const { data: existing } = await supabase
       .from("chats").select("*").eq("id", chatId).maybeSingle();
     if (!existing) return json("error", { message: "Chat not found" }, 404);
-    if (existing.student_id !== user.id && !isStaff(profile)) {
+    const owner = (user && existing.student_id === user.id) ||
+      (visitor && existing.guest_email === visitor.email);
+    if (!owner && !isStaff(profile)) {
       return json("error", { message: "Not your chat" }, 403);
     }
     chat = existing;
@@ -233,15 +258,26 @@ async function sendMessage(ctx, body) {
     if (sender !== "student") {
       return json("error", { message: "Select a conversation to reply to" }, 400);
     }
-    const { data: created } = await supabase
-      .from("chats").insert({
-        student_id: user.id,
-        subject: preview(text),
-        status: "open",
-        unread_admin: 0,
-        last_message_at: new Date().toISOString(),
-      }).select("*").maybeSingle();
-    chat = created;
+    // Guests resume a conversation started with the same email.
+    if (visitor && !user) {
+      const { data: existing } = await supabase
+        .from("chats").select("*").eq("guest_email", visitor.email).limit(1).maybeSingle();
+      if (existing) chat = existing;
+    }
+    if (!chat) {
+      const { data: created } = await supabase
+        .from("chats").insert({
+          student_id: user ? user.id : null,
+          guest_email: visitor ? visitor.email : null,
+          guest_name: visitor ? (visitor.name || null) : null,
+          subject: preview(text),
+          status: "open",
+          unread_admin: 0,
+          unread_student: 0,
+          last_message_at: new Date().toISOString(),
+        }).select("*").maybeSingle();
+      chat = created;
+    }
   }
 
   const { data: message } = await supabase
@@ -259,21 +295,27 @@ async function sendMessage(ctx, body) {
 
   let email = "skipped";
   if (sender === "student") {
-    email = await notifyAdminsOfStudentMessage(profile, text, chat.id);
+    const who = profile || { full_name: visitor && visitor.name, email: visitor && visitor.email };
+    email = await notifyAdminsOfStudentMessage(who, text, chat.id);
   } else {
     const { data: studentProfile } = await supabase
       .from("profiles").select("*").eq("id", chat.student_id).maybeSingle();
-    if (studentProfile) email = await notifyStudentOfAdminReply(studentProfile, text, chat.id);
+    if (studentProfile) {
+      email = await notifyStudentOfAdminReply(studentProfile, text, chat.id);
+    } else if (chat.guest_email) {
+      email = await notifyStudentOfAdminReply({ email: chat.guest_email, full_name: chat.guest_name }, text, chat.id);
+    }
   }
 
   return json("success", { chatId: chat.id, message, email }, 200);
 }
 
 async function listChats(ctx) {
-  const { user, profile } = ctx;
+  const { user, profile, visitor } = ctx;
   let query = supabase.from("chats").select("*, student:profiles!chats_student_id_fkey(id, email, full_name)");
   if (!isStaff(profile)) {
-    query = query.eq("student_id", user.id);
+    if (user) query = query.eq("student_id", user.id);
+    else query = query.eq("guest_email", visitor.email);
   }
   const { data: chats } = await query.order("last_message_at", { ascending: false }).limit(100);
 
@@ -284,8 +326,8 @@ async function listChats(ctx) {
     out.push({
       id: c.id,
       student_id: c.student_id,
-      student_name: c.student?.full_name || c.student?.email || "Student",
-      student_email: c.student?.email || "",
+      student_name: c.student?.full_name || c.student?.email || c.guest_name || "Student",
+      student_email: c.student?.email || c.guest_email || "",
       subject: c.subject,
       status: c.status,
       unread_student: c.unread_student,
@@ -297,14 +339,30 @@ async function listChats(ctx) {
   return json("success", { chats: out }, 200);
 }
 
-async function markRead(ctx, body) {
-  const { user, profile } = ctx;
+async function getThread(ctx, body) {
+  const { user, profile, visitor } = ctx;
   const chatId = body.chatId;
   if (!chatId) return json("error", { message: "chatId is required" }, 400);
 
   const { data: chat } = await supabase.from("chats").select("*").eq("id", chatId).maybeSingle();
   if (!chat) return json("error", { message: "Chat not found" }, 404);
-  if (chat.student_id !== user.id && !isStaff(profile)) {
+  const owner = (user && chat.student_id === user.id) || (visitor && chat.guest_email === visitor.email);
+  if (!owner && !isStaff(profile)) return json("error", { message: "Not your chat" }, 403);
+
+  const { data: messages } = await supabase
+    .from("chat_messages").select("*").eq("chat_id", chatId).order("created_at", { ascending: true });
+  return json("success", { chatId, messages: messages || [] }, 200);
+}
+
+async function markRead(ctx, body) {
+  const { user, profile, visitor } = ctx;
+  const chatId = body.chatId;
+  if (!chatId) return json("error", { message: "chatId is required" }, 400);
+
+  const { data: chat } = await supabase.from("chats").select("*").eq("id", chatId).maybeSingle();
+  if (!chat) return json("error", { message: "Chat not found" }, 404);
+  const owner = (user && chat.student_id === user.id) || (visitor && chat.guest_email === visitor.email);
+  if (!owner && !isStaff(profile)) {
     return json("error", { message: "Not your chat" }, 403);
   }
 
@@ -322,6 +380,47 @@ async function markRead(ctx, body) {
   return json("success", { chatId }, 200);
 }
 
+async function deleteChat(ctx, body) {
+  const { user, profile, visitor } = ctx;
+  const chatId = body.chatId;
+  if (!chatId) return json("error", { message: "chatId is required" }, 400);
+
+  const { data: chat } = await supabase.from("chats").select("*").eq("id", chatId).maybeSingle();
+  if (!chat) return json("error", { message: "Chat not found" }, 404);
+  const owner = (user && chat.student_id === user.id) || (visitor && chat.guest_email === visitor.email);
+  if (!owner && !isStaff(profile)) return json("error", { message: "Not allowed" }, 403);
+
+  await supabase.from("chat_messages").delete().eq("chat_id", chatId);
+  await supabase.from("chats").delete().eq("id", chatId);
+  return json("success", { chatId }, 200);
+}
+
+async function purgeOldChats(ctx) {
+  const { profile } = ctx;
+  if (!isStaff(profile)) return json("error", { message: "Staff only" }, 403);
+
+  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: old } = await supabase
+    .from("chats").select("id").lt("last_message_at", cutoff);
+  const ids = (old || []).map(c => c.id);
+
+  if (ids.length) {
+    await supabase.from("chat_messages").delete().in("chat_id", ids);
+    await supabase.from("chats").delete().in("id", ids);
+  }
+  return json("success", { deleted: ids.length }, 200);
+}
+
+async function resolveCtx(req, body) {
+  const authUser = await getUser(req);
+  if (authUser) return { user: authUser.user, profile: authUser.profile, visitor: null };
+  const v = (body && body.visitor) || body || {};
+  const email = String(v.email || "").trim().toLowerCase();
+  const name = String(v.name || "").trim();
+  if (!isValidEmail(email)) return null;
+  return { user: null, profile: null, visitor: { name, email } };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS });
@@ -330,25 +429,37 @@ Deno.serve(async (req) => {
     return json("error", { message: "Method not allowed" }, 405);
   }
 
-  const ctx = await getUser(req);
-  if (!ctx) {
-    return json("error", { message: "Please sign in to use chat." }, 401);
-  }
-
   const url = new URL(req.url);
-  const action = url.searchParams.get("action") || "chats";
-
-  if (req.method === "GET") {
-    if (action === "chats" || action === "list") return await listChats(ctx);
-    return json("error", { message: "Unknown action" }, 400);
+  let body = {};
+  if (req.method === "POST") {
+    try { body = await req.json(); } catch { /* ignore */ }
+    const ip = (req.headers.get("x-forwarded-for") || "anon").split(",")[0].trim();
+    if (rateLimited(ip)) {
+      return json("error", { message: "A little too fast - give it a second." }, 429);
+    }
   }
 
-  let body = {};
-  try { body = await req.json(); } catch { /* ignore */ }
-  if (body.action === "read" || action === "read") return await markRead(ctx, body);
-  if (body.action === "send" || action === "send") return await sendMessage(ctx, body);
+  let ctx;
+  if (req.method === "GET") {
+    const authUser = await getUser(req);
+    if (!authUser) return json("error", { message: "Sign in to use chat." }, 401);
+    ctx = { user: authUser.user, profile: authUser.profile, visitor: null };
+  } else {
+    ctx = await resolveCtx(req, body);
+    if (!ctx) {
+      return json("error", { message: "Please provide your name and email to start chatting." }, 401);
+    }
+  }
 
-  const parsed = { ...body };
-  parsed.action = "send";
-  return await sendMessage(ctx, parsed);
+  const action = url.searchParams.get("action") || body.action || "chats";
+
+  if (action === "chats" || action === "list") return await listChats(ctx);
+  if (action === "thread") return await getThread(ctx, body);
+  if (action === "read") return await markRead(ctx, body);
+  if (action === "delete") return await deleteChat(ctx, body);
+  if (action === "purge") return await purgeOldChats(ctx);
+
+  const sendBody = { ...body };
+  sendBody.action = "send";
+  return await sendMessage(ctx, sendBody);
 });

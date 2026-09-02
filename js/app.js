@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-contact-email]').forEach(el => {
     el.textContent = window.APP_CONFIG.contactEmail || 'ahmedashrafgeith@gmail.com';
   });
   document.querySelectorAll('[data-footer-brand]').forEach(el => {
-    el.textContent = 'Ahmed English';
+    el.textContent = 'TutorEnglishPro';
   });
 });
 
@@ -37,3 +37,4 @@ function icon(name) {
   };
   return icons[name] || '';
 }
+

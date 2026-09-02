@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+﻿document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
   if (!sb) {
     const el = document.getElementById('user-name');
@@ -563,9 +563,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let activeChatId = null;
   let inboxChannel = null;
   let inboxChannel2 = null;
+  let inboxTab = 'all';
+  let inboxAll = [];
+  let inboxContacts = [];
 
   function inh(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function avaHue(name) {
+    let h = 0;
+    const s = String(name || '?');
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+    return h;
   }
 
   async function inboxApi(path, options) {
@@ -588,79 +597,222 @@ document.addEventListener('DOMContentLoaded', async () => {
     badge.style.display = total > 0 ? 'inline-block' : 'none';
   }
 
-  async function loadInboxList() {
-    const list = document.getElementById('inbox-list');
-    if (!list || !inboxToken) return;
-    const r = await inboxApi('?action=chats', { method: 'GET' });
-    if (r.status !== 'success') {
-      list.innerHTML = '<p class="muted" style="padding:18px;text-align:center;">Could not load conversations.</p>';
-      return;
-    }
-    const chats = r.chats || [];
-    if (!chats.length) {
-      list.innerHTML = '<p class="muted" style="padding:18px;text-align:center;">No conversations yet. Students can chat from any page.</p>';
-      return;
-    }
-    list.innerHTML = chats.map(c => `
-      <div class="inbox-row ${activeChatId === c.id ? 'active' : ''}" data-chat="${c.id}" style="padding:12px 14px;border-bottom:1px solid var(--c-card-border);cursor:pointer;">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <strong style="font-size:.9rem;">${inh(c.student_name || 'Student')}</strong>
-          ${c.unread_admin > 0 ? `<span style="background:#e5484d;color:#fff;border-radius:12px;font-size:.68rem;font-weight:800;padding:2px 8px;">${c.unread_admin}</span>` : ''}
-        </div>
-        <div class="muted" style="font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${inh(c.last_message ? c.last_message.body : (c.subject || ''))}</div>
-        <div class="muted" style="font-size:.68rem;margin-top:2px;">${c.last_message ? new Date(c.last_message.created_at).toLocaleString() : ''}</div>
-      </div>`).join('');
-    list.querySelectorAll('[data-chat]').forEach(row => row.addEventListener('click', () => openInboxThread(row.dataset.chat)));
+async function loadInboxList() {
+  const list = document.getElementById('inbox-list');
+  if (!list || !inboxToken) return;
+  const r = await inboxApi('?action=chats', { method: 'GET' });
+  if (r.status !== 'success') {
+    list.innerHTML = '<div class="inbox-no muted">Could not load conversations.</div>';
+    return;
+  }
+  inboxAll = (r.chats || []).filter(c => c.id !== activeChatId || c.unread_admin === 0);
+  let rows = applyInboxView();
+
+  if (inboxTab === 'contacts') {
+    await loadInboxContacts();
+    return;
   }
 
-  async function openInboxThread(chatId) {
-    activeChatId = chatId;
-    const thread = document.getElementById('inbox-thread');
-    if (!thread) return;
-    thread.style.justifyContent = 'flex-start';
-    thread.innerHTML = '<p class="muted" style="text-align:center;">Loading…</p>';
-    loadInboxList();
-    subscribeInboxThread(chatId);
-    const { data: msgs, error } = await sb.from('chat_messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true });
-    if (error) { thread.innerHTML = '<p class="muted" style="text-align:center;">Could not load messages.</p>'; return; }
-    thread.innerHTML = `
-      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:10px;" id="admin-thread-body"></div>
-      <div style="display:flex;gap:8px;border-top:1px solid var(--c-card-border);padding-top:10px;">
-        <input class="field" id="inbox-reply" placeholder="Type your reply…" autocomplete="off" style="margin:0;">
-        <button type="button" class="btn btn-primary btn-sm" id="inbox-send">Send</button>
-      </div>`;
-    const bodyEl = document.getElementById('admin-thread-body');
-    (msgs || []).forEach(m => {
-      const mine = m.sender === 'admin';
-      const b = document.createElement('div');
-      b.style.cssText = `align-self:${mine ? 'flex-end' : 'flex-start'};max-width:82%;background:${mine ? '#0b3b2c' : '#fff'};color:${mine ? '#fff' : '#111'};padding:9px 12px;border-radius:12px;font-size:.86rem;white-space:pre-wrap;${mine ? '' : 'border:1px solid var(--c-card-border);'}`;
-      b.textContent = m.body;
-      bodyEl.appendChild(b);
-    });
-    bodyEl.scrollTop = bodyEl.scrollHeight;
-    const field = document.getElementById('inbox-reply');
-    const send = document.getElementById('inbox-send');
-    function doSend() {
-      const text = (field.value || '').trim();
-      if (!text) return;
-      if (send) send.disabled = true;
-      inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'send', chatId, body: text }) }).then(r => {
-        if (send) send.disabled = false;
-        if (r.status !== 'success') { field.placeholder = r.message || 'Could not send'; return; }
-        field.value = '';
-        const b = document.createElement('div');
-        b.style.cssText = 'align-self:flex-end;max-width:82%;background:#0b3b2c;color:#fff;padding:9px 12px;border-radius:12px;font-size:.86rem;white-space:pre-wrap;';
-        b.textContent = text;
-        bodyEl.appendChild(b);
-        bodyEl.scrollTop = bodyEl.scrollHeight;
-        loadInboxList(); setInboxBadge();
-      });
+  list.innerHTML = rows;
+  wireInboxRows(list);
+}
+
+function applyInboxView() {
+  const qTxt = document.getElementById('inbox-search') ? document.getElementById('inbox-search').value.trim().toLowerCase() : '';
+  let chats = inboxAll.slice();
+  if (inboxTab === 'unread') chats = chats.filter(c => (c.unread_admin || 0) > 0);
+  if (qTxt) chats = chats.filter(c => {
+    const n = (c.student_name || '').toLowerCase();
+    const e = (c.student_email || '').toLowerCase();
+    const m = ((c.last_message && c.last_message.body) || '').toLowerCase();
+    return n.indexOf(qTxt) >= 0 || e.indexOf(qTxt) >= 0 || m.indexOf(qTxt) >= 0;
+  });
+  if (!inboxAll.length) return `<div class="inbox-no muted">No conversations yet. Students and visitors can start a chat from any page.</div>`;
+  if (!chats.length) return `<div class="inbox-no muted">Nothing here.</div>`;
+  return chats.map(c => {
+    const guest = !!c.guest_email && !c.student_id;
+    const preview = c.last_message ? (c.last_message.sender === 'admin' ? 'You: ' : c.student_name.split(' ')[0] + ': ') + (c.last_message.body || '') : (c.subject || '');
+    const when = c.last_message ? new Date(c.last_message.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+    const unread = c.unread_admin || 0;
+    const hurt = c.student_name || 'Student';
+    const h = String(hurt).toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 2) || 'S';
+    return `
+    <div class="inbox-row ${guest ? 'guest' : ''} ${activeChatId === c.id ? 'active' : ''}" data-chat="${c.id}">
+      <div class="inbox-ava" style="background:hsl(${avaHue(hurt)} 62% 42%);">${inh(h.charAt(0).toUpperCase())}</div>
+      <div class="inbox-main">
+        <div class="inbox-top"><strong>${inh(hurt)}</strong>${when ? `<time>${inh(when)}</time>` : ''}</div>
+        <div class="inbox-prev">${inh(preview)}</div>
+        <div class="inbox-bottom">
+          ${guest ? `<span class="inbox-tag">Guest</span>` : `<span class="badge-soft">${inh((c.student_email || '').split('@')[0].slice(0, 12))}</span>`}
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${unread > 0 ? `<span class="inbox-unread">${unread}</span>` : ''}
+            <button type="button" class="inbox-del" title="Delete conversation" data-del="${c.id}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function wireInboxRows(list) {
+  list.querySelectorAll('[data-chat]').forEach(row => row.addEventListener('click', () => openInboxThread(row.dataset.chat)));
+  list.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    confirmDeleteChat(btn.dataset.del);
+  }));
+}
+
+function confirmDeleteChat(chatId) {
+  const name = (() => { const c = inboxAll.find(x => x.id === chatId); return c ? c.student_name : ''; })();
+  if (!window.confirm('Delete this conversation' + (name ? ' with ' + name : '') + '? This cannot be undone.')) return;
+  inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'delete', chatId }) }).then(r => {
+    if (r.status !== 'success') { alert(r.message || 'Could not delete.'); return; }
+    if (activeChatId === chatId) {
+      activeChatId = null;
+      const thread = document.getElementById('inbox-thread');
+      if (thread) {
+        thread.style.justifyContent = 'center';
+        thread.innerHTML = `<div class="inbox-no muted">Select a conversation to read and reply.</div>`;
+      }
     }
-    send.addEventListener('click', doSend);
-    field.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
-    await inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'read', chatId }) });
     loadInboxList(); setInboxBadge();
+  });
+}
+
+async function loadInboxContacts() {
+  const list = document.getElementById('inbox-list');
+  if (!list || !sb) return;
+  try {
+    const { data, error } = await sb.from('contacts').select('*').order('created_at', { ascending: false }).limit(100);
+    inboxContacts = error ? [] : (data || []);
+  } catch (e) { inboxContacts = []; }
+
+  const qTxt = document.getElementById('inbox-search') ? document.getElementById('inbox-search').value.trim().toLowerCase() : '';
+  let rows = inboxContacts.slice();
+  if (qTxt) rows = rows.filter(c => (c.name || '').toLowerCase().indexOf(qTxt) >= 0 || (c.email || '').toLowerCase().indexOf(qTxt) >= 0 || (c.message || '').toLowerCase().indexOf(qTxt) >= 0);
+
+  if (!rows.length) {
+    list.innerHTML = `<div class="inbox-no muted">${inboxContacts.length ? 'Nothing matches.' : 'No contact-form messages yet.'}</div>`;
+    return;
   }
+  list.innerHTML = rows.map(c => `
+    <div class="inbox-row" data-contact="${c.id}">
+      <div class="inbox-ava" style="background:${c.status === 'new' ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'hsla(0,0%,60%,1)'};">${inh((c.name || '?').charAt(0).toUpperCase())}</div>
+      <div class="inbox-main">
+        <div class="inbox-top"><strong>${inh(c.name || 'Unknown')}</strong><time>${new Date(c.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</time></div>
+        <div class="inbox-prev">${inh((c.message || '').slice(0, 60))}</div>
+        <div class="inbox-bottom">
+          <span class="badge-soft" style="${c.status === 'new' ? 'background:#eef2ff;color:#4338ca;border-color:#e0e7ff;' : ''}">${c.status === 'new' ? 'New' : 'Seen'}</span>
+          <button type="button" class="inbox-del" title="Delete message" data-delcon="${c.id}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('[data-contact]').forEach(row => row.addEventListener('click', () => openInboxContact(row.dataset.contact)));
+  list.querySelectorAll('[data-delcon]').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this contact message?')) return;
+    sb.from('contacts').delete().eq('id', btn.dataset.delcon).then(() => loadInboxContacts());
+  }));
+}
+
+function openInboxContact(id) {
+  const thread = document.getElementById('inbox-thread');
+  const c = inboxContacts.find(x => x.id === id);
+  if (!thread || !c) return;
+  thread.style.justifyContent = 'flex-start';
+  thread.innerHTML = `
+    <div class="inbox-thread-head">
+      <div class="inbox-ava" style="background:hsla(0,0%,60%,1);">${inh((c.name || '?').charAt(0).toUpperCase())}</div>
+      <div><strong>${inh(c.name || 'Unknown')}</strong><div class="muted">${inh(c.email || '')}</div></div>
+      <div class="inbox-thread-meta">
+        <span class="badge-soft">Contact form</span>
+        <span class="badge-soft" style="${c.status === 'new' ? 'background:#eef2ff;color:#4338ca;border-color:#e0e7ff;' : ''}">${c.status === 'new' ? 'New' : 'Seen'}</span>
+      </div>
+    </div>
+    <div id="admin-thread-body" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:16px;">
+      <div class="bk-bubble guest">${inh(c.message || '')}<span class="bk-btime">${new Date(c.created_at).toLocaleString()}</span></div>
+    </div>
+    <div class="inbox-replybar">
+      <a class="btn btn-primary btn-sm" style="margin:auto;text-decoration:none;" href="mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent('Re: your message to TutorEnglishPro')}">Reply by email →</a>
+    </div>`;
+  if (c.status === 'new') sb.from('contacts').update({ status: 'seen' }).eq('id', c.id).then(() => loadInboxContacts());
+}
+
+async function openInboxThread(chatId) {
+  activeChatId = chatId;
+  const thread = document.getElementById('inbox-thread');
+  if (!thread) return;
+  thread.style.justifyContent = 'flex-start';
+  thread.innerHTML = '<div class="inbox-no muted">Loading…</div>';
+  loadInboxList();
+  subscribeInboxThread(chatId);
+  const { data: msgs, error } = await sb.from('chat_messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true });
+  if (error) { thread.innerHTML = '<div class="inbox-no muted">Could not load messages.</div>'; return; }
+  const chat = inboxAll.find(c => c.id === chatId) || {};
+  const guest = !!chat.guest_email && !chat.student_id;
+  const who = chat.student_name || 'Student';
+  thread.innerHTML = `
+    <div class="inbox-thread-head">
+      <div class="inbox-ava" style="background:hsl(${avaHue(who)} 62% 42%);">${inh((who || 'S').charAt(0).toUpperCase())}</div>
+      <div><strong>${inh(who)}</strong><div class="muted">${inh(chat.student_email || '')}</div></div>
+      <div class="inbox-thread-meta">
+        ${guest ? '<span class="inbox-tag">Guest</span>' : `<span class="badge-soft">${inh((chat.student_email || '').split('@')[0].slice(0, 12))}</span>`}
+        <button type="button" class="inbox-del" title="Delete conversation" id="inbox-thread-del">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="admin-thread-body" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:16px;"></div>
+    <div class="inbox-replybar">
+      <input class="field" id="inbox-reply" placeholder="Type your reply…" autocomplete="off" style="margin:0;">
+      <button type="button" class="btn btn-primary btn-sm" id="inbox-send">Send</button>
+    </div>`;
+  const bodyEl = document.getElementById('admin-thread-body');
+  (msgs || []).forEach(m => {
+    const mine = m.sender === 'admin';
+    const b = document.createElement('div');
+    b.className = 'bk-bubble' + (mine ? ' mine' : (guest && m.sender === 'student' ? ' guest' : ''));
+    b.textContent = m.body;
+    const t = document.createElement('span');
+    t.className = 'bk-btime';
+    t.textContent = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    b.appendChild(t);
+    bodyEl.appendChild(b);
+  });
+  bodyEl.scrollTop = bodyEl.scrollHeight;
+  const field = document.getElementById('inbox-reply');
+  const send = document.getElementById('inbox-send');
+  function doSend() {
+    const text = (field.value || '').trim();
+    if (!text) return;
+    if (send) send.disabled = true;
+    inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'send', chatId, body: text }) }).then(r => {
+      if (send) send.disabled = false;
+      if (r.status !== 'success') { field.placeholder = r.message || 'Could not send'; return; }
+      field.value = '';
+      const b = document.createElement('div');
+      b.className = 'bk-bubble mine';
+      b.textContent = text;
+      const t = document.createElement('span');
+      t.className = 'bk-btime';
+      t.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      b.appendChild(t);
+      bodyEl.appendChild(b);
+      bodyEl.scrollTop = bodyEl.scrollHeight;
+      loadInboxList(); setInboxBadge();
+    });
+  }
+  send.addEventListener('click', doSend);
+  field.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
+  const delBtn = document.getElementById('inbox-thread-del');
+  if (delBtn) delBtn.addEventListener('click', () => confirmDeleteChat(chatId));
+  await inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'read', chatId }) });
+  loadInboxList(); setInboxBadge();
+}
 
   function subscribeInbox() {
     if (inboxChannel) { try { sb.removeChannel(inboxChannel); } catch {} }
@@ -689,20 +841,53 @@ document.addEventListener('DOMContentLoaded', async () => {
       .subscribe();
   }
 
-  async function initChatInbox() {
-    if (!CHAT_FN) return;
-    const style = document.createElement('style');
-    style.textContent = '.side-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;border-radius:18px;background:#e5484d;color:#fff;font-size:.65rem;font-weight:800;text-align:center;margin-left:auto;padding:0 5px}.inbox-row.active{background:rgba(11,59,44,.08)}.inbox-row:hover{background:rgba(11,59,44,.04)}#inbox-wrap{grid-template-columns:minmax(240px,300px) 1fr}#inbox-wrap{display:grid;gap:18px}@media(max-width:900px){#inbox-wrap{grid-template-columns:1fr}}';
-    document.head.appendChild(style);
+async function initChatInbox() {
+  if (!CHAT_FN) return;
 
-    const { data: { session } } = await sb.auth.getSession();
-    if (session && session.access_token) inboxToken = session.access_token;
-    if (!inboxToken) return;
-    subscribeInbox();
-    await loadInboxList();
-    await setInboxBadge();
-    setInterval(() => { loadInboxList(); setInboxBadge(); }, 60000);
-  }
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.access_token) inboxToken = session.access_token;
+  if (!inboxToken) return;
+
+  const tabs = document.querySelectorAll('.bk-tab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    inboxTab = t.dataset.tab;
+    tabs.forEach(x => {
+      const on = x === t;
+      x.classList.toggle('is-on', on);
+      x.setAttribute('aria-selected', on);
+    });
+    const thread = document.getElementById('inbox-thread');
+    if (thread) { thread.style.justifyContent = 'center'; thread.innerHTML = '<div class="inbox-no muted">Select an item to open it.</div>'; }
+    activeChatId = null;
+    if (inboxTab === 'contacts') loadInboxContacts();
+    else loadInboxList();
+  }));
+
+  const search = document.getElementById('inbox-search');
+  if (search) search.addEventListener('input', () => {
+    if (inboxTab === 'contacts') loadInboxContacts();
+    else { const list = document.getElementById('inbox-list'); if (list) list.innerHTML = applyInboxView(); wireInboxRows(list); }
+  });
+
+  const refresh = document.getElementById('inbox-refresh-btn');
+  if (refresh) refresh.addEventListener('click', () => { loadInboxList(); loadInboxContacts(); });
+
+  const archive = document.getElementById('inbox-archive-btn');
+  if (archive) archive.addEventListener('click', async () => {
+    const r = await inboxApi('', { method: 'POST', body: JSON.stringify({ action: 'purge' }) });
+    if (r.status === 'success') {
+      alert('Cleaned up ' + (r.deleted || 0) + ' conversation(s) idle for over 90 days.');
+      loadInboxList(); loadInboxContacts(); setInboxBadge();
+    } else {
+      alert(r.message || 'Could not clean up conversations.');
+    }
+  });
+
+  subscribeInbox();
+  await loadInboxList();
+  await setInboxBadge();
+  setInterval(() => { loadInboxList(); loadInboxContacts(); setInboxBadge(); }, 60000);
+}
 
   initChatInbox();
 
@@ -743,3 +928,4 @@ window.changeRole = async function (userId, selectEl) {
     selectEl.disabled = false;
   }
 };
+

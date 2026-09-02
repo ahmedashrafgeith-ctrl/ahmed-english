@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Packages & Pricing - Ahmed English</title>
+  <title>Packages & Pricing - TutorEnglishPro</title>
   <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing, instant Stripe payment, and direct Cal.com booking.">
   <link rel="stylesheet" href="styles.css">
   <script src="js/config.js"></script>
@@ -20,8 +20,8 @@
   <div class="nav-wrap">
     <nav class="nav">
       <a class="brand" href="index.html">
-        <span class="brand-mark">A</span>
-        <span><span class="brand-name">Ahmed English</span><span class="brand-sub">Private Tutor</span></span>
+        <span class="brand-mark">P</span>
+        <span><span class="brand-name">TutorEnglishPro</span><span class="brand-sub">Private Tutor</span></span>
       </a>
       <div class="nav-menu">
         <a class="nav-link" href="index.html">Home</a>
@@ -30,7 +30,8 @@
         <a class="nav-link active" href="packages.html">Packages</a>
         <a class="nav-link" href="booking.html">Book a Lesson</a>
         <a class="nav-link" href="login.html" data-auth="guest">Student Login</a>
-        <a class="nav-link" href="student.html" data-nav="dashboard" data-auth="user" style="display:none;">Dashboard</a>
+                  <span class="nav-chip" data-auth="user" data-nav="user-chip" style="display:none;font-size:.72rem;font-weight:600;color:#fff;background:linear-gradient(135deg,#00e5ff,#7c3aed);border-radius:20px;padding:4px 12px;margin-right:4px;"></span>
+<a class="nav-link" href="student.html" data-nav="dashboard" data-auth="user" style="display:none;">Dashboard</a>
         <a class="nav-link" href="#" data-auth="user" onclick="signOut(); return false;" style="display:none;">Sign Out</a>
       </div>
       <div class="nav-cta">
@@ -63,7 +64,7 @@
         </div>
         <div style="display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;">
           <a class="btn btn-primary" href="booking.html">Book Free Trial</a>
-          <a class="btn btn-secondary" id="cal-trial-link" href="#" target="_blank">Schedule Trial NOW</a>
+          <a class="btn btn-secondary" id="cal-trial-link" href="#" target="_blank">Schedule Trial Lesson</a>
         </div>
       </div>
     </div>
@@ -74,7 +75,7 @@
       <div class="plan-band reveal">
         <span class="eyebrow" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff;"><span class="dot"></span> Flexible & Secure</span>
         <h2 style="margin-top:16px;">Pay Instantly, Book Directly</h2>
-        <p class="lead" style="margin:0 auto;">Payments processed securely by Stripe · Scheduling handled by Cal.com · Progress tracked in your Student Portal.</p>
+        <p class="lead" style="margin:0 auto;">Payments processed securely by Stripe � Scheduling handled by Cal.com � Progress tracked in your Student Portal.</p>
         <a class="btn" href="booking.html">
           Book Your Free Trial
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -86,9 +87,9 @@
   <footer class="footer">
     <div class="wrap footer-grid">
       <div class="footer-brand">
-        <span class="mini-mark">A</span>
-        <strong data-footer-brand>Ahmed English</strong>
-        <span class="muted">· Personalized Online English Lessons</span>
+        <span class="mini-mark">P</span>
+        <strong data-footer-brand>TutorEnglishPro</strong>
+        <span class="muted">� Personalized Online English Lessons</span>
       </div>
       <div class="footer-links">
         <a href="privacy.html">Privacy Policy</a>
@@ -109,21 +110,21 @@
         {
           title: "Starter",
           lessons: "4 Lessons",
-          subtext: "/ month · 1 lesson per week",
+          subtext: "/ month � 1 lesson per week",
           price: "$40",
           oldPrice: 80,
           save: 50,
           desc: "Ideal for steady progress, maintaining your skills, and addressing key speaking challenges.",
           stripeLink: stripeCfg.starterPaymentLink,
           calLink: `${calCfg.base}/${calCfg.username}/${calCfg.trialEvent}`,
-          cta: "Schedule Trial NOW",
+          cta: "Schedule Trial Lesson",
           featured: false,
           features: ["4 x 60-min 1-on-1 private lessons","Personalized lesson notes & vocabulary","Student Portal access & progress tracking","Flexible booking via Cal.com"]
         },
         {
           title: "Progress",
           lessons: "8 Lessons",
-          subtext: "/ month · 2 lessons per week",
+          subtext: "/ month � 2 lessons per week",
           price: "$70",
           oldPrice: 140,
           save: 50,
@@ -133,12 +134,12 @@
           cta: "Schedule Lessons",
           featured: true,
           tag: "Most Popular",
-          features: ["8 x 60-min 1-on-1 private lessons","Priority calendar scheduling on Cal.com","Customized homework & exercises","Direct tutor email & Q&A support","Detailed monthly progress reviews"]
+          features: ["8 x 60-min 1-on-1 private lessons","Priority calendar scheduling on Cal.com","Customized homework & exercises","Direct tutor email & Q&A support"]
         },
         {
           title: "Intensive",
           lessons: "12 Lessons",
-          subtext: "/ month · 3 lessons per week",
+          subtext: "/ month � 3 lessons per week",
           price: "$100",
           oldPrice: 200,
           save: 50,
@@ -160,7 +161,7 @@
             <div class="pkg-sub">${p.lessons} ${p.subtext}</div>
             <div class="pkg-note">SAVE ${p.save}%</div>
             <p style="margin-top:14px;font-size:.95rem;">${p.desc}</p>
-            <ul class="checks">${p.features.map(f => `<li><span class="ck">✓</span>${f}</li>`).join('')}</ul>
+            <ul class="checks">${p.features.map(f => `<li><span class="ck">?</span>${f}</li>`).join('')}</ul>
           </div>
           <div style="display:grid;gap:10px;">
             <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${p.stripeLink}" target="_blank">
@@ -180,3 +181,4 @@
 <script src="js/chat-widget.js"></script>
 </body>
 </html>
+

@@ -1,5 +1,5 @@
-// ============================================================
-// Ahmed English - Book Lesson (Supabase Edge Function)
+﻿// ============================================================
+// TutorEnglishPro - Book Lesson (Supabase Edge Function)
 // ------------------------------------------------------------
 // Internal booking system linked to Cal.com.
 //

@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Ahmed English - Supabase Schema
 -- Run this in the Supabase SQL Editor (Dashboard > SQL > New query)
 -- This enables account creation, student portal, and tutor dashboard.

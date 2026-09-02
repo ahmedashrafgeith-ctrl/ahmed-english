@@ -1,5 +1,5 @@
-// ============================================================
-// Ahmed English — Internal Booking System (slot picker + My Bookings)
+﻿// ============================================================
+// TutorEnglishPro — Internal Booking System (slot picker + My Bookings)
 // ------------------------------------------------------------
 // Talks to the Supabase Edge Function `book-lesson`, which reads
 // Ahmed's real Cal.com calendar (free slots) and hands the student
@@ -22,6 +22,8 @@
   let accessToken = "";
   let selectedEvent = "60min";
   let weekStart = null; // Monday of the displayed week (local)
+  let monthCursor = null; // 1st of the displayed month (local)
+  let viewMode = "week"; // "week" | "month"
   let user = null;
   let packLeft = null;
   let busyChanel = null;
@@ -64,6 +66,13 @@
     const fa = a.toLocaleDateString([], { month: "short", day: "numeric" });
     const fb = b.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
     return `${fa} – ${fb}`;
+  }
+  function monthStart(d) {
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+  function fmtMonthLabel(d) {
+    const c = monthStart(d);
+    return c.toLocaleDateString([], { month: "long", year: "numeric" });
   }
 
   // ---- toasts ----
@@ -139,26 +148,31 @@
           <div>
             <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Schedule Your Lesson</span>
             <h2 style="margin:0;font-size:1.4rem;">Book Your <span class="grad-text">Lesson</span></h2>
-            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time — everything else gets pre-filled, so you finish with one tap on the calendar. Confirmed bookings show below and in your account.</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time — everything else gets pre-filled, so you finish with one tap on the calendar.</p>
           </div>
           <div id="bk-pack-badge" style="font-size:.85rem;font-weight:700;color:var(--c-ink-3);"></div>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 4px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div class="bk-toolbar">
+          <div class="bk-left">
             <span class="muted" style="font-size:.9rem;font-weight:600;" id="bk-range"></span>
             <span class="badge badge-acc" id="bk-tz-label" style="font-size:.68rem;font-weight:700;"></span>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button type="button" class="btn btn-soft btn-sm" id="bk-prev" title="Previous week">←</button>
-            <button type="button" class="btn btn-soft btn-sm" id="bk-now" title="Jump to this week">This week</button>
-            <button type="button" class="btn btn-soft btn-sm" id="bk-next" title="Next week">→</button>
+          <div class="bk-mid">
+            <button type="button" class="btn btn-soft btn-sm" id="bk-prev" title="Previous">←</button>
+            <button type="button" class="btn btn-soft btn-sm" id="bk-now" title="Jump to current">Today</button>
+            <button type="button" class="btn btn-soft btn-sm" id="bk-next" title="Next">→</button>
+          </div>
+          <div class="bk-mode" role="tablist" aria-label="Calendar view">
+            <button type="button" class="bk-mode-btn is-on" id="bk-mode-week" role="tab" aria-selected="true">Week</button>
+            <button type="button" class="bk-mode-btn" id="bk-mode-month" role="tab" aria-selected="false">Month</button>
           </div>
         </div>
 
         <div id="bk-slots" style="min-height:120px;">
           <div class="muted" style="padding:24px;text-align:center;">Loading available times…</div>
         </div>
+        <div id="bk-day-detail" style="display:none;"></div>
 
         <div id="bk-msg" style="margin-top:14px;font-size:.9rem;font-weight:600;display:none;"></div>
 
@@ -176,6 +190,9 @@
     els.prev = q("#bk-prev");
     els.next = q("#bk-next");
     els.now = q("#bk-now");
+    els.dayDetail = q("#bk-day-detail");
+    els.modeWeek = q("#bk-mode-week");
+    els.modeMonth = q("#bk-mode-month");
     els.msg = q("#bk-msg");
     els.mybookings = q("#bk-mybookings");
     els.pack = q("#bk-pack-badge");
@@ -198,22 +215,33 @@
   }
 
   // ---- availability ----
+  function currentRange() {
+    if (viewMode === "month") {
+      const a = monthStart(monthCursor);
+      const b = new Date(a.getFullYear(), a.getMonth() + 1, 0); // last day of month
+      return { start: a, end: b, label: fmtMonthLabel(a) };
+    }
+    const a = startOfWeek(weekStart);
+    return { start: a, end: addDays(a, 6), label: fmtWeekRange(a) };
+  }
+
   async function loadSlots() {
     els.slots.innerHTML = `<div class="muted" style="padding:40px;text-align:center;">Loading available times…</div>`;
+    els.dayDetail.style.display = "none";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-    const start = ymdLocal(weekStart);
-    const end = ymdLocal(addDays(weekStart, 6));
-    const r = await callFn(`?eventSlug=${encodeURIComponent(selectedEvent)}&start=${start}&end=${end}&tz=${encodeURIComponent(tz)}`, { method: "GET" });
+    const { start, end, label } = currentRange();
+    const r = await callFn(`?eventSlug=${encodeURIComponent(selectedEvent)}&start=${ymdLocal(start)}&end=${ymdLocal(end)}&tz=${encodeURIComponent(tz)}`, { method: "GET" });
 
     els.tzLabel.textContent = tz;
-    els.range.textContent = fmtWeekRange(weekStart);
+    els.range.textContent = label;
 
     if (!r.ok) {
       els.slots.innerHTML = `<div class="muted" style="padding:20px;text-align:center;">Could not load availability. ${esc(r.message || "")}</div>`;
       return;
     }
     const data = r.data || {};
-    renderWeek(data, tz);
+    if (viewMode === "month") renderMonth(data, tz);
+    else renderWeek(data, tz);
   }
 
   function renderWeek(data, tz) {
@@ -252,7 +280,7 @@
     if (!any) {
       els.slots.innerHTML = `
         <div style="padding:28px;text-align:center;" class="muted">
-          No open slots in this week.
+          No open slots this week.
           <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next week →</button>
         </div>`;
       const jump = q("#bk-jump-next");
@@ -263,12 +291,100 @@
     els.slots.innerHTML = `
       <div class="bk-week">${columns}</div>
       <div class="muted" style="font-size:.8rem;margin-top:10px;">
-        ${totalFree} free ${totalFree === 1 ? "slot" : "slots"} this week · ${esc(tz)} · slots greyed out have already passed
+        ${totalFree} free ${totalFree === 1 ? "slot" : "slots"} this week
       </div>`;
 
     qs(".bk-slot").forEach(btn => {
       if (!btn.classList.contains("is-past")) btn.addEventListener("click", () => openConfirm(btn.dataset.start, btn.dataset.end));
     });
+  }
+
+  function renderMonth(data, tz) {
+    const nowMs = Date.now();
+    const todayYmd = ymdLocal(new Date());
+    const a = monthStart(monthCursor);
+    const daysInMonth = new Date(a.getFullYear(), a.getMonth() + 1, 0).getDate();
+    const lead = (a.getDay() + 6) % 7; // leading blank cells (Mon-first)
+    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+      .map(d => `<div class="bk-wd">${d}</div>`).join("");
+
+    let cells = "";
+    let totalFree = 0;
+    for (let i = 0; i < lead; i++) cells += `<div class="bk-mcell bk-blank"></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const day = new Date(a.getFullYear(), a.getMonth(), d);
+      const key = ymdLocal(day);
+      const slots = (data[key] || []).filter(s => s && new Date(s.start) > nowMs).sort((x, y) => new Date(x.start) - new Date(y.start));
+      const isToday = key === todayYmd;
+      const isPast = day.getTime() < new Date(todayYmd + "T00:00:00").getTime();
+      if (slots.length) totalFree += slots.length;
+      const pills = slots.slice(0, 3).map(s => `<span class="bk-mini">${esc(fmtTime(s.start, tz))}</span>`).join("");
+      const more = slots.length > 3 ? `<span class="bk-mini bk-more">+${slots.length - 3}</span>` : "";
+      cells += `
+        <div class="bk-mcell ${isToday ? 'today' : ''} ${slots.length ? 'has' : ''}">
+          <button type="button" class="bk-mbtn" ${slots.length ? `data-day="${esc(key)}"` : "disabled"}>
+            <span class="bk-dn ${isPast ? 'past' : ''}">${d}</span>
+            ${slots.length ? `<span class="bk-pills">${pills}${more}</span>` : ""}
+          </button>
+        </div>`;
+    }
+
+    if (!totalFree) {
+      els.slots.innerHTML = `
+        <div style="padding:28px;text-align:center;" class="muted">
+          No open slots this month.
+          <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next month →</button>
+        </div>`;
+      const jump = q("#bk-jump-next");
+      if (jump) jump.addEventListener("click", () => { monthCursor = new Date(a.getFullYear(), a.getMonth() + 1, 1); loadSlots(); });
+      return;
+    }
+
+    els.slots.innerHTML = `
+      <div class="bk-month-grid">
+        ${weekDays}
+        ${cells}
+      </div>
+      <div class="muted" style="font-size:.8rem;margin-top:10px;">${totalFree} free slots in ${a.toLocaleDateString([], { month: "long" })}</div>`;
+
+    qs(".bk-mbtn[data-day]").forEach(btn => {
+      btn.addEventListener("click", () => showDayDetail(btn.dataset.day, data, tz));
+    });
+  }
+
+  function showDayDetail(key, data, tz) {
+    const slots = (data[key] || []).filter(s => s && s.start).sort((x, y) => new Date(x.start) - new Date(y.start));
+    const d = new Date(key + "T00:00:00");
+    const heading = d.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
+    const body = slots.length
+      ? slots.map(s => {
+          const past = new Date(s.start) <= Date.now();
+          return `<button type="button" class="bk-dslot ${past ? 'is-past' : ''}" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}">
+            <span class="bk-dt">${esc(fmtTime(s.start, tz))}</span>
+            <span class="bk-dm">${esc(s.start.slice(11, 16))} - ${esc((s.end || s.start).slice(11, 16))} <span class="muted">· ${esc(tz)}</span></span>
+            ${past ? `<span class="bk-dtag">past</span>` : `<span class="bk-dtag bk-ok">select</span>`}
+          </button>`;
+        }).join("")
+      : `<div class="muted" style="padding:10px 2px;">No free slots on this day.</div>`;
+    els.dayDetail.style.display = "";
+    els.dayDetail.innerHTML = `
+      <div class="bk-day-card">
+        <div class="bk-day-card-head">
+          <strong>${esc(heading)}</strong>
+          <button type="button" class="btn btn-ghost btn-sm" id="bk-detail-close">Close</button>
+        </div>
+        <div class="bk-dslot-list">${body}</div>
+      </div>`;
+    qs(".bk-dslot:not(.is-past)").forEach(btn => {
+      btn.addEventListener("click", () => openConfirm(btn.dataset.start, btn.dataset.end));
+    });
+    q("#bk-detail-close").addEventListener("click", () => {
+      els.dayDetail.style.display = "none";
+      els.dayDetail.innerHTML = "";
+    });
+    const detailTop = els.dayDetail.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top: detailTop, behavior: "smooth" });
   }
 
   // ---- booking confirm modal ----
@@ -469,10 +585,34 @@
 
     const loggedIn = await ensureAuth();
     weekStart = startOfWeek(new Date());
+    monthCursor = monthStart(new Date());
 
-    els.prev.addEventListener("click", () => { weekStart = addDays(weekStart, -7); loadSlots(); });
-    els.next.addEventListener("click", () => { weekStart = addDays(weekStart, 7); loadSlots(); });
-    els.now.addEventListener("click", () => { weekStart = startOfWeek(new Date()); loadSlots(); });
+    function setMode(mode) {
+      viewMode = mode;
+      els.modeWeek.classList.toggle("is-on", mode === "week");
+      els.modeMonth.classList.toggle("is-on", mode === "month");
+      els.modeWeek.setAttribute("aria-selected", mode === "week");
+      els.modeMonth.setAttribute("aria-selected", mode === "month");
+      loadSlots();
+    }
+
+    els.prev.addEventListener("click", () => {
+      if (viewMode === "month") monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1);
+      else weekStart = addDays(weekStart, -7);
+      loadSlots();
+    });
+    els.next.addEventListener("click", () => {
+      if (viewMode === "month") monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
+      else weekStart = addDays(weekStart, 7);
+      loadSlots();
+    });
+    els.now.addEventListener("click", () => {
+      weekStart = startOfWeek(new Date());
+      monthCursor = monthStart(new Date());
+      loadSlots();
+    });
+    els.modeWeek.addEventListener("click", () => setMode("week"));
+    els.modeMonth.addEventListener("click", () => setMode("month"));
 
     if (!loggedIn) {
       els.slots.innerHTML = `<div style="padding:40px;text-align:center;" class="muted">

@@ -1,5 +1,5 @@
-// ============================================================
-// Ahmed English — Cal.com Webhook (Supabase Edge Function)
+﻿// ============================================================
+// TutorEnglishPro — Cal.com Webhook (Supabase Edge Function)
 // ------------------------------------------------------------
 // Receives Cal.com booking webhooks (BOOKING_CREATED,
 // BOOKING_CANCELLED, BOOKING_RESCHEDULED) and keeps Supabase in
