@@ -48,6 +48,10 @@ const SLUG_MAP = {
 // Cal.com schedule (Asia/Kuala_Lumpur, 18:00-22:00, all days).
 const WIN_START_MIN = 18 * 60;
 const WIN_END_MIN = 22 * 60;
+// Cal.com enforces a 120-minute (2 hour) minimum booking notice on these
+// event types. We hide any slot closer than this so students never see a
+// time Cal.com will reject.
+const MIN_NOTICE_MS = 120 * 60 * 1000;
 
 const supabase = createClient(SB_URL, SB_SERVICE);
 
@@ -153,7 +157,10 @@ function computeSlots(eventSlug, start, end, busy) {
     for (let s = new Date(winStart); s.getTime() + minutes * 60000 <= winEnd.getTime(); s = new Date(s.getTime() + step * 60000)) {
       const sMs = s.getTime();
       const eMs = sMs + minutes * 60000;
-      if (eMs <= nowMs) continue; // already past
+      // Hide anything already past, and anything within Cal.com's minimum
+      // booking notice (so a slot Cal.com would reject is never shown).
+      if (sMs <= nowMs) continue;
+      if (sMs - nowMs < MIN_NOTICE_MS) continue;
       const overlaps = busy.some(b => sMs < b.end.getTime() && eMs > b.start.getTime());
       if (overlaps) continue;
       const iso = s.toISOString();
@@ -220,11 +227,11 @@ async function createBooking(user, body) {
     });
     const out = await res.json();
     if (!res.ok) {
-      let reason = out?.error?.message || out?.message || "Cal.com rejected the booking.";
-      let code = 200;
-      if (res.status === 401) { reason = "Cal.com rejected our API key (server-side) - contact support."; code = 502; }
+      let reason = "That time couldn't be booked. Please pick another slot.";
+      let code = 502;
+      if (res.status === 401) { reason = "We couldn't confirm your booking just now. Please try again in a moment."; code = 502; }
       if (res.status === 409) { reason = "Sorry, that slot was just taken. Please pick another time."; code = 409; }
-      if (res.status === 422) { reason = out?.error?.details?.message || "That time is no longer bookable."; code = 422; }
+      if (res.status === 422) { reason = "Sorry, that time is no longer available. Please pick another slot."; code = 422; }
       console.error("[book-lesson] cal create error", res.status, JSON.stringify(out));
       return json("error", { message: reason }, code);
     }

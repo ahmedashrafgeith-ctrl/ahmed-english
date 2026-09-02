@@ -651,6 +651,98 @@ p { color: var(--c-ink-2); }
 .bk-slot.is-past { opacity: .35; pointer-events: none; background: var(--c-soft); color: var(--c-ink-3); border-color: var(--c-card-border); }
 .bk-day .bk-empty { font-size: .76rem; color: var(--c-ink-3); text-align: center; padding: 14px 0 6px; font-style: italic; }
 
+/* ============ Agenda (two-pane) time picker ============ */
+.bk-agenda {
+  display: grid;
+  grid-template-columns: 172px 1fr;
+  gap: 16px;
+  margin: 16px 0 6px;
+  background: var(--c-card-bg, var(--c-surface));
+  border: 1.5px solid var(--c-card-border);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 10px 34px rgb(0 0 0 / .06);
+}
+.bk-ago-days {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.bk-ago-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 8px;
+  border: 1.5px solid var(--c-card-border);
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  transition: all .18s cubic-bezier(.22,1,.36,1);
+  width: 100%;
+}
+.bk-ago-day:hover { transform: translateX(3px); border-color: color-mix(in srgb, var(--c-accent) 45%, transparent); background: color-mix(in srgb, var(--c-accent) 5%, transparent); }
+.bk-ago-day.is-active {
+  border-color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface));
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--c-accent) 20%, transparent);
+}
+.bk-ago-day:disabled { opacity: .5; cursor: default; }
+.bk-ago-day:disabled:hover { transform: none; background: transparent; border-color: var(--c-card-border); }
+.bk-ago-dw { font-size: .64rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: var(--c-ink-3); }
+.bk-ago-day.today .bk-ago-dw { color: var(--c-accent); }
+.bk-ago-dn { font-size: 1.25rem; font-weight: 900; color: var(--c-ink); line-height: 1; }
+.bk-ago-day.today .bk-ago-dn { color: var(--c-accent); }
+.bk-ago-dc { font-size: .62rem; font-weight: 700; color: var(--c-ink-3); }
+.bk-ago-day.is-active .bk-ago-dc { color: var(--c-accent); }
+
+.bk-ago-panel { min-width: 0; display: flex; flex-direction: column; }
+.bk-ago-panel-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding-bottom: 12px; margin-bottom: 12px;
+  border-bottom: 2px solid var(--c-card-border);
+}
+.bk-ago-panel-head strong { font-size: 1.15rem; font-weight: 900; color: var(--c-ink); }
+.bk-ago-panel-count { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--c-ink-3); }
+.bk-ago-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+.bk-ago-time {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 16px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--c-accent) 30%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--c-accent) 7%, var(--c-surface));
+  cursor: pointer; font: inherit;
+  transition: all .18s cubic-bezier(.22,1,.36,1);
+}
+.bk-ago-time:hover {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--c-accent) 30%, transparent);
+}
+.bk-ago-time:hover .bk-ago-clock,
+.bk-ago-time:hover .bk-ago-dur { color: #fff; }
+.bk-ago-clock { font-size: 1.15rem; font-weight: 900; color: var(--c-accent); }
+.bk-ago-dur { font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); }
+.bk-ago-empty { grid-column: 1 / -1; text-align: center; padding: 40px 0; }
+
+@media (max-width: 720px) {
+  .bk-agenda { grid-template-columns: 1fr; }
+  .bk-ago-days { flex-direction: row; overflow-x: auto; max-height: none; padding-bottom: 4px; }
+  .bk-ago-day { width: 96px; flex: 0 0 auto; }
+  .bk-ago-times { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}
+
+
 /* ============ Booking page: toolbar + month calendar ============ */
 .bk-toolbar {
   display: flex; align-items: center; justify-content: space-between;

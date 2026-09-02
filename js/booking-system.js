@@ -25,6 +25,7 @@
   let weekStart = null; // Monday of the displayed week (local)
   let monthCursor = null; // 1st of the displayed month (local)
   let viewMode = "week"; // "week" | "month"
+  let activeDay = null; // YYYY-MM-DD of the picked day in the agenda view
   let user = null;
   let packLeft = null;
   let busyChanel = null;
@@ -249,54 +250,81 @@
     const nowMs = Date.now();
     const todayYmd = ymdLocal(new Date());
 
-    let columns = "";
-    let any = false;
+    // Build a normalized list of the 7 days in the week with their slots.
+    const days = [];
     let totalFree = 0;
     for (let i = 0; i < 7; i++) {
       const day = addDays(weekStart, i);
       const key = ymdLocal(day);
-      const slots = (data[key] || []).filter(s => s && s.start).sort((a, b) => new Date(a.start) - new Date(b.start));
-      const today = key === todayYmd;
-      const freeToday = slots.filter(s => new Date(s.start) > nowMs).length;
-      if (freeToday) { any = true; totalFree += freeToday; }
-
-      columns += `
-        <div class="bk-day ${today ? 'today' : ''}">
-          <div class="bk-day-head">
-            <div class="dw">${fmtDayLine(key + "T00:00:00")}</div>
-            <div class="dd">${new Date(key + "T00:00:00").getDate()}</div>
-            ${today ? '<div class="dw" style="color:var(--c-accent);">Today</div>' : ""}
-          </div>
-          ${slots.length
-            ? slots.map(s => {
-                const past = new Date(s.start) <= nowMs;
-                return `<button type="button" class="btn btn-sm bk-slot ${past ? 'is-past' : ''}" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}" style="${past ? '' : 'background:var(--c-soft);color:var(--c-ink);border:1px solid var(--c-card-border);'}">
-                  ${esc(fmtTime(s.start, tz))}
-                </button>`;
-              }).join("")
-            : `<div class="bk-empty">No free slot</div>`}
-        </div>`;
+      const slots = (data[key] || []).filter(s => s && s.start && new Date(s.start) > nowMs).sort((a, b) => new Date(a.start) - new Date(b.start));
+      days.push({ key, day, slots, today: key === todayYmd });
+      totalFree += slots.length;
     }
 
-    if (!any) {
+    if (!totalFree) {
       els.slots.innerHTML = `
         <div style="padding:28px;text-align:center;" class="muted">
           No open slots this week.
           <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next week →</button>
         </div>`;
       const jump = q("#bk-jump-next");
-      if (jump) jump.addEventListener("click", () => { weekStart = addDays(weekStart, 7); loadSlots(); });
+      if (jump) jump.addEventListener("click", () => { weekStart = addDays(weekStart, 7); activeDay = null; loadSlots(); });
       return;
     }
 
-    els.slots.innerHTML = `
-      <div class="bk-week">${columns}</div>
-      <div class="muted" style="font-size:.8rem;margin-top:10px;">
-        ${totalFree} free ${totalFree === 1 ? "slot" : "slots"} this week
-      </div>`;
+    // Default the active day to today if it has slots, else the first free day.
+    if (!activeDay || !data[activeDay] || !data[activeDay].some(s => new Date(s.start) > nowMs)) {
+      const today = days.find(d => d.today && d.slots.length);
+      activeDay = (today || days.find(d => d.slots.length)).key;
+    }
+    const active = days.find(d => d.key === activeDay);
+    const activeSlots = active ? active.slots : [];
 
-    qs(".bk-slot").forEach(btn => {
-      if (!btn.classList.contains("is-past")) btn.addEventListener("click", () => openConfirm(btn.dataset.start, btn.dataset.end));
+    // Left pane: selectable day cards.
+    const dayList = days.map(d => {
+      const count = d.slots.length;
+      const activeCls = d.key === activeDay ? "is-active" : "";
+      const todayCls = d.today ? "today" : "";
+      const pastCls = !count ? "empty" : "";
+      return `
+        <button type="button" class="bk-ago-day ${activeCls} ${todayCls} ${pastCls}" data-day="${esc(d.key)}" ${count ? "" : "disabled"}>
+          <span class="bk-ago-dw">${fmtDayLine(d.day.toISOString())}</span>
+          <span class="bk-ago-dn">${d.day.getDate()}</span>
+          <span class="bk-ago-dc">${count ? `${count} free` : "booked"}</span>
+        </button>`;
+    }).join("");
+
+    // Right pane: big time buttons for the active day.
+    const activeEvent = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
+    const timeList = activeSlots.length
+      ? activeSlots.map(s => `
+          <button type="button" class="bk-ago-time" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}">
+            <span class="bk-ago-clock">${esc(fmtTime(s.start, tz))}</span>
+            <span class="bk-ago-dur">${esc(activeEvent.minutes)} min</span>
+          </button>`).join("")
+      : `<div class="bk-ago-empty muted">No free times on this day.</div>`;
+
+    els.slots.innerHTML = `
+      <div class="bk-agenda">
+        <div class="bk-ago-days" role="listbox" aria-label="Pick a day">${dayList}</div>
+        <div class="bk-ago-panel">
+          <div class="bk-ago-panel-head">
+            <strong>${active ? active.day.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) : ""}</strong>
+            <span class="bk-ago-panel-count">${activeSlots.length} ${activeSlots.length === 1 ? "time" : "times"}</span>
+          </div>
+          <div class="bk-ago-times">${timeList}</div>
+        </div>
+      </div>
+      <div class="muted" style="font-size:.8rem;margin-top:12px;">${totalFree} free ${totalFree === 1 ? "slot" : "slots"} this week · ${esc(tz)}</div>`;
+
+    qs(".bk-ago-day:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeDay = btn.dataset.day;
+        renderWeek(data, tz);
+      });
+    });
+    qs(".bk-ago-time").forEach(btn => {
+      btn.addEventListener("click", () => openConfirm(btn.dataset.start, btn.dataset.end));
     });
   }
 
@@ -589,17 +617,18 @@
 
     els.prev.addEventListener("click", () => {
       if (viewMode === "month") monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1);
-      else weekStart = addDays(weekStart, -7);
+      else { weekStart = addDays(weekStart, -7); activeDay = null; }
       loadSlots();
     });
     els.next.addEventListener("click", () => {
       if (viewMode === "month") monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
-      else weekStart = addDays(weekStart, 7);
+      else { weekStart = addDays(weekStart, 7); activeDay = null; }
       loadSlots();
     });
     els.now.addEventListener("click", () => {
       weekStart = startOfWeek(new Date());
       monthCursor = monthStart(new Date());
+      activeDay = null;
       loadSlots();
     });
     els.modeWeek.addEventListener("click", () => setMode("week"));
