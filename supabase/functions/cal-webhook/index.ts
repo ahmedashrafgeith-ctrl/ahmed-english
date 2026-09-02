@@ -66,6 +66,7 @@ async function upsertBooking(studentId, payload) {
   const attendees = payload.attendees || [];
   const email = attendees[0]?.email || payload.responses?.email || payload.email || null;
 
+// Match by cal_uid first (re-bookings / reschedules).
   const { data: existing } = await supabase
     .from("bookings")
     .select("*")
@@ -80,6 +81,30 @@ async function upsertBooking(studentId, payload) {
       .select("*")
       .maybeSingle();
     return updated || existing;
+  }
+
+  // Otherwise match the pending booking created by the site (same
+  // student + start time), and confirm it (so we don't duplicate).
+  if (studentId && start) {
+    const { data: pending } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("student_id", studentId)
+      .eq("status", "pending")
+      .gte("start_at", new Date(new Date(start).getTime() - 5 * 60000).toISOString())
+      .lte("start_at", new Date(new Date(start).getTime() + 5 * 60000).toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (pending) {
+      const { data: confirmed } = await supabase
+        .from("bookings")
+        .update({ cal_uid: uid, status: "booked", start_at: start || pending.start_at, end_at: end || pending.end_at, title })
+        .eq("id", pending.id)
+        .select("*")
+        .maybeSingle();
+      return confirmed || pending;
+    }
   }
 
   const { data: inserted } = await supabase

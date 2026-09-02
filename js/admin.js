@@ -134,7 +134,7 @@
     const studentList = document.getElementById('student-list');
     if (!studentList) return;
     if (!list || !list.length) {
-      studentList.innerHTML = '<tr><td colspan="7" class="muted">No matching students found.</td></tr>';
+      studentList.innerHTML = '<tr><td colspan="8" class="muted">No matching students found.</td></tr>';
       return;
     }
     studentList.innerHTML = list.map(s => {
@@ -155,8 +155,22 @@
             <option value="admin" ${s.role === 'admin' ? 'selected' : ''}>Admin</option>
           </select>
         </td>
+        <td><button type="button" class="btn btn-ghost btn-sm" style="color:#DC2626;font-size:.78rem;" data-delstudent="${s.id}" title="Remove student">Delete</button></td>
       </tr>`;
     }).join('');
+    studentList.querySelectorAll('[data-delstudent]').forEach(btn => btn.addEventListener('click', async () => {
+      const uid = btn.dataset.delstudent;
+      const stu = list.find(x => x.id === uid);
+      if (!window.confirm('Delete student ' + (stu && stu.full_name || '') + '? This removes their profile but not their auth account.')) return;
+      btn.disabled = true;
+      try {
+        const { error } = await sb.from('profiles').delete().eq('id', uid);
+        if (error) throw error;
+        allStudents = allStudents.filter(x => x.id !== uid);
+        renderRoster(allStudents);
+      } catch (e) { alert('Failed: ' + ((e && e.message) || 'permission error')); }
+      finally { btn.disabled = false; }
+    }));
   }
 
   try {
@@ -481,11 +495,18 @@
       el.innerHTML = rows.map(b => `
         <div class="act-item">
           <div class="a-body">
-            <strong>${b.title || b.event_slug} <span class="muted" style="font-weight:400;">· ${(byId[b.student_id] && (byId[b.student_id].full_name || byId[b.student_id].email)) || '—'}</span></strong>
+            <strong>${b.title || b.event_slug} <span class="muted" style="font-weight:400;">· ${(byId[b.student_id] && (byId[b.student_id].full_name || byId[b.student_id].email)) || (b.guest_email || '—')}</span></strong>
             <p>${new Date(b.start_at).toLocaleString()}</p>
             <span class="badge ${b.status === 'booked' ? 'badge-ok' : 'badge-warn'}" style="font-size:0.7rem;">${b.status}${b.consumed_lesson ? ' · lesson used' : ''}</span>
           </div>
+          <button type="button" class="btn btn-ghost btn-sm" style="color:#DC2626;font-size:.78rem;" data-delbooking="${b.id}" title="Remove booking">Delete</button>
         </div>`).join('');
+      el.querySelectorAll('[data-delbooking]').forEach(btn => btn.addEventListener('click', async () => {
+        if (!window.confirm('Delete this booking record? This does not cancel it on Cal.com.')) return;
+        const { error } = await sb.from('bookings').delete().eq('id', btn.dataset.delbooking);
+        if (error) { alert('Failed: ' + error.message); return; }
+        loadAdminBookings();
+      }));
     } catch (e) { console.error('load bookings error:', e); }
   }
 
@@ -510,9 +531,16 @@
           <td>${used}</td>
           <td><span class="badge ${left > 0 ? 'badge-ok' : 'badge-warn'}">${left}</span></td>
           <td><button type="button" class="btn btn-sm btn-soft" data-edi="${s.id}">Edit</button></td>
+          <td><button type="button" class="btn btn-sm btn-ghost" style="color:#DC2626;" data-delsub="${s.id}" title="Remove subscription">Delete</button></td>
         </tr>`;
       }).join('');
       list.querySelectorAll('[data-edi]').forEach(b => b.addEventListener('click', () => openUsageEditor(b.dataset.edi, subs)));
+      list.querySelectorAll('[data-delsub]').forEach(b => b.addEventListener('click', async () => {
+        if (!window.confirm('Delete this subscription record?')) return;
+        const { error } = await sb.from('subscriptions').delete().eq('id', b.dataset.delsub);
+        if (error) { alert('Failed: ' + error.message); return; }
+        renderUsageList();
+      }));
     } catch (e) { console.error('usage list error:', e); }
   }
 

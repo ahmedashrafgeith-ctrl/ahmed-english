@@ -494,7 +494,7 @@
     }
     try {
       const { data: rows } = await sb.from("bookings").select("*").eq("student_id", user.id).order("start_at", { ascending: true });
-      const future = (rows || []).filter(b => b.status === "booked" && new Date(b.start_at) > new Date());
+      const future = (rows || []).filter(b => (b.status === "booked" || b.status === "pending") && new Date(b.start_at) > new Date());
       const other = (rows || []).filter(b => !future.includes(b));
       if (!rows || !rows.length) {
         els.mybookings.innerHTML = `<p class="muted">Nothing booked yet — pick a free slot above.</p>`;
@@ -518,9 +518,11 @@
     const when = new Date(b.start_at).toLocaleString([], {
       weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
     });
-    const badge = b.status === "booked"
-      ? (b.consumed_lesson ? `<span class="badge badge-ok">Booked · lesson used</span>` : `<span class="badge badge-acc">Pending confirmation</span>`)
-      : `<span class="badge badge-warn">${esc(b.status)}</span>`;
+    const badge = b.status === "pending"
+      ? `<span class="badge badge-acc">Awaiting confirmation</span>`
+      : b.status === "booked"
+        ? (b.consumed_lesson ? `<span class="badge badge-ok">Booked · lesson used</span>` : `<span class="badge badge-acc">Pending confirmation</span>`)
+        : `<span class="badge badge-warn">${esc(b.status)}</span>`;
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--c-card-border);border-radius:12px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap;">
         <div style="min-width:0;">

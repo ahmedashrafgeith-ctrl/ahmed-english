@@ -54,9 +54,10 @@
 
 /* ---- hover / tap action menu ---- */
 #ahm-actions{position:absolute;right:0;bottom:70px;display:flex;flex-direction:column;gap:10px;align-items:flex-end;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
-#ahm-chat-root:hover #ahm-actions,#ahm-chat-root.menu #ahm-actions{opacity:1;transform:none;pointer-events:auto}
-.ahm-act{display:flex;align-items:center;gap:10px;background:var(--c-surface,#fff);color:var(--c-ink,#111);border:1px solid var(--c-card-border,#e5e7eb);border-radius:999px;padding:11px 16px 11px 13px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.14);transition:background .15s,transform .15s;max-width:min(78vw,260px)}
-.ahm-act .ahm-ic{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--c-accent,#0b3b2c)}
+#ahm-chat-root:hover #ahm-actions:not(.hide),#ahm-chat-root.menu #ahm-actions:not(.hide){opacity:1;transform:none;pointer-events:auto}
+.ahm-act{display:inline-flex;align-items:center;gap:8px;background:var(--c-surface,#fff);color:var(--c-ink,#111);border:1px solid var(--c-card-border,#e5e7eb);border-radius:999px;padding:10px 14px 10px 10px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.14);transition:background .15s,transform .15s;white-space:nowrap}
+.ahm-act .ahm-ic{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--c-accent,#0b3b2c);flex-shrink:0}
+.ahm-act .ahm-ic svg{width:16px;height:16px}
 .ahm-act:hover{background:var(--c-soft,#fff1e8);transform:translateX(-4px)}
 
 /* ---- chat panel ---- */
@@ -241,6 +242,8 @@
     if (panel) panel.classList.remove("open");
     var fab = document.getElementById("ahm-chat-fab");
     if (fab) fab.style.display = "flex";
+    var actions = document.getElementById("ahm-actions");
+    if (actions) actions.classList.remove("hide");
     if (window.location.hash) {
       try { history.replaceState(null, "", location.pathname + location.search); } catch { /* ignore */ }
     }
@@ -253,6 +256,8 @@
     panel.classList.add("open");
     var fab = document.getElementById("ahm-chat-fab");
     if (fab) fab.style.display = "none";
+    var actions = document.getElementById("ahm-actions");
+    if (actions) actions.classList.add("hide");
     if (localStorage) localStorage.setItem(OPEN_KEY, "1");
     refreshBadge(0);
     startChat();

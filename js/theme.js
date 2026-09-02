@@ -97,6 +97,7 @@ function applyTheme(id) {
 
 function buildThemeWidget() {
   if (document.getElementById('theme-widget')) return;
+  if (document.querySelector('.dash-shell')) return;
   const el = document.createElement('div');
   el.id = 'theme-widget';
   el.innerHTML = `

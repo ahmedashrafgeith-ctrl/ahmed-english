@@ -192,10 +192,36 @@ async function createBooking(user, body) {
   if (!SLUG_MAP[eventSlug]) return json("error", { message: "Unknown event type" }, 400);
   if (!start) return json("error", { message: "A start time is required" }, 400);
   const calSlug = SLUG_MAP[eventSlug].slug;
+  const minutes = SLUG_MAP[eventSlug].minutes;
 
   const date = String(start).slice(0, 10);
   const startMs = Math.floor(new Date(start).getTime());
-  const minutes = SLUG_MAP[eventSlug].minutes;
+
+  // Record the booking in Supabase immediately as "pending". The
+  // cal-webhook later flips it to "booked" (and consumes a lesson)
+  // once Cal.com confirms. This way the lesson shows in "My Bookings"
+  // right away even if the webhook is slow.
+  let pending = null;
+  try {
+    const { data: ins } = await supabase
+      .from("bookings")
+      .insert({
+        student_id: user.id,
+        event_slug: eventSlug,
+        title: SLUG_MAP[eventSlug].slug,
+        start_at: start,
+        end_at: new Date(startMs + minutes * 60000).toISOString(),
+        duration_min: minutes,
+        status: "pending",
+        consumed_lesson: false,
+      })
+      .select("*")
+      .maybeSingle();
+    pending = ins || null;
+  } catch (e) {
+    console.error("insert pending booking error:", e.message);
+  }
+
   const q = new URLSearchParams({
     date,
     dateTime: String(startMs),
@@ -208,6 +234,7 @@ async function createBooking(user, body) {
 
   return json("success", {
     bookingUrl,
+    pending,
     message: "Everything is pre-filled - confirm once on Cal.com to finish booking.",
   }, 200);
 }
@@ -224,6 +251,18 @@ async function cancelBooking(user, body) {
     .maybeSingle();
   if (!existing) return json("error", { message: "Booking not found" }, 404);
   if (existing.student_id !== user.id) return json("error", { message: "Not your booking" }, 403);
+
+// If we never got a Cal.com uid (pending), just remove it — nothing
+  // exists on Cal.com yet to cancel.
+  if (!existing.cal_uid) {
+    const { data: removed } = await supabase
+      .from("bookings")
+      .delete()
+      .eq("id", bookingId)
+      .select("*")
+      .maybeSingle();
+    return json("success", { booking: removed || null, message: "Pending booking removed." }, 200);
+  }
 
   // Cancel on Cal.com if we have the uid (best effort).
   if (existing.cal_uid) {
