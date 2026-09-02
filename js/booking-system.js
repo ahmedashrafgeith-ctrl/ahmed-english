@@ -26,6 +26,24 @@
   let monthCursor = null; // 1st of the displayed month (local)
   let viewMode = "week"; // "week" | "month"
   let activeDay = null; // YYYY-MM-DD of the picked day in the agenda view
+  let myTab = "upcoming"; // "upcoming" | "history"
+  const SLUG_LABEL = {
+    "30min-trial": "Free Trial",
+    "30min": "30-Min Lesson",
+    "60min": "60-Min Lesson",
+  };
+  const SLUG_ICON = {
+    "30min-trial": "⚡",
+    "30min": "🗓",
+    "60min": "🎓",
+  };
+  function lessonLabel(b) {
+    const s = (b.event_slug || "").toLowerCase();
+    if (SLUG_LABEL[s]) return SLUG_LABEL[s];
+    const t = (b.title || "").replace(/ between .*$/i, "").replace(/-/g, " ").trim();
+    if (t) return t.charAt(0).toUpperCase() + t.slice(1);
+    return "Lesson";
+  }
   let user = null;
   let packLeft = null;
   let busyChanel = null;
@@ -529,18 +547,37 @@
     try {
       const { data: rows } = await sb.from("bookings").select("*").eq("student_id", user.id).order("start_at", { ascending: true });
       const future = (rows || []).filter(b => (b.status === "booked" || b.status === "pending") && new Date(b.start_at) > new Date());
-      const other = (rows || []).filter(b => !future.includes(b));
+      const other = (rows || []).filter(b => !future.includes(b)).slice().sort((a, b) => new Date(b.start_at) - new Date(a.start_at)).slice(0, 8);
       if (!rows || !rows.length) {
-        els.mybookings.innerHTML = `<p class="muted">Nothing booked yet — pick a free slot above.</p>`;
+        els.mybookings.innerHTML = `
+          <div class="bk-books-empty">
+            <div class="bk-books-empty-ic">📅</div>
+            <strong>No lessons yet</strong>
+            <p class="muted">Pick a free slot above to book your first lesson.</p>
+          </div>`;
         return;
       }
-      const upcoming = future.length ? future.map(b => bookingRow(b, true)).join("") : `<p class="muted" style="margin:6px 0;">No upcoming lessons.</p>`;
-      const history = other.length
-        ? other.slice().sort((a, b) => new Date(b.start_at) - new Date(a.start_at)).slice(0, 5).map(b => bookingRow(b, false)).join("")
-        : "";
-      els.mybookings.innerHTML = upcoming + (history ? `<div class="muted" style="font-size:.78rem;font-weight:700;margin:14px 0 8px;">PAST / CANCELLED</div>${history}` : "");
+
+      const upcomingHtml = future.length
+        ? `<div class="bk-books-list">${future.map(b => bookingCard(b, true)).join("")}</div>`
+        : `<div class="bk-books-empty"><strong>No upcoming lessons</strong><p class="muted">Your next booking will show up here.</p></div>`;
+      const historyHtml = other.length
+        ? `<div class="bk-books-list bk-books-history">${other.map(b => bookingCard(b, false)).join("")}</div>`
+        : `<div class="bk-books-empty"><strong>No past bookings</strong><p class="muted">Your booking history will appear here.</p></div>`;
+
+      els.mybookings.innerHTML = `
+        <div class="bk-books-tabs">
+          <button type="button" class="bk-btab ${myTab === 'upcoming' ? 'is-on' : ''}" data-tab="upcoming">Upcoming${future.length ? ` <span class="bk-btab-cnt">${future.length}</span>` : ''}</button>
+          <button type="button" class="bk-btab ${myTab === 'history' ? 'is-on' : ''}" data-tab="history">History<span class="bk-btab-cnt">${other.length}</span></button>
+        </div>
+        <div id="bk-books-body">${myTab === 'upcoming' ? upcomingHtml : historyHtml}</div>`;
+
       const p = q("#pack-left");
       if (p) p.textContent = packLeft;
+      qs(".bk-btab").forEach(btn => btn.addEventListener("click", () => {
+        myTab = btn.dataset.tab === "history" ? "history" : "upcoming";
+        loadMyBookings();
+      }));
       qs("[data-cancel]").forEach(btn => btn.addEventListener("click", () => openCancelModal(btn.dataset.cancel)));
     } catch (e) {
       console.error("my bookings error:", e);
@@ -548,23 +585,35 @@
     }
   }
 
-  function bookingRow(b, upcoming) {
-    const when = new Date(b.start_at).toLocaleString([], {
-      weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-    });
+  function bookingCard(b, upcoming) {
+    const start = new Date(b.start_at);
+    const end = b.end_at ? new Date(b.end_at) : null;
+    const dateStr = start.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+    const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      + (end ? " – " + end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "");
+    const label = lessonLabel(b);
+    const icon = SLUG_ICON[(b.event_slug || "").toLowerCase()] || "🗓";
+    const cancelled = b.status !== "booked" && b.status !== "pending";
     const badge = b.status === "pending"
-      ? `<span class="badge badge-acc">Awaiting confirmation</span>`
-      : b.status === "booked"
-        ? `<span class="badge badge-ok">Booked</span>`
-        : `<span class="badge badge-warn">${esc(b.status)}</span>`;
+      ? `<span class="bk-stat bk-stat-pend">Pending</span>`
+      : (cancelled ? `<span class="bk-stat bk-stat-canc">Cancelled</span>` : `<span class="bk-stat bk-stat-ok">Booked</span>`);
     return `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--c-card-border);border-radius:12px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap;">
-        <div style="min-width:0;">
-          <strong style="font-size:.95rem;">${esc(b.title || b.event_slug || "Lesson")}</strong>
-          <div class="muted" style="font-size:.84rem;margin-top:2px;">${when}</div>
-          <div style="margin-top:6px;">${badge}</div>
+      <div class="bk-book ${cancelled ? 'is-cancelled' : ''} ${upcoming ? '' : 'is-past'}">
+        <div class="bk-book-dot"></div>
+        <div class="bk-book-ic">${icon}</div>
+        <div class="bk-book-main">
+          <div class="bk-book-top">
+            <strong>${esc(label)}</strong>
+            ${badge}
+          </div>
+          <div class="bk-book-when">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${esc(dateStr)}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>${esc(timeStr)}</span>
+          </div>
         </div>
-        ${upcoming ? `<button type="button" class="btn btn-ghost btn-sm" data-cancel="${b.id}">Cancel</button>` : ""}
+        ${upcoming ? `<button type="button" class="bk-book-cancel" data-cancel="${b.id}" title="Cancel this lesson">Cancel</button>` : ""}
       </div>`;
   }
 

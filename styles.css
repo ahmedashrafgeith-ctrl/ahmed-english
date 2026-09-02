@@ -679,6 +679,81 @@ p { color: var(--c-ink-2); }
   .bk-sum2 { grid-template-columns: 1fr; }
 }
 
+/* ============ My Bookings ============ */
+.bk-books-tabs {
+  display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px;
+  background: var(--c-soft); border: 1px solid var(--c-card-border); border-radius: 14px;
+}
+.bk-btab {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 0; background: transparent; cursor: pointer;
+  padding: 9px 18px; border-radius: 10px; font-size: .85rem; font-weight: 700;
+  color: var(--c-ink-3); font-family: inherit; transition: all .18s cubic-bezier(.22,1,.36,1);
+}
+.bk-btab-cnt {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 20px;
+  background: color-mix(in srgb, var(--c-ink-3) 22%, transparent); color: var(--c-ink-2);
+  font-size: .72rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.bk-btab.is-on { background: var(--c-accent); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--c-accent) 32%, transparent); }
+.bk-btab.is-on .bk-btab-cnt { background: rgba(255,255,255,.25); color: #fff; }
+
+.bk-books-list { display: flex; flex-direction: column; gap: 10px; }
+.bk-book {
+  position: relative; display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px 14px 18px;
+  border: 1.5px solid var(--c-card-border); border-radius: 16px;
+  background: var(--c-surface); box-shadow: 0 2px 10px rgb(0 0 0 / .03);
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.bk-book:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgb(0 0 0 / .08); border-color: color-mix(in srgb, var(--c-accent) 30%, var(--c-card-border)); }
+.bk-book-dot {
+  position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 4px;
+  background: var(--c-accent);
+}
+.bk-book.is-cancelled .bk-book-dot { background: var(--c-ink-3); }
+.bk-book.is-past { opacity: .82; }
+.bk-book.is-cancelled { opacity: .7; box-shadow: none; }
+.bk-book-ic {
+  width: 46px; height: 46px; flex: 0 0 auto; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.35rem;
+  background: color-mix(in srgb, var(--c-accent) 14%, var(--c-surface));
+}
+.bk-book.is-cancelled .bk-book-ic { background: var(--c-soft); filter: grayscale(.4); opacity: .7; }
+.bk-book-main { flex: 1; min-width: 0; }
+.bk-book-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.bk-book-top strong { font-size: 1rem; color: var(--c-ink); line-height: 1.25; }
+.bk-book-when { display: flex; align-items: center; gap: 6px; margin-top: 7px; flex-wrap: wrap; color: var(--c-ink-2); font-size: .86rem; font-weight: 600; }
+.bk-book-when svg { width: 14px; height: 14px; color: var(--c-ink-3); flex-shrink: 0; }
+.bk-book-when svg + span { white-space: nowrap; }
+.bk-book-when svg ~ svg { margin-left: 4px; }
+
+.bk-stat { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+.bk-stat-ok { color: #059669; background: color-mix(in srgb, #059669 12%, transparent); border: 1px solid color-mix(in srgb, #059669 28%, transparent); }
+.bk-stat-pend { color: #B45309; background: color-mix(in srgb, #B45309 12%, transparent); border: 1px solid color-mix(in srgb, #B45309 28%, transparent); }
+.bk-stat-canc { color: var(--c-ink-3); background: var(--c-soft); border: 1px solid var(--c-card-border); }
+
+.bk-book-cancel {
+  flex: 0 0 auto; border: 1.5px solid var(--c-card-border); background: transparent; cursor: pointer;
+  color: #DC2626; font-size: .8rem; font-weight: 700; font-family: inherit;
+  padding: 9px 16px; border-radius: 10px; transition: all .15s;
+}
+.bk-book-cancel:hover { background: #DC2626; border-color: #DC2626; color: #fff; }
+
+.bk-books-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 36px 20px; text-align: center; color: var(--c-ink-3);
+  border: 1.5px dashed var(--c-card-border); border-radius: 16px;
+}
+.bk-books-empty-ic { font-size: 2rem; margin-bottom: 6px; }
+.bk-books-empty strong { font-size: 1rem; color: var(--c-ink-2); }
+.bk-books-empty p { margin: 4px 0 0; font-size: .85rem; }
+
+@media (max-width: 520px) {
+  .bk-book { flex-wrap: wrap; padding: 14px; }
+  .bk-book-cancel { width: 100%; }
+}
+
 /* ============ Booking page: week calendar ============ */
 .bk-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 14px 0 6px; }
 .bk-day {
