@@ -66,7 +66,8 @@ async function upsertBooking(studentId, payload) {
   const attendees = payload.attendees || [];
   const email = attendees[0]?.email || payload.responses?.email || payload.email || null;
 
-// Match by cal_uid first (re-bookings / reschedules).
+  // Match by cal_uid first (bookings created by our own book-lesson
+  // function store this uid, so we just refresh it — never re-consume).
   const { data: existing } = await supabase
     .from("bookings")
     .select("*")
@@ -80,17 +81,17 @@ async function upsertBooking(studentId, payload) {
       .eq("id", existing.id)
       .select("*")
       .maybeSingle();
-    return updated || existing;
+    return { booking: updated || existing, createdNew: false };
   }
 
-  // Otherwise match the pending booking created by the site (same
-  // student + start time), and confirm it (so we don't duplicate).
+  // Otherwise match an existing booking created by the site for the
+  // same student + start time (regardless of status), and confirm it
+  // (so we don't duplicate or double-consume a lesson).
   if (studentId && start) {
     const { data: pending } = await supabase
       .from("bookings")
       .select("*")
       .eq("student_id", studentId)
-      .eq("status", "pending")
       .gte("start_at", new Date(new Date(start).getTime() - 5 * 60000).toISOString())
       .lte("start_at", new Date(new Date(start).getTime() + 5 * 60000).toISOString())
       .order("created_at", { ascending: false })
@@ -103,7 +104,7 @@ async function upsertBooking(studentId, payload) {
         .eq("id", pending.id)
         .select("*")
         .maybeSingle();
-      return confirmed || pending;
+      return { booking: confirmed || pending, createdNew: false };
     }
   }
 
@@ -122,7 +123,9 @@ async function upsertBooking(studentId, payload) {
     })
     .select("*")
     .maybeSingle();
-  return inserted || null;
+  // createdNew = true -> this booking was NOT created by our site, so the
+  // webhook is the only place that will consume the lesson.
+  return { booking: inserted || null, createdNew: true };
 }
 
 async function consumeLesson(studentId) {
@@ -169,12 +172,17 @@ Deno.serve(async (req) => {
   }
 
   if (trigger === "BOOKING_CREATED") {
-    const booking = await upsertBooking(student.id, payload);
-    const remaining = await consumeLesson(student.id);
-    if (booking && Number.isInteger(remaining) && remaining >= 0) {
-      await supabase.from("bookings").update({ consumed_lesson: true }).eq("id", booking.id);
+    const { booking, createdNew } = await upsertBooking(student.id, payload);
+    // Only consume a lesson for bookings that were NOT created through
+    // our own site flow (book-lesson already consumed those directly).
+    if (createdNew && booking) {
+      const remaining = await consumeLesson(student.id);
+      if (Number.isInteger(remaining) && remaining >= 0) {
+        await supabase.from("bookings").update({ consumed_lesson: true }).eq("id", booking.id);
+      }
+      return json("success", { handled: true, consumed: Number.isInteger(remaining), lessonsLeft: remaining }, 200);
     }
-    return json("success", { handled: true, consumed: Number.isInteger(remaining), lessonsLeft: remaining }, 200);
+    return json("success", { handled: true, consumed: false, synced: true }, 200);
   }
 
   if (trigger === "BOOKING_CANCELLED") {

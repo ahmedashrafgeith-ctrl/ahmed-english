@@ -6,28 +6,26 @@
 //  - GET  /book-lesson?eventSlug=...&start=...&end=...&tz=...
 //        -> computes available slots from Ahmed's Cal.com schedule
 //           (18:00-22:00 GMT+8 daily), minus existing bookings.
-//           NOTE: Cal.com's own GET /v2/slots is currently broken,
-//           so we compute availability ourselves from the schedule
-//           (verified via /v2/schedules) and existing bookings
-//           (/v2/bookings), which both work.
+//           Availability is computed from the schedule window and
+//           existing bookings fetched via /v2/bookings.
 //
 //  - POST /book-lesson  {eventSlug, start, timeZone}
-//        -> no longer creates the booking directly through the API
-//           (POST /v2/bookings is failing with a generic 400 from
-//           Cal.com right now / API-key write access). Instead it
-//           returns a deep link to Ahmed's Cal.com booking page,
-//           pre-filled with the chosen date. The student confirms
-//           there (Cal.com's own web flow, which always works).
-//           The booking is then mirrored into Supabase and a lesson
-//           is consumed via the `cal-webhook` function.
+//        -> ONE-TAP in-app booking. Creates the booking directly on
+//           Cal.com via POST /v2/bookings (with the server-side
+//           CAL_API_KEY). Cal.com records the calendar event AND
+//           automatically emails the student + host (confirmation).
+//           On success we store the Cal.com uid + status "booked"
+//           in Supabase and consume one lesson from the student's
+//           active plan. No deep link / no second confirmation step.
 //
 //  - POST /book-lesson  {action:"cancel", bookingId}
-//        -> best-effort cancel on Cal.com; credits the lesson back
-//           (also handled by the BOOKING_CANCELLED cal-webhook).
+//        -> cancels on Cal.com (POST /v2/bookings/{uid}/cancel),
+//           credits the lesson back, marks the booking cancelled.
 //
 // SECURITY: verify_jwt = true (see config.toml) means the caller
-// MUST be a signed-in student. CAL_API_KEY is a server secret only
-// (never in the browser). Writes go through the service_role key.
+// MUST be a signed-in student. CAL_API_KEY is a server secret set
+// via the Supabase Management API (never in the browser or repo).
+// Writes go through the service_role key.
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -36,14 +34,14 @@ const CAL_API_KEY = Deno.env.get("CAL_API_KEY") || "";
 const SB_URL = Deno.env.get("SUPABASE_URL") || "";
 const SB_SERVICE = Deno.env.get("SERVICE_ROLE_KEY") || "";
 const CAL_BASE = "https://api.cal.com";
-const CAL_VER = "2026-07-27";
-const USERNAME = "ahmed-ghaith-fbjoax";
+const CAL_VER = "2026-02-25";
 
-// Map our event slugs to Cal.com event slugs (and their durations).
+// Map our event slugs to Cal.com eventType IDs, slugs, durations.
+// eventTypeId values were read live from GET /v2/event-types.
 const SLUG_MAP = {
-  "30min-trial": { slug: "30min-trial", minutes: 30 },
-  "30min":       { slug: "30min",       minutes: 30 },
-  "60min":       { slug: "60min",       minutes: 60 },
+  "30min-trial": { slug: "30min-trial", eventTypeId: 6757821, minutes: 30 },
+  "30min":       { slug: "30min",       eventTypeId: 6757819, minutes: 30 },
+  "60min":       { slug: "60min",       eventTypeId: 6757820, minutes: 60 },
 };
 
 // Ahmed's working window: 18:00 - 22:00 (GMT+8). Verified against the
@@ -183,7 +181,7 @@ async function getSlots(url) {
   return json("success", { data, timeZone: tz });
 }
 
-// ---- POST: hand the student to Cal.com's web flow to confirm ----
+// ---- POST: create the booking on Cal.com (1-tap, in-app) ----
 async function createBooking(user, body) {
   const eventSlug = body.eventSlug || "60min";
   const start = body.start;
@@ -191,51 +189,98 @@ async function createBooking(user, body) {
 
   if (!SLUG_MAP[eventSlug]) return json("error", { message: "Unknown event type" }, 400);
   if (!start) return json("error", { message: "A start time is required" }, 400);
-  const calSlug = SLUG_MAP[eventSlug].slug;
-  const minutes = SLUG_MAP[eventSlug].minutes;
 
-  const date = String(start).slice(0, 10);
+  const cfg = SLUG_MAP[eventSlug];
+  const minutes = cfg.minutes;
   const startMs = Math.floor(new Date(start).getTime());
+  const endIso = new Date(startMs + minutes * 60000).toISOString();
 
-  // Record the booking in Supabase immediately as "pending". The
-  // cal-webhook later flips it to "booked" (and consumes a lesson)
-  // once Cal.com confirms. This way the lesson shows in "My Bookings"
-  // right away even if the webhook is slow.
-  let pending = null;
+  // Create the booking on Cal.com directly with the server-side key.
+  // Cal.com records the event, opens the calendar slot, and emails the
+  // student + host automatically (no second step for the student).
+  let cal = null;
+  try {
+    const res = await fetch(`${CAL_BASE}/v2/bookings`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${CAL_API_KEY}`,
+        "cal-api-version": CAL_VER,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventTypeId: cfg.eventTypeId,
+        start: new Date(startMs).toISOString(),
+        attendee: {
+          name: user.full_name || user.email || "Student",
+          email: user.email || "",
+          timeZone,
+          language: "en",
+        },
+      }),
+    });
+    const out = await res.json();
+    if (!res.ok) {
+      let reason = out?.error?.message || out?.message || "Cal.com rejected the booking.";
+      let code = 200;
+      if (res.status === 401) { reason = "Cal.com rejected our API key (server-side) - contact support."; code = 502; }
+      if (res.status === 409) { reason = "Sorry, that slot was just taken. Please pick another time."; code = 409; }
+      if (res.status === 422) { reason = out?.error?.details?.message || "That time is no longer bookable."; code = 422; }
+      console.error("[book-lesson] cal create error", res.status, JSON.stringify(out));
+      return json("error", { message: reason }, code);
+    }
+    cal = out?.data || null;
+  } catch (e) {
+    console.error("[book-lesson] cal create exception:", e.message);
+    return json("error", { message: "Could not reach Cal.com to confirm your booking. Please try again." }, 502);
+  }
+
+  const uid = cal?.uid || null;
+  const calStart = cal?.start || new Date(startMs).toISOString();
+  const calEnd = cal?.end || endIso;
+  const title = cal?.title || cfg.slug;
+
+  // Persist the confirmed booking in Supabase with the Cal.com uid.
+  let booking = null;
   try {
     const { data: ins } = await supabase
       .from("bookings")
       .insert({
         student_id: user.id,
         event_slug: eventSlug,
-        title: SLUG_MAP[eventSlug].slug,
-        start_at: start,
-        end_at: new Date(startMs + minutes * 60000).toISOString(),
+        cal_uid: uid,
+        title,
+        start_at: calStart,
+        end_at: calEnd,
         duration_min: minutes,
-        status: "pending",
+        status: "booked",
         consumed_lesson: false,
       })
       .select("*")
       .maybeSingle();
-    pending = ins || null;
+    booking = ins || null;
   } catch (e) {
-    console.error("insert pending booking error:", e.message);
+    console.error("[book-lesson] insert booking error:", e.message);
   }
 
-  const q = new URLSearchParams({
-    date,
-    dateTime: String(startMs),
-    duration: String(minutes),
-    tz: timeZone || "UTC",
-    name: user.full_name || "",
-    email: user.email || "",
-  });
-  const bookingUrl = `https://cal.com/${USERNAME}/${calSlug}?${q.toString()}`;
+  // Consume one lesson from the student's active plan.
+  let remaining = null;
+  try {
+    const { data: rem } = await supabase.rpc("consume_lesson", { p_student: user.id });
+    if (Number.isInteger(rem) && rem >= 0) {
+      remaining = rem;
+      if (booking) {
+        await supabase.from("bookings").update({ consumed_lesson: true }).eq("id", booking.id);
+      }
+    }
+  } catch (e) {
+    console.error("[book-lesson] consume_lesson error:", e.message);
+  }
 
   return json("success", {
-    bookingUrl,
-    pending,
-    message: "Everything is pre-filled - confirm once on Cal.com to finish booking.",
+    booking,
+    calBooking: cal,
+    lessonsLeft: remaining,
+    message: "Your lesson is booked. Cal.com has emailed you the confirmation and calendar invite.",
   }, 200);
 }
 
@@ -252,8 +297,7 @@ async function cancelBooking(user, body) {
   if (!existing) return json("error", { message: "Booking not found" }, 404);
   if (existing.student_id !== user.id) return json("error", { message: "Not your booking" }, 403);
 
-// If we never got a Cal.com uid (pending), just remove it — nothing
-  // exists on Cal.com yet to cancel.
+  // If we never got a Cal.com uid (legacy/imported pending), just remove it.
   if (!existing.cal_uid) {
     const { data: removed } = await supabase
       .from("bookings")
@@ -261,34 +305,32 @@ async function cancelBooking(user, body) {
       .eq("id", bookingId)
       .select("*")
       .maybeSingle();
-    return json("success", { booking: removed || null, message: "Pending booking removed." }, 200);
+    return json("success", { booking: removed || null, message: "Booking removed." }, 200);
   }
 
-  // Cancel on Cal.com if we have the uid (best effort).
-  if (existing.cal_uid) {
-    try {
-      const res = await fetch(`${CAL_BASE}/v2/bookings/${existing.cal_uid}/cancel`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${CAL_API_KEY}`,
-          "cal-api-version": CAL_VER,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cancellationReason: "Cancelled by student on site" }),
-      });
-      if (!res.ok) {
-        // Cal.com API cancels are also flaky right now. Let the webhook
-        // (or the student's confirmation-email manage link) handle it.
-        return json("error", {
-          message: "Could not reach Cal.com to cancel. Please use the 'Manage booking' link in your confirmation email (your lesson will be credited after it is cancelled).",
-        }, 502);
-      }
-    } catch (e) {
-      console.error("cal cancel error:", e.message);
+  // Cancel the booking on Cal.com using its uid (server-side key).
+  try {
+    const res = await fetch(`${CAL_BASE}/v2/bookings/${existing.cal_uid}/cancel`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${CAL_API_KEY}`,
+        "cal-api-version": CAL_VER,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cancellationReason: "Cancelled by student on site" }),
+    });
+    if (!res.ok) {
+      const out = await res.json().catch(() => ({}));
+      console.error("[book-lesson] cal cancel error", res.status, JSON.stringify(out));
       return json("error", {
-        message: "Could not reach Cal.com to cancel. Please use the link in your confirmation email.",
+        message: "Could not cancel on Cal.com. Please use the 'Manage booking' link in your confirmation email (your lesson will be credited after it is cancelled).",
       }, 502);
     }
+  } catch (e) {
+    console.error("[book-lesson] cal cancel exception:", e.message);
+    return json("error", {
+      message: "Could not reach Cal.com to cancel. Please use the link in your confirmation email.",
+    }, 502);
   }
 
   // Credit the lesson back if a lesson was consumed.
@@ -298,12 +340,12 @@ async function cancelBooking(user, body) {
 
   const { data: updated } = await supabase
     .from("bookings")
-    .update({ status: "cancelled", consumed_lesson: false, cal_uid: null })
+    .update({ status: "cancelled", consumed_lesson: false })
     .eq("id", bookingId)
     .select("*")
     .maybeSingle();
 
-  return json("success", { booking: updated }, 200);
+  return json("success", { booking: updated, message: "Lesson cancelled and credited back." }, 200);
 }
 
 Deno.serve(async (req) => {

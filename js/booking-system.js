@@ -2,10 +2,11 @@
 // TutorEnglishPro — Internal Booking System (slot picker + My Bookings)
 // ------------------------------------------------------------
 // Talks to the Supabase Edge Function `book-lesson`, which reads
-// Ahmed's real Cal.com calendar (free slots) and hands the student
-// to Cal.com's own booking page to finish. Once confirmed there,
-// the `cal-webhook` function stores the booking, consumes a lesson
-// and both student + admin get Cal.com's confirmation email.
+// Ahmed's real Cal.com calendar (free slots) and creates the booking
+// directly on Cal.com (POST /v2/bookings) with the server-side API
+// key. Cal.com itself emails the student + host the confirmation and
+// calendar invite. Booking is ONE-TAP — the student confirms in-app
+// and is shown a success state; there is no second Cal.com step.
 // ============================================================
 (function () {
   const BOOKING = (window.APP_CONFIG && window.APP_CONFIG.booking) || {};
@@ -148,7 +149,7 @@
           <div>
             <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Schedule Your Lesson</span>
             <h2 style="margin:0;font-size:1.4rem;">Book Your <span class="grad-text">Lesson</span></h2>
-            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time — everything else gets pre-filled, so you finish with one tap on the calendar.</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time and confirm — it books instantly, and Cal.com emails you the invite.</p>
           </div>
           <div id="bk-pack-badge" style="font-size:.85rem;font-weight:700;color:var(--c-ink-3);"></div>
         </div>
@@ -179,7 +180,7 @@
         <div style="margin-top:28px;border-top:1px solid var(--c-card-border);padding-top:18px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
             <h3 style="margin:0;font-size:1.1rem;">My Bookings</h3>
-            <span class="muted" style="font-size:.78rem;">Bookings confirm here once you finish on Cal.com</span>
+            <span class="muted" style="font-size:.78rem;">Your upcoming lessons appear here.</span>
           </div>
           <div id="bk-mybookings" style="margin-top:12px;"><p class="muted">Loading…</p></div>
         </div>
@@ -399,7 +400,7 @@
 
     openModal(`
       <h3>Review your booking</h3>
-      <p class="bk-sub">Pick the lesson type, then confirm — Ahmed's calendar opens pre-filled, so it's just one final tap.</p>
+      <p class="bk-sub">Confirm to book instantly — Cal.com sends you the confirmation and calendar invite by email.</p>
       <div class="bk-sum">
         <div><span class="muted">Lesson</span><b id="bk-sum-type">${esc(event.label)}</b></div>
         <div><span class="muted">Date</span><b>${esc(date)}</b></div>
@@ -415,9 +416,9 @@
       </div>
       <div class="bk-actions">
         <button type="button" class="btn btn-secondary" data-close>Go back</button>
-        <button type="button" class="btn btn-primary" id="bk-confirm">Reserve and continue →</button>
+        <button type="button" class="btn btn-primary" id="bk-confirm">Confirm booking →</button>
       </div>
-      <p class="bk-note">Your name, email, date and time are handed to Cal.com automatically — you won't re-enter anything.</p>
+      <p class="bk-note">Your name, email, date and time are sent to Cal.com automatically — you won't re-enter anything.</p>
     `);
 
     qs("[data-type]").forEach(b => b.addEventListener("click", () => {
@@ -433,7 +434,7 @@
     const finish = async () => {
       setModal(`
         <h3>Booking…</h3>
-        <p class="bk-sub">Reserving your slot…</p>
+        <p class="bk-sub">Confirming your slot on Cal.com…</p>
       `);
       const r = await callFn("", {
         method: "POST",
@@ -441,44 +442,32 @@
       });
       if (!r.ok) {
         setModal(`
-          <h3>Could not reserve this slot</h3>
+          <h3>Could not book this slot</h3>
           <p class="bk-sub">${esc(r.message || "Please try a different slot.")}</p>
           <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>OK</button></div>
         `);
         toast(r.message || "Booking failed — try another slot.", false);
         return;
       }
-      if (r.bookingUrl) {
-        const p = lastPick;
-        setModal(`
-          <h3 style="color:#059669;">Slot reserved ✓</h3>
-          <p class="bk-sub">One tap left — press <b>Confirm</b> on the calendar page. Your details are already filled in.</p>
-          <div class="bk-sum">
-            <div><span class="muted">Lesson</span><b>${p ? esc(p.event.label) : ""}</b></div>
-            <div><span class="muted">Date</span><b>${p ? esc(p.date) : ""}</b></div>
-            <div><span class="muted">Time</span><b>${p ? esc(p.time) + " · " + esc(p.tz) : ""}</b></div>
-            <div><span class="muted">Plan</span><b>${p ? p.leftText : ""}</b></div>
-          </div>
-          <div class="bk-actions">
-            <button type="button" class="btn btn-secondary" data-close>Done</button>
-            <button type="button" class="btn btn-primary" id="bk-open-cal">
-              Confirm on Cal.com →
-            </button>
-          </div>
-          <p class="bk-note">The lesson appears below the moment it's confirmed — no need to email Ahmed.</p>
-        `);
-        q("#bk-open-cal").addEventListener("click", () => {
-          window.open(r.bookingUrl, "_blank", "noopener");
-          toast("Opened Cal.com — tap Confirm there to finish.", true);
-        });
-      } else {
-        setModal(`
-          <h3>Booking confirmed</h3>
-          <p class="bk-sub">${esc(r.message || "")}</p>
-          <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>Done</button></div>
-        `);
-      }
-      toast("Slot reserved — finish on Cal.com to confirm.", true);
+      const p = lastPick;
+      const leftText2 = r.lessonsLeft != null && Number.isInteger(r.lessonsLeft)
+        ? `Lessons left: <b>${r.lessonsLeft}</b>`
+        : p.leftText;
+      setModal(`
+        <h3 style="color:#059669;">Booked ✓</h3>
+        <p class="bk-sub">Your lesson is confirmed. Cal.com emailed you the invite — check ${esc((user && user.email) || "your inbox")}.</p>
+        <div class="bk-sum">
+          <div><span class="muted">Lesson</span><b>${esc(p.event.label)}</b></div>
+          <div><span class="muted">Date</span><b>${esc(p.date)}</b></div>
+          <div><span class="muted">Time</span><b>${esc(p.time)} · ${esc(p.tz)}</b></div>
+          <div><span class="muted">Plan</span><b>${leftText2}</b></div>
+        </div>
+        <div class="bk-actions">
+          <button type="button" class="btn btn-primary" data-close>Done</button>
+        </div>
+        <p class="bk-note">See it under "My Bookings" below. To change or cancel, use the link in your email or the Cancel button here.</p>
+      `);
+      toast("✓ Lesson booked — confirmation email sent.", true);
       await loadSlots();
       await loadMyBookings();
       await loadPack();
@@ -521,7 +510,7 @@
     const badge = b.status === "pending"
       ? `<span class="badge badge-acc">Awaiting confirmation</span>`
       : b.status === "booked"
-        ? (b.consumed_lesson ? `<span class="badge badge-ok">Booked · lesson used</span>` : `<span class="badge badge-acc">Pending confirmation</span>`)
+        ? `<span class="badge badge-ok">Booked</span>`
         : `<span class="badge badge-warn">${esc(b.status)}</span>`;
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--c-card-border);border-radius:12px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap;">
