@@ -169,7 +169,7 @@
               </button>`).join('')}
           </div>
 
-          <p class="bk-cal-powered">Cal.com · confirmed instantly</p>
+          <p class="bk-cal-powered">Confirmed instantly · invite by email</p>
         </div>
 
         <div class="bk-cal-main">
@@ -433,31 +433,37 @@
     lastPick = { event, date, time, leftText, tz };
 
     openModal(`
-      <h3>Review your booking</h3>
-      <p class="bk-sub">Confirm to book instantly — Cal.com sends you the confirmation and calendar invite by email.</p>
-      <div class="bk-sum">
-        <div><span class="muted">Lesson</span><b id="bk-sum-type">${esc(event.label)}</b></div>
-        <div><span class="muted">Date</span><b>${esc(date)}</b></div>
-        <div><span class="muted">Time</span><b>${esc(time)} · ${esc(tz)}</b></div>
-        <div><span class="muted">Plan</span><b>${leftText}</b></div>
-      </div>
-      <div class="bk-type">
-        <span class="muted" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Lesson type</span>
-        <div class="seg">
+      <div class="bk-confirm">
+        <div class="bk-confirm-head">
+          <button type="button" class="bk-close-x" data-close aria-label="Close">✕</button>
+          <h3>Confirm your booking</h3>
+          <p>Books instantly — your invite arrives by email.</p>
+        </div>
+
+        <div class="bk-sum2">
+          <div class="bk-cell"><span class="muted">Lesson</span><b id="bk-sum-type">${esc(event.label)}</b></div>
+          <div class="bk-cell"><span class="muted">Date</span><b>${esc(date)}</b></div>
+          <div class="bk-cell"><span class="muted">Time</span><b>${esc(time)}</b><small>· ${esc(tz)}</small></div>
+          <div class="bk-cell"><span class="muted">Plan</span><b class="bk-plantext">${leftText}</b></div>
+        </div>
+
+        <div class="bk-type-row">
           ${EVENTS.map(e => `
-            <button type="button" class="btn btn-sm ${e.key === selectedEvent ? 'btn-primary' : 'btn-secondary'}" data-type="${e.key}">${esc(e.label)}<span style="opacity:.7;margin-left:4px;">${e.minutes}m</span></button>`).join('')}
+            <button type="button" class="bk-type-btn ${e.key === selectedEvent ? 'is-active' : ''}" data-type="${e.key}">
+              <span class="bk-type-l">${esc(e.label)}</span><span class="bk-type-d">${e.minutes}m</span>
+            </button>`).join('')}
+        </div>
+
+        <div class="bk-actions">
+          <button type="button" class="btn btn-secondary" data-close>Go back</button>
+          <button type="button" class="btn btn-primary" id="bk-confirm">Confirm →</button>
         </div>
       </div>
-      <div class="bk-actions">
-        <button type="button" class="btn btn-secondary" data-close>Go back</button>
-        <button type="button" class="btn btn-primary" id="bk-confirm">Confirm booking →</button>
-      </div>
-      <p class="bk-note">Your name, email, date and time are sent to Cal.com automatically — you won't re-enter anything.</p>
     `);
 
-    qs("[data-type]").forEach(b => b.addEventListener("click", () => {
+    qs(".bk-type-btn").forEach(b => b.addEventListener("click", () => {
       selectedEvent = b.dataset.type;
-      qs("[data-type]").forEach(x => x.className = "btn btn-sm " + (x === b ? "btn-primary" : "btn-secondary"));
+      qs(".bk-type-btn").forEach(x => x.classList.toggle("is-active", x === b));
       const ev = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
       lastPick.event = ev;
       const t = q("#bk-sum-type");
@@ -467,8 +473,10 @@
     const btn = q("#bk-confirm");
     const finish = async () => {
       setModal(`
-        <h3>Booking…</h3>
-        <p class="bk-sub">Confirming your slot on Cal.com…</p>
+        <div class="bk-confirm">
+          <div class="bk-confirm-head"><h3>Confirming</h3><p>Adding your Book - Check Your Email</p></div>
+          <p class="bk-loading">Hang on a moment…</p>
+        </div>
       `);
       const r = await callFn("", {
         method: "POST",
@@ -476,30 +484,33 @@
       });
       if (!r.ok) {
         setModal(`
-          <h3>Could not book this slot</h3>
-          <p class="bk-sub">${esc(r.message || "Please try a different slot.")}</p>
-          <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>OK</button></div>
+          <div class="bk-confirm">
+            <div class="bk-confirm-head"><h3>Could not book this slot</h3><p>${esc(r.message || "Please try a different slot.")}</p></div>
+            <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>OK</button></div>
+          </div>
         `);
         toast(r.message || "Booking failed — try another slot.", false);
         return;
       }
       const p = lastPick;
       const leftText2 = r.lessonsLeft != null && Number.isInteger(r.lessonsLeft)
-        ? `Lessons left: <b>${r.lessonsLeft}</b>`
+        ? `${r.lessonsLeft} lesson${r.lessonsLeft === 1 ? "" : "s"} left`
         : p.leftText;
       setModal(`
-        <h3 style="color:#059669;">Booked ✓</h3>
-        <p class="bk-sub">Your lesson is confirmed. Cal.com emailed you the invite — check ${esc((user && user.email) || "your inbox")}.</p>
-        <div class="bk-sum">
-          <div><span class="muted">Lesson</span><b>${esc(p.event.label)}</b></div>
-          <div><span class="muted">Date</span><b>${esc(p.date)}</b></div>
-          <div><span class="muted">Time</span><b>${esc(p.time)} · ${esc(p.tz)}</b></div>
-          <div><span class="muted">Plan</span><b>${leftText2}</b></div>
+        <div class="bk-confirm">
+          <div class="bk-confirm-head">
+            <div class="bk-ok-check">✓</div>
+            <h3>Booked!</h3>
+            <p>Confirmed — invite sent to ${esc((user && user.email) || "your email")}.</p>
+          </div>
+          <div class="bk-sum2">
+            <div class="bk-cell"><span class="muted">Lesson</span><b>${esc(p.event.label)}</b></div>
+            <div class="bk-cell"><span class="muted">Date</span><b>${esc(p.date)}</b></div>
+            <div class="bk-cell"><span class="muted">Time</span><b>${esc(p.time)}</b><small>· ${esc(p.tz)}</small></div>
+            <div class="bk-cell"><span class="muted">Plan</span><b class="bk-plantext">${leftText2}</b></div>
+          </div>
+          <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>Done</button></div>
         </div>
-        <div class="bk-actions">
-          <button type="button" class="btn btn-primary" data-close>Done</button>
-        </div>
-        <p class="bk-note">See it under "My Bookings" below. To change or cancel, use the link in your email or the Cancel button here.</p>
       `);
       toast("✓ Lesson booked — confirmation email sent.", true);
       await loadSlots();

@@ -632,6 +632,53 @@ p { color: var(--c-ink-2); }
 .bk-actions .btn { min-width: 120px; }
 .bk-note { font-size: .78rem; color: var(--c-ink-3); margin-top: 13px; line-height: 1.55; }
 
+/* ---- compact confirm dialog ---- */
+.bk-modal.bk-compact { max-width: 400px; padding: 0; text-align: left; overflow: hidden; }
+.bk-confirm { display: flex; flex-direction: column; padding: 20px 20px 18px; }
+.bk-confirm-head { position: relative; text-align: center; padding: 2px 26px 12px; }
+.bk-confirm-head .bk-close-x { position: absolute; top: -8px; right: -8px; }
+.bk-confirm-head h3 { font-size: 1.15rem; }
+.bk-confirm-head p { margin: 4px 0 0; font-size: .8rem; color: var(--c-ink-3); line-height: 1.45; }
+.bk-close-x {
+  width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer; font: inherit;
+  background: var(--c-soft); color: var(--c-ink-3); font-size: .85rem;
+}
+.bk-close-x:hover { background: var(--c-border); color: var(--c-ink); }
+.bk-ok-check {
+  width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 50%;
+  background: color-mix(in srgb, #059669 12%, transparent); color: #059669;
+  display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900;
+}
+.bk-loading { text-align: center; color: var(--c-ink-3); font-size: .9rem; padding: 16px 0; }
+
+.bk-sum2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  border: 1px solid var(--c-card-border); border-radius: 14px;
+  padding: 12px; margin: 4px 0 14px; background: var(--c-surface);
+}
+.bk-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bk-cell .muted { font-size: .64rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.bk-cell b { font-size: .9rem; line-height: 1.3; color: var(--c-ink); }
+.bk-cell small { font-size: .74rem; color: var(--c-ink-3); }
+.bk-cell .bk-plantext { font-size: .8rem; font-weight: 600; color: var(--c-ink-2); }
+
+.bk-type-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 16px; }
+.bk-type-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 9px 6px; cursor: pointer; font: inherit; text-align: center;
+  border: 1.5px solid var(--c-card-border); border-radius: 12px;
+  background: var(--c-surface); color: var(--c-ink); transition: all .15s;
+}
+.bk-type-btn:hover { border-color: var(--c-accent); }
+.bk-type-btn.is-active { border-color: var(--c-accent); background: color-mix(in srgb, var(--c-accent) 10%, var(--c-surface)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 18%, transparent); }
+.bk-type-l { font-size: .78rem; font-weight: 700; }
+.bk-type-d { font-size: .68rem; color: var(--c-ink-3); }
+.bk-type-btn.is-active .bk-type-d { color: var(--c-accent); }
+
+@media (max-width: 420px) {
+  .bk-sum2 { grid-template-columns: 1fr; }
+}
+
 /* ============ Booking page: week calendar ============ */
 .bk-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 14px 0 6px; }
 .bk-day {
