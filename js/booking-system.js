@@ -144,47 +144,68 @@
 
   // ---- UI ----
   function buildUI(container) {
+    const photo = (window.TUTOR_PHOTO) || "";
+    const hostLine = (user && user.user_metadata && user.user_metadata.full_name) ? "" : "";
+    const activeEvent = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
     container.innerHTML = `
-      <div class="card" style="padding:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
-          <div>
-            <span class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Schedule Your Lesson</span>
-            <h2 style="margin:0;font-size:1.4rem;">Book Your <span class="grad-text">Lesson</span></h2>
-            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Pick a free time and confirm — it books instantly, and Cal.com emails you the invite.</p>
+      <div class="bk-cal reveal">
+        <div class="bk-cal-side">
+          <div class="bk-cal-avatar"><img src="${esc(photo)}" alt="Tutor" onerror="this.style.display='none'"><span>${esc("TG")}</span></div>
+          <p class="bk-cal-who">Ahmed Ghaith · English Tutor</p>
+          <h2 class="bk-cal-title" id="bk-cal-title">${esc(activeEvent.label)}</h2>
+          <div class="bk-cal-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>${activeEvent.minutes} min</span>
           </div>
-          <div id="bk-pack-badge" style="font-size:.85rem;font-weight:700;color:var(--c-ink-3);"></div>
+          <div class="bk-cal-select" id="bk-cal-pack"></div>
+
+          <div class="bk-cal-events">
+            <span class="bk-cal-events-label">Select a type</span>
+            ${EVENTS.map(e => `
+              <button type="button" class="bk-cal-event ${e.key === selectedEvent ? 'is-active' : ''}" data-type="${e.key}">
+                <span class="bk-cal-event-name">${esc(e.label)}</span>
+                <span class="bk-cal-event-dur">${e.minutes} min</span>
+                <svg class="bk-cal-event-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>`).join('')}
+          </div>
+
+          <p class="bk-cal-powered">Cal.com · confirmed instantly</p>
         </div>
 
-        <div class="bk-toolbar">
-          <div class="bk-left">
-            <span class="muted" style="font-size:.9rem;font-weight:600;" id="bk-range"></span>
-            <span class="badge badge-acc" id="bk-tz-label" style="font-size:.68rem;font-weight:700;"></span>
+        <div class="bk-cal-main">
+          <div class="bk-cal-head">
+            <div class="bk-cal-left">
+              <span class="muted" style="font-size:.8rem;font-weight:600;" id="bk-range"></span>
+              <span class="badge badge-acc" id="bk-tz-label" style="font-size:.6rem;font-weight:700;"></span>
+            </div>
+            <div class="bk-mid">
+              <button type="button" class="btn btn-soft btn-sm" id="bk-prev" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button type="button" class="btn btn-soft btn-sm" id="bk-now" title="Jump to current">Today</button>
+              <button type="button" class="btn btn-soft btn-sm" id="bk-next" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><polyline points="9 18 15 12 9 6"/></svg></button>
+            </div>
+            <div class="bk-mode" role="tablist" aria-label="Calendar view">
+              <button type="button" class="bk-mode-btn is-on" id="bk-mode-week" role="tab" aria-selected="true">Week</button>
+              <button type="button" class="bk-mode-btn" id="bk-mode-month" role="tab" aria-selected="false">Month</button>
+            </div>
           </div>
-          <div class="bk-mid">
-            <button type="button" class="btn btn-soft btn-sm" id="bk-prev" title="Previous">←</button>
-            <button type="button" class="btn btn-soft btn-sm" id="bk-now" title="Jump to current">Today</button>
-            <button type="button" class="btn btn-soft btn-sm" id="bk-next" title="Next">→</button>
-          </div>
-          <div class="bk-mode" role="tablist" aria-label="Calendar view">
-            <button type="button" class="bk-mode-btn is-on" id="bk-mode-week" role="tab" aria-selected="true">Week</button>
-            <button type="button" class="bk-mode-btn" id="bk-mode-month" role="tab" aria-selected="false">Month</button>
-          </div>
-        </div>
 
-        <div id="bk-slots" style="min-height:120px;">
-          <div class="muted" style="padding:24px;text-align:center;">Loading available times…</div>
-        </div>
-        <div id="bk-day-detail" style="display:none;"></div>
-
-        <div id="bk-msg" style="margin-top:14px;font-size:.9rem;font-weight:600;display:none;"></div>
-
-        <div style="margin-top:28px;border-top:1px solid var(--c-card-border);padding-top:18px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-            <h3 style="margin:0;font-size:1.1rem;">My Bookings</h3>
-            <span class="muted" style="font-size:.78rem;">Your upcoming lessons appear here.</span>
+          <div class="bk-cal-body">
+            <div class="bk-cal-caption">Select a Date &amp; Time</div>
+            <div id="bk-slots" style="min-height:140px;">
+              <div class="muted" style="padding:24px;text-align:center;">Loading available times…</div>
+            </div>
+            <div id="bk-day-detail" style="display:none;"></div>
           </div>
-          <div id="bk-mybookings" style="margin-top:12px;"><p class="muted">Loading…</p></div>
+          <div id="bk-msg" style="margin-top:10px;font-size:.85rem;font-weight:600;display:none;"></div>
         </div>
+      </div>
+
+      <div style="margin-top:26px;border-top:1px solid var(--c-card-border);padding-top:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <h3 style="margin:0;font-size:1.1rem;">My Bookings</h3>
+          <span class="muted" style="font-size:.78rem;">Your upcoming lessons appear here.</span>
+        </div>
+        <div id="bk-mybookings" style="margin-top:12px;"><p class="muted">Loading…</p></div>
       </div>`;
 
     els.range = q("#bk-range");
@@ -197,7 +218,7 @@
     els.modeMonth = q("#bk-mode-month");
     els.msg = q("#bk-msg");
     els.mybookings = q("#bk-mybookings");
-    els.pack = q("#bk-pack-badge");
+    els.pack = q("#bk-cal-pack");
     els.tzLabel = q("#bk-tz-label");
   }
 
@@ -250,7 +271,6 @@
     const nowMs = Date.now();
     const todayYmd = ymdLocal(new Date());
 
-    // Build a normalized list of the 7 days in the week with their slots.
     const days = [];
     let totalFree = 0;
     for (let i = 0; i < 7; i++) {
@@ -272,7 +292,6 @@
       return;
     }
 
-    // Default the active day to today if it has slots, else the first free day.
     if (!activeDay || !data[activeDay] || !data[activeDay].some(s => new Date(s.start) > nowMs)) {
       const today = days.find(d => d.today && d.slots.length);
       activeDay = (today || days.find(d => d.slots.length)).key;
@@ -280,50 +299,37 @@
     const active = days.find(d => d.key === activeDay);
     const activeSlots = active ? active.slots : [];
 
-    // Left pane: selectable day cards.
-    const dayList = days.map(d => {
+    // Day selector chips (Cal.com style) across the top of the right pane.
+    const dayChips = days.map(d => {
       const count = d.slots.length;
-      const activeCls = d.key === activeDay ? "is-active" : "";
-      const todayCls = d.today ? "today" : "";
-      const pastCls = !count ? "empty" : "";
-      return `
-        <button type="button" class="bk-ago-day ${activeCls} ${todayCls} ${pastCls}" data-day="${esc(d.key)}" ${count ? "" : "disabled"}>
-          <span class="bk-ago-dw">${fmtDayLine(d.day.toISOString())}</span>
-          <span class="bk-ago-dn">${d.day.getDate()}</span>
-          <span class="bk-ago-dc">${count ? `${count} free` : "booked"}</span>
-        </button>`;
+      return `<button type="button" class="bk-chip ${d.key === activeDay ? 'is-selected' : ''} ${d.today ? 'today' : ''} ${!count ? 'empty' : ''}" data-day="${esc(d.key)}" ${count ? "" : "disabled"}>
+        <span class="bk-chip-wd">${fmtDayLine(d.day.toISOString())}</span>
+        <span class="bk-chip-d">${d.day.getDate()}</span>
+        <span class="bk-chip-n">${count ? count : ''}</span>
+      </button>`;
     }).join("");
 
-    // Right pane: big time buttons for the active day.
     const activeEvent = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
     const timeList = activeSlots.length
       ? activeSlots.map(s => `
-          <button type="button" class="bk-ago-time" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}">
-            <span class="bk-ago-clock">${esc(fmtTime(s.start, tz))}</span>
-            <span class="bk-ago-dur">${esc(activeEvent.minutes)} min</span>
+          <button type="button" class="bk-time" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}">
+            <span class="bk-time-h">${esc(fmtTime(s.start, tz))}</span>
+            <span class="bk-time-sub">${activeEvent.minutes} min</span>
           </button>`).join("")
-      : `<div class="bk-ago-empty muted">No free times on this day.</div>`;
+      : `<div class="bk-empty2 muted">No free times on this day.</div>`;
 
     els.slots.innerHTML = `
-      <div class="bk-agenda">
-        <div class="bk-ago-days" role="listbox" aria-label="Pick a day">${dayList}</div>
-        <div class="bk-ago-panel">
-          <div class="bk-ago-panel-head">
-            <strong>${active ? active.day.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) : ""}</strong>
-            <span class="bk-ago-panel-count">${activeSlots.length} ${activeSlots.length === 1 ? "time" : "times"}</span>
-          </div>
-          <div class="bk-ago-times">${timeList}</div>
-        </div>
+      <div class="bk-days">${dayChips}</div>
+      <div class="bk-times-head">
+        <span class="bk-times-date">${active ? active.day.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }) : ''}</span>
+        <span class="muted" style="font-size:.8rem;">${totalFree} free ${totalFree === 1 ? 'slot' : 'slots'} this week</span>
       </div>
-      <div class="muted" style="font-size:.8rem;margin-top:12px;">${totalFree} free ${totalFree === 1 ? "slot" : "slots"} this week · ${esc(tz)}</div>`;
+      <div class="bk-times">${timeList}</div>`;
 
-    qs(".bk-ago-day:not(:disabled)").forEach(btn => {
-      btn.addEventListener("click", () => {
-        activeDay = btn.dataset.day;
-        renderWeek(data, tz);
-      });
+    qs(".bk-chip:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => { activeDay = btn.dataset.day; renderWeek(data, tz); });
     });
-    qs(".bk-ago-time").forEach(btn => {
+    qs(".bk-time").forEach(btn => {
       btn.addEventListener("click", () => openConfirm(btn.dataset.start, btn.dataset.end));
     });
   }
@@ -633,6 +639,18 @@
     });
     els.modeWeek.addEventListener("click", () => setMode("week"));
     els.modeMonth.addEventListener("click", () => setMode("month"));
+
+    qs(".bk-cal-event").forEach(b => b.addEventListener("click", () => {
+      selectedEvent = b.dataset.type;
+      const ev = EVENTS.find(e => e.key === selectedEvent) || EVENTS[0];
+      qs(".bk-cal-event").forEach(x => x.classList.toggle("is-active", x === b));
+      const title = q("#bk-cal-title");
+      if (title) title.textContent = ev.label;
+      const meta = q(".bk-cal-meta span");
+      if (meta) meta.textContent = ev.minutes + " min";
+      activeDay = null;
+      loadSlots();
+    }));
 
     if (!loggedIn) {
       els.slots.innerHTML = `<div style="padding:40px;text-align:center;" class="muted">

@@ -54,7 +54,7 @@
 
 /* ---- hover / tap action menu ---- */
 #ahm-actions{position:absolute;right:0;bottom:70px;display:flex;flex-direction:column;gap:10px;align-items:flex-end;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
-#ahm-chat-root:hover #ahm-actions:not(.hide),#ahm-chat-root.menu #ahm-actions:not(.hide){opacity:1;transform:none;pointer-events:auto}
+#ahm-chat-root:hover #ahm-actions:not(.hide),#ahm-chat-root.menu #ahm-actions:not(.hide),#ahm-chat-root.pin #ahm-actions:not(.hide){opacity:1;transform:none;pointer-events:auto}
 .ahm-act{display:inline-flex;align-items:center;gap:8px;background:var(--c-surface,#fff);color:var(--c-ink,#111);border:1px solid var(--c-card-border,#e5e7eb);border-radius:999px;padding:10px 14px 10px 10px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.14);transition:background .15s,transform .15s;white-space:nowrap}
 .ahm-act .ahm-ic{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--c-accent,#0b3b2c);flex-shrink:0}
 .ahm-act .ahm-ic svg{width:16px;height:16px}
@@ -179,7 +179,7 @@
 
       <div id="ahm-actions">
         <button class="ahm-act" data-a="chat"><span class="ahm-ic">${ICON_CHAT}</span>Chat with us</button>
-        <button class="ahm-act" data-a="form"><span class="ahm-ic">${ICON_FORM}</span>We'll get back to you</button>
+        <button class="ahm-act" data-a="form"><span class="ahm-ic">${ICON_FORM}</span>Leave a message!</button>
       </div>
 
       <button id="ahm-chat-fab" title="Chat with us" aria-label="Chat with us" aria-expanded="false">
@@ -200,6 +200,21 @@
       if (panel.classList.contains("open")) { closeChat(); return; }
       var open = rootEl.classList.toggle("menu");
       fab.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    // Keep the hover action menu visible for a moment after the mouse leaves
+    // the widget so it's easier to click an option.
+    var pinTimer = null;
+    rootEl.addEventListener("mouseenter", function () {
+      if (pinTimer) { clearTimeout(pinTimer); pinTimer = null; }
+    });
+    rootEl.addEventListener("mouseleave", function () {
+      if (pinTimer) clearTimeout(pinTimer);
+      rootEl.classList.add("pin");
+      pinTimer = setTimeout(function () {
+        rootEl.classList.remove("pin");
+        pinTimer = null;
+      }, 5000);
     });
 
     // outside click closes the action menu
@@ -233,6 +248,7 @@
     var r = document.getElementById("ahm-chat-root");
     if (!r) return;
     r.classList.remove("menu");
+    r.classList.remove("pin");
     var fab = document.getElementById("ahm-chat-fab");
     if (fab) fab.setAttribute("aria-expanded", "false");
   }

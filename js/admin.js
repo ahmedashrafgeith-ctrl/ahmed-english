@@ -19,6 +19,13 @@
     avatarMark.textContent = profile.full_name.charAt(0).toUpperCase();
   }
 
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+
   // ==========================================
   // 1. ENROLLMENT STATUS TOGGLE LOGIC
   // ==========================================
@@ -485,22 +492,65 @@
     const el = document.getElementById('admin-bookings');
     if (!el) return;
     try {
-      const { data: rows } = await sb.from('bookings').select('*').order('start_at', { ascending: false }).limit(30);
+      const { data: rows } = await sb.from('bookings').select('*').order('start_at', { ascending: false }).limit(50);
       if (!rows || !rows.length) {
-        el.innerHTML = '<p class="muted">No on-site bookings recorded yet.</p>';
+        el.innerHTML = '<div style="padding:14px 0;text-align:center;" class="muted">No on-site bookings recorded yet.</div>';
         return;
       }
       const byId = {};
       (await sb.from('profiles').select('id,full_name,email')).data.forEach(p => byId[p.id] = p);
-      el.innerHTML = rows.map(b => `
-        <div class="act-item">
-          <div class="a-body">
-            <strong>${b.title || b.event_slug} <span class="muted" style="font-weight:400;">· ${(byId[b.student_id] && (byId[b.student_id].full_name || byId[b.student_id].email)) || (b.guest_email || '—')}</span></strong>
-            <p>${new Date(b.start_at).toLocaleString()}</p>
-            <span class="badge ${b.status === 'booked' ? 'badge-ok' : 'badge-warn'}" style="font-size:0.7rem;">${b.status}${b.consumed_lesson ? ' · lesson used' : ''}</span>
-          </div>
-          <button type="button" class="btn btn-ghost btn-sm" style="color:#DC2626;font-size:.78rem;" data-delbooking="${b.id}" title="Remove booking">Delete</button>
-        </div>`).join('');
+
+      const nameOf = b => {
+        const p = byId[b.student_id];
+        if (p) return p.full_name || p.email;
+        return b.guest_email || '—';
+      };
+      const slugLabel = s => ({
+        '30min-trial': 'Free Trial',
+        '30min': '30-Min Lesson',
+        '60min': '60-Min Lesson',
+      }[s] || s || 'Lesson');
+
+      const rowsHtml = rows.map((b, i) => {
+        const start = new Date(b.start_at);
+        const end = b.end_at ? new Date(b.end_at) : null;
+        const dateStr = start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + (end ? ' – ' + end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
+        const dur = b.duration_min ? b.duration_min + 'm' : (end ? Math.round((end - start) / 60000) + 'm' : '—');
+        const booked = b.status === 'booked';
+        const calShort = b.cal_uid ? b.cal_uid.slice(0, 8) + '…' : '—';
+        const title = (b.title && !['30min-trial', '30min', '60min'].includes(b.title)) ? b.title : slugLabel(b.event_slug);
+        return `<tr>
+          <td><strong>${esc(nameOf(b))}</strong></td>
+          <td>${esc(title)}</td>
+          <td>${esc(dateStr)}<div style="font-size:.78rem;color:var(--c-ink-3);">${esc(timeStr)}</div></td>
+          <td>${esc(dur)}</td>
+          <td>
+            <span class="badge ${booked ? 'badge-ok' : 'badge-warn'}">${esc(b.status)}</span>
+            ${b.consumed_lesson ? '<span class="badge badge-acc" style="margin-left:4px;">lesson used</span>' : ''}
+          </td>
+          <td style="font-size:.78rem;color:var(--c-ink-3);">${esc(calShort)}</td>
+          <td>
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button type="button" class="btn btn-sm btn-ghost" style="color:#DC2626;font-size:.78rem;" data-delbooking="${b.id}" title="Remove booking record (does not cancel on Cal.com)">Delete</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <span class="muted" style="font-size:.82rem;">Showing latest ${rows.length} bookings.</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="table">
+            <thead><tr>
+              <th>Student</th><th>Lesson</th><th>Date &amp; Time</th><th>Dur</th><th>Status</th><th>Cal UID</th><th></th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>`;
+
       el.querySelectorAll('[data-delbooking]').forEach(btn => btn.addEventListener('click', async () => {
         if (!window.confirm('Delete this booking record? This does not cancel it on Cal.com.')) return;
         const { error } = await sb.from('bookings').delete().eq('id', btn.dataset.delbooking);
