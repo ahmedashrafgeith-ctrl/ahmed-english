@@ -113,8 +113,8 @@
 
 @media (max-width:640px){
   #ahm-chat-panel{right:0;bottom:0;left:0;top:0;width:100vw;max-width:100vw;height:100dvh;max-height:none;border-radius:0;border:none}
-  #ahm-chat-root{bottom:14px;right:14px}
-  #ahm-actions{bottom:74px}
+  #ahm-chat-root{bottom:max(16px,env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));left:auto}
+  #ahm-actions{right:0;left:auto;bottom:70px}
   #ahm-contact{padding:0}
   .ahm-cmodal{height:100dvh;max-width:100vw;border-radius:0;display:flex;flex-direction:column;padding:20px}
   .ahm-cmodal .w{max-width:420px;width:100%;margin:0 auto}
