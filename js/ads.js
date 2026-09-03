@@ -6,9 +6,9 @@
 //   2. window.APP_CONFIG.adsense (defaults in js/config.js)
 //
 // Renders each [data-ad-zone] container as a real AdSense unit when
-// the zone+client are configured and enabled, or as a labeled
-// "Advertisements" placeholder otherwise. Visitor page views are
-// logged to Supabase (best effort) when tracking is on.
+// the zone+client are configured and enabled, or hides it entirely
+// (no placeholder box / "Advertisements" label) otherwise. Visitor
+// page views are logged to Supabase (best effort) when tracking is on.
 // ============================================================
 (function () {
   var SB = (window.APP_CONFIG && window.APP_CONFIG.supabase) || {};
@@ -86,10 +86,10 @@
       return;
     }
 
-    // 3) Off / not fully configured → labeled placeholder
-    el.classList.add("ad-placeholder");
-    el.innerHTML =
-      '<div class="ad-ph"><span>Advertisements</span></div>';
+    // 3) Off / not fully configured → hide the area entirely
+    //    (no "Advertisements" label or empty box should ever appear on the site)
+    el.innerHTML = "";
+    el.style.display = "none";
   }
 
   function mount() {

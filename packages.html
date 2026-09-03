@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Packages & Pricing - TutorEnglishPro</title>
   <meta name="description" content="View private 1-on-1 English lesson packages and subscriptions with transparent pricing, instant Stripe payment, and direct Cal.com booking.">
-  <link rel="stylesheet" href="styles.css?v=20260903b">
+  <link rel="stylesheet" href="styles.css?v=20260903c">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,7 +14,7 @@
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/ads.js?v=20260903b"></script>
+  <script src="js/ads.js?v=20260903c"></script>
 </head>
 <body>
 
@@ -76,7 +76,7 @@
       <div class="plan-band reveal">
         <span class="eyebrow" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff;"><span class="dot"></span> Flexible & Secure</span>
         <h2 style="margin-top:16px;">Pay Instantly, Book Directly</h2>
-        <p class="lead" style="margin:0 auto;">Payments processed securely by Stripe Â· Scheduling handled by Cal.com Â· Progress tracked in your Student Portal.</p>
+        <p class="lead" style="margin:0 auto;">Payments processed securely by Stripe · Scheduling handled by Cal.com · Progress tracked in your Student Portal.</p>
         <a class="btn" href="booking.html">
           Book Your Free Trial
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -110,7 +110,7 @@
         {
           title: "Starter",
           lessons: "4 Lessons",
-          subtext: "/ month Â· 1 lesson per week",
+          subtext: "/ month · 1 lesson per week",
           price: "$40",
           oldPrice: 80,
           save: 50,
@@ -124,7 +124,7 @@
         {
           title: "Progress",
           lessons: "8 Lessons",
-          subtext: "/ month Â· 2 lessons per week",
+          subtext: "/ month · 2 lessons per week",
           price: "$70",
           oldPrice: 140,
           save: 50,
@@ -139,7 +139,7 @@
         {
           title: "Intensive",
           lessons: "12 Lessons",
-          subtext: "/ month Â· 3 lessons per week",
+          subtext: "/ month · 3 lessons per week",
           price: "$100",
           oldPrice: 200,
           save: 50,
@@ -161,7 +161,7 @@
             <div class="pkg-sub">${p.lessons} ${p.subtext}</div>
             <div class="pkg-note">SAVE ${p.save}%</div>
             <p style="margin-top:14px;font-size:.95rem;">${p.desc}</p>
-            <ul class="checks">${p.features.map(f => `<li><span class="ck">âœ“</span>${f}</li>`).join('')}</ul>
+            <ul class="checks">${p.features.map(f => `<li><span class="ck">✓</span>${f}</li>`).join('')}</ul>
           </div>
           <div style="display:grid;gap:10px;">
             <a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;" href="${p.stripeLink}" target="_blank">
@@ -178,7 +178,7 @@
     });
   </script>
 
-<script src="js/chat-widget.js?v=20260903b"></script>
+<script src="js/chat-widget.js?v=20260903c"></script>
 </body>
 </html>
 
