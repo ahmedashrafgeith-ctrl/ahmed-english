@@ -221,11 +221,29 @@
         var ctx = await getSB();
         if (!ctx || !ctx.sb) return;
 
-        if (act === 'delete') {
-          if (!confirm('Delete this review permanently?')) return;
-          await ctx.sb.from('reviews').delete().eq('id', id);
-        } else {
-          await ctx.sb.from('reviews').update({ status: act }).eq('id', id);
+        var statusMap = { approve: 'approved', reject: 'rejected', pending: 'pending' };
+        b.disabled = true;
+
+        var err = null;
+        try {
+          if (act === 'delete') {
+            if (!confirm('Delete this review permanently?')) { b.disabled = false; return; }
+            var r1 = await ctx.sb.from('reviews').delete().eq('id', id);
+            if (r1.error) err = r1.error.message;
+          } else {
+            var r2 = await ctx.sb.from('reviews').update({ status: statusMap[act] }).eq('id', id);
+            if (r2.error) err = r2.error.message;
+          }
+        } catch (e) { err = (e && e.message) || 'Unknown error'; }
+
+        if (err) {
+          b.disabled = false;
+          if (msgEl) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#DC2626';
+            msgEl.textContent = 'Action failed: ' + err;
+          }
+          return;
         }
         await loadAdmin(msgEl, listEl);
       });

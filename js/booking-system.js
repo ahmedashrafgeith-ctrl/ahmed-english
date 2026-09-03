@@ -209,6 +209,10 @@
 
           <div class="bk-cal-body">
             <div class="bk-cal-caption">Select a Date &amp; Time</div>
+            <div id="bk-tz-note" style="display:none;align-items:center;gap:6px;margin:2px 0 10px;font-size:.78rem;font-weight:600;color:var(--c-accent,#0b3b2c);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>&#9881; Shown in your local timezone: <span id="bk-tz-note-name" style="font-weight:800;">&hellip;</span></span>
+            </div>
             <div id="bk-slots" style="min-height:140px;">
               <div class="muted" style="padding:24px;text-align:center;">Loading available times…</div>
             </div>
@@ -238,6 +242,8 @@
     els.mybookings = q("#bk-mybookings");
     els.pack = q("#bk-cal-pack");
     els.tzLabel = q("#bk-tz-label");
+    els.tzNote = q("#bk-tz-note");
+    els.tzNoteName = q("#bk-tz-note-name");
   }
 
   // ---- package info ----
@@ -275,6 +281,10 @@
 
     els.tzLabel.textContent = tz;
     els.range.textContent = label;
+    if (els.tzNote) {
+      els.tzNote.style.display = "flex";
+      if (els.tzNoteName) els.tzNoteName.textContent = tz;
+    }
 
     if (!r.ok) {
       els.slots.innerHTML = `<div class="muted" style="padding:20px;text-align:center;">Could not load availability. ${esc(r.message || "")}</div>`;

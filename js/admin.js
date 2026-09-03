@@ -1083,6 +1083,21 @@ async function initChatInbox() {
   initChatInbox();
   initAdsControl(sb);
 
+  // Smooth-scroll side-nav links to their sections (works on phone/tablet too)
+  document.querySelectorAll('.side-link[href^="#"]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const id = link.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+      // highlight active
+      document.querySelectorAll('.side-link').forEach((l) => l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+
   loadAdminBookings();
   renderUsageList();
 });
