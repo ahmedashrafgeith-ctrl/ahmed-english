@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Bootstrap</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+</head>
+<body>
+<h2 id="msg">Signing in…</h2>
+<script>
+(function(){
+  var msg = document.getElementById('msg');
+  var params = new URLSearchParams(location.search);
+  var target = params.get('target') || 'dashboard.html';
+  var email = 'qa-admin-03c69c7d@proenglishtutor.online';
+  var password = 'Qa03c69c7d!T9xZ2';
+  var sb = getSupabase();
+  if (!sb) { msg.textContent = 'Supabase client unavailable'; return; }
+  sb.auth.signInWithPassword({ email: email, password: password })
+    .then(function(res){
+      if (res.error) { msg.textContent = 'SIGNIN ERROR: ' + res.error.message; return; }
+      msg.textContent = 'Signed in: ' + res.data.user.email;
+      window.location.href = target;
+    })
+    .catch(function(e){ msg.textContent = 'ERR: ' + e.message; });
+})();
+</script>
+</body>
+</html>
