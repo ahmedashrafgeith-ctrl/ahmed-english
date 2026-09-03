@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles.css?v=20260902i">
-  <link rel="stylesheet" href="components.css?v=20260902i">
-  <link rel="stylesheet" href="reviews.css?v=20260902i">
+  <link rel="stylesheet" href="styles.css?v=20260903a">
+  <link rel="stylesheet" href="components.css?v=20260903a">
+  <link rel="stylesheet" href="reviews.css?v=20260903a">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,8 +14,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/ads.js?v=20260902i"></script>
-  <script src="js/admin.js?v=20260902i"></script>
+  <script src="js/ads.js?v=20260903a"></script>
+  <script src="js/admin.js?v=20260903a"></script>
 </head>
 <body>
 
@@ -158,6 +158,9 @@
           </div>
         </div>
       </div>
+
+      <!-- ============ MAIN DASHBOARD VIEW ============ -->
+      <div id="admin-dash-view">
 
       <!-- HERO ENROLLMENT STATUS TOGGLE CARD -->
       <section class="card" id="enrollment-control" style="margin-bottom:26px;border-left:5px solid var(--c-accent);padding:24px 28px;background:var(--c-surface);">
@@ -360,12 +363,62 @@
         <div id="reviews-admin-list"><p class="muted" style="padding:22px;text-align:center;">Loading reviews&hellip;</p></div>
       </section>
 
-      <!-- ADS & VISITOR TRACKING CONTROL -->
+      <!-- CHAT INBOX -->
+      <section class="panel" id="chat-inbox">
+        <div class="panel-head bk-inbox-head">
+          <div>
+            <h3>Inbox</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here � they see it instantly and get an email.</p>
+          </div>
+          <div class="bk-inbox-tools">
+            <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="inbox-refresh-btn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="bk-inbox-tabs" role="tablist">
+          <button type="button" class="bk-tab is-on" data-tab="all" role="tab" aria-selected="true">All Chat</button>
+          <button type="button" class="bk-tab" data-tab="unread" role="tab" aria-selected="false">Unread</button>
+          <button type="button" class="bk-tab" data-tab="contacts" role="tab" aria-selected="false">Contact Form</button>
+        </div>
+
+        <div class="bk-inbox-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="inbox-search" placeholder="Search name, email, or message�" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+        </div>
+
+        <div id="inbox-wrap">
+          <div id="inbox-side">
+            <div id="inbox-list">
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversations�</p>
+            </div>
+          </div>
+          <div id="inbox-thread">
+            <p class="muted" style="padding:18px;text-align:center;">Select a conversation to read and reply. Chat archives are deleted automatically after 90 days.</p>
+          </div>
+        </div>
+      </section>
+      </div><!-- /#admin-dash-view -->
+
+      <!-- ============ ADS & TRACKING VIEW ============ -->
+      <div id="admin-ads-view" style="display:none;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+          <div>
+            <div class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Monetization</div>
+            <h2 style="font-size:1.5rem;margin:0;">Ads &amp; Visitor Tracking</h2>
+            <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Control where Google AdSense shows across the site and review anonymized visitor stats.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="ads-back-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Dashboard
+          </button>
+        </div>
+
       <section class="panel" id="ads-panel">
         <div class="panel-head">
           <div>
-            <h3>Ads &amp; Visitor Tracking</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Paste your Google AdSense publisher &amp; slot IDs, then control where ads appear (or turn zones off). Ads render automatically in the marked zones across the site. Visitor page views are tracked below.</p>
+            <h3>AdSense Publisher &amp; Slots</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Paste your Google AdSense publisher &amp; slot IDs, then control where ads appear (or turn zones off). Ad units render automatically in the marked zones across the site.</p>
           </div>
           <button type="button" class="btn btn-sm btn-ghost" id="ads-reset-btn">Reset to defaults</button>
         </div>
@@ -378,19 +431,29 @@
             <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense → Account → Settings. Leave empty to show labeled "Advertisements" placeholders instead of real ads.</p>
 
             <div style="margin-top:18px;">
-              <label class="kpi-label">Ad Slot IDs (per zone)</label>
-              <div style="display:grid;gap:10px;margin-top:6px;">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span>Banner (top)</span></label>
-                  <input class="field" data-zone-slot="banner" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+              <label class="kpi-label">Ad Zones &amp; Placements</label>
+              <p class="muted" style="margin:2px 0 10px;font-size:.78rem;line-height:1.5;">For each zone pick a method: paste your own ad code (AdSense / other network), OR use the managed AdSense slot below. Paste WordPress-style custom HTML/script whether the zone is on or off &mdash; custom code always wins.</p>
+              <div style="display:grid;gap:14px;margin-top:6px;" id="ads-zones">
+                <div class="ad-zone-card">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span>Banner (top)</span></label>
+                    <input class="field" data-zone-slot="banner" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="banner" rows="3" placeholder="Paste your own ad code here (e.g. AdSense snippet, Amazon ad, etc.)" autocomplete="off"></textarea>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span>In-content</span></label>
-                  <input class="field" data-zone-slot="in-content" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                <div class="ad-zone-card">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span>In-content</span></label>
+                    <input class="field" data-zone-slot="in-content" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="in-content" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span>Sidebar</span></label>
-                  <input class="field" data-zone-slot="sidebar" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                <div class="ad-zone-card">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span>Sidebar</span></label>
+                    <input class="field" data-zone-slot="sidebar" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="sidebar" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
               </div>
             </div>
@@ -439,42 +502,7 @@
           </div>
         </div>
       </section>
-
-      <!-- CHAT INBOX -->
-      <section class="panel" id="chat-inbox">
-        <div class="panel-head bk-inbox-head">
-          <div>
-            <h3>Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here � they see it instantly and get an email.</p>
-          </div>
-          <div class="bk-inbox-tools">
-            <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="inbox-refresh-btn">Refresh</button>
-          </div>
-        </div>
-
-        <div class="bk-inbox-tabs" role="tablist">
-          <button type="button" class="bk-tab is-on" data-tab="all" role="tab" aria-selected="true">All Chat</button>
-          <button type="button" class="bk-tab" data-tab="unread" role="tab" aria-selected="false">Unread</button>
-          <button type="button" class="bk-tab" data-tab="contacts" role="tab" aria-selected="false">Contact Form</button>
-        </div>
-
-        <div class="bk-inbox-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="inbox-search" placeholder="Search name, email, or message�" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
-        </div>
-
-        <div id="inbox-wrap">
-          <div id="inbox-side">
-            <div id="inbox-list">
-              <p class="muted" style="padding:18px;text-align:center;">Loading conversations�</p>
-            </div>
-          </div>
-          <div id="inbox-thread">
-            <p class="muted" style="padding:18px;text-align:center;">Select a conversation to read and reply. Chat archives are deleted automatically after 90 days.</p>
-          </div>
-        </div>
-      </section>
+      </div><!-- /#admin-ads-view -->
     </main>
   </div>
 
@@ -580,7 +608,7 @@
     </div>
   </div>
 
-<script src="js/reviews.js?v=20260902i"></script>
+<script src="js/reviews.js?v=20260903a"></script>
 </body>
 </html>
 

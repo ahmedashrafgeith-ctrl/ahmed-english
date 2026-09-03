@@ -1245,3 +1245,7 @@ p { color: var(--c-ink-2); }
 /* ============ Ads control (admin) ============ */
 .zone-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 600; color: var(--c-ink-2, #5B4F45); cursor: pointer; white-space: nowrap; }
 .zone-toggle input { width: 17px; height: 17px; accent-color: var(--c-accent, #E8724A); cursor: pointer; }
+.ad-zone-card { background: var(--c-surface, #fff); border: 1px solid var(--c-border, #e5e7eb); border-radius: 12px; padding: 12px 14px; display: grid; gap: 10px; }
+.ad-zone-card:has(input[type="checkbox"]:checked) { border-color: var(--c-accent, #E8724A); }
+.ad-zone-card .ad-code { resize: vertical; min-height: 66px; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: .78rem; line-height: 1.5; color: var(--c-ink, #333); background: var(--c-soft, #faf7f3); }
+.ad-zone-card .ad-code::placeholder { font-family: var(--font), sans-serif; font-size: .78rem; color: var(--c-ink-3, #9ca3af); }

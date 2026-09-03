@@ -87,3 +87,45 @@
   .rv-grid { grid-template-columns: 1fr; }
   .rv-summary { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
+
+/* ---------- Public carousel ---------- */
+.rv-carousel {
+  position: relative;
+  background: radial-gradient(1200px 240px at 50% 0%, color-mix(in srgb, var(--c-accent) 6%, transparent), transparent);
+  border-radius: var(--r-lg); padding: 34px 22px 30px; border: 1px solid var(--c-card-border);
+}
+.rv-grid { display: flex; justify-content: center; }
+.rv-grid .rv-card {
+  max-width: 620px; margin: 0 auto; padding: 28px 30px; gap: 18px;
+  border: 1px solid var(--c-card-border); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md); position: relative;
+}
+.rv-grid .rv-card::before {
+  content: ""; position: absolute; top: 0; left: 26px; right: 26px; height: 3px;
+  background: linear-gradient(90deg, var(--c-accent), var(--c-accent-2, var(--c-accent)));
+  border-radius: 0 0 6px 6px;
+}
+.rv-grid .rv-card .rv-text { font-size: .98rem; line-height: 1.6; }
+.rv-card-on { animation: rvPop .38s ease; }
+@keyframes rvPop {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.rv-car-controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 26px; }
+.rv-car-btn {
+  width: 48px; height: 48px; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--c-accent); background: var(--c-surface); color: var(--c-accent);
+  display: flex; align-items: center; justify-content: center; transition: all .2s;
+  box-shadow: var(--shadow-sm);
+}
+.rv-car-btn svg { width: 21px; height: 21px; }
+.rv-car-btn:hover { background: var(--c-accent); color: #fff; transform: scale(1.07); }
+.rv-car-btn:active { transform: scale(.96); }
+.rv-car-btn:disabled { opacity: .35; cursor: default; transform: none; box-shadow: none; }
+.rv-car-dots { display: flex; gap: 8px; align-items: center; }
+.rv-dot {
+  width: 9px; height: 9px; border-radius: 50%; cursor: pointer; padding: 0;
+  border: 1px solid var(--c-accent); background: transparent; transition: all .2s;
+}
+.rv-dot:hover { background: color-mix(in srgb, var(--c-accent) 40%, transparent); }
+.rv-dot.on { background: var(--c-accent); transform: scale(1.35); }

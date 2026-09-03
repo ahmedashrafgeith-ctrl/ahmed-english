@@ -47,7 +47,7 @@ const SLUG_MAP = {
 // Ahmed's working window: 18:00 - 22:00 (GMT+8). Verified against the
 // Cal.com schedule (Asia/Kuala_Lumpur, 18:00-22:00, all days).
 const WIN_START_MIN = 18 * 60;
-const WIN_END_MIN = 22 * 60;
+const WIN_END_MIN = 23 * 60;
 // Cal.com enforces a 120-minute (2 hour) minimum booking notice on these
 // event types. We hide any slot closer than this so students never see a
 // time Cal.com will reject.
@@ -103,7 +103,7 @@ async function requireStudent(req) {
 function inWorkingWindow(iso) {
   const d = new Date(iso);
   const h = (d.getUTCHours() + 8) % 24; // hour in GMT+8 (no DST)
-  return h >= 18 && h < 22;
+  return h >= 18 && h < 23;
 }
 
 // Fetch Ahmed's existing bookings (the reliable, working read API).
@@ -137,7 +137,7 @@ async function fetchBusy(startIso, endIso) {
   }
 }
 
-// Compute free slots inside 18:00-22:00 (GMT+8) for each date.
+// Compute free slots inside 18:00-23:00 (GMT+8) for each date.
 function computeSlots(eventSlug, start, end, busy) {
   const minutes = SLUG_MAP[eventSlug].minutes;
   const startDate = new Date(start + "T00:00:00Z");

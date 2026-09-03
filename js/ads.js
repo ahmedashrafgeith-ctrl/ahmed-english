@@ -20,6 +20,7 @@
     var s = {
       client: DEFAULTS.client || "",
       slots: DEFAULTS.slots || {},
+      code: DEFAULTS.code || {},
       zones: DEFAULTS.zones || {},
       tracking: DEFAULTS.tracking !== false
     };
@@ -28,6 +29,7 @@
       if (saved && typeof saved === "object") {
         if (typeof saved.client === "string") s.client = saved.client;
         if (saved.slots) for (var k in saved.slots) if (saved.slots[k]) s.slots[k] = saved.slots[k];
+        if (saved.code) for (var c in saved.code) if (saved.code[c]) s.code[c] = saved.code[c];
         if (saved.zones) for (var z in saved.zones) if (typeof saved.zones[z] === "boolean") s.zones[z] = saved.zones[z];
         if (typeof saved.tracking === "boolean") s.tracking = saved.tracking;
       }
@@ -38,44 +40,83 @@
 
   var slug = "ca-pub-" + (cfg.client || "");
 
+  // Re-run any <script> tags so pasted AdSense/tracking code actually executes.
+  function runScripts(container) {
+    var scripts = container.querySelectorAll("script");
+    for (var i = 0; i < scripts.length; i++) {
+      var sc = scripts[i];
+      var n = document.createElement("script");
+      if (sc.src) n.src = sc.src;
+      if (sc.innerHTML) n.innerHTML = sc.innerHTML;
+      n.async = sc.async || true;
+      if (sc.parentNode) sc.parentNode.replaceChild(n, sc);
+    }
+  }
+
   function renderZone(el) {
     var zone = el.getAttribute("data-ad-zone") || "banner";
     var enabled = cfg.zones[zone] === true;
+    var custom = ((cfg.code && cfg.code[zone]) || "").trim();
     var slot = cfg.slots[zone] || "";
-    var useAd = enabled && cfg.client && slot;
 
-    if (useAd) {
+    el.classList.remove("ad-placeholder", "ad-rendered");
+
+    // 1) WordPress-style: pasted raw ad code takes priority for this zone
+    if (custom) {
+      el.innerHTML = custom;
+      runScripts(el);
+      el.classList.add("ad-rendered");
+      if (window.adsbygoogle) {
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+      }
+      return;
+    }
+
+    // 2) Managed AdSense unit (client + slot)
+    if (enabled && cfg.client && slot) {
       el.innerHTML =
         '<ins class="adsbygoogle" style="display:block" ' +
         'data-ad-client="' + slug + '" ' +
         'data-ad-slot="' + slot + '" ' +
         'data-ad-format="auto" data-full-width-responsive="true"></ins>';
+      el.classList.add("ad-rendered");
       if (window.adsbygoogle) {
         try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
       }
-    } else {
-      el.classList.add("ad-placeholder");
-      el.innerHTML =
-        '<div class="ad-ph"><span>Advertisements</span></div>';
+      return;
     }
+
+    // 3) Off / not fully configured → labeled placeholder
+    el.classList.add("ad-placeholder");
+    el.innerHTML =
+      '<div class="ad-ph"><span>Advertisements</span></div>';
   }
 
   function mount() {
-    if (cfg.client) {
+    // find any AdSense client id referenced across zones (managed or custom code)
+    var clientId = cfg.client || "";
+    var zones = document.querySelectorAll("[data-ad-zone]");
+    for (var i = 0; i < zones.length; i++) {
+      var z = zones[i].getAttribute("data-ad-zone") || "banner";
+      var c = ((cfg.code && cfg.code[z]) || "");
+      if (!clientId && c.indexOf("data-ad-client=") !== -1) {
+        var m = c.match(/data-ad-client\s*=\s*["']?(ca-pub-[^"'\s>]+)/);
+        if (m) clientId = m[1];
+      }
+    }
+
+    if (clientId) {
       if (!document.getElementById("adsbygoogle-loader") && !window.adsbygoogle) {
         var s = document.createElement("script");
         s.id = "adsbygoogle-loader";
         s.async = true;
-        s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(slug);
+        s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(clientId);
         s.crossOrigin = "anonymous";
         document.head.appendChild(s);
-      } else if (window.adsbygoogle) {
-        // loader present
       }
     }
 
-    var zones = document.querySelectorAll("[data-ad-zone]");
-    for (var i = 0; i < zones.length; i++) renderZone(zones[i]);
+    for (var j = 0; j < zones.length; j++) renderZone(zones[j]);
   }
 
   function track() {

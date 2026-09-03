@@ -941,6 +941,7 @@ async function initAdsControl(sbc) {
     return {
       client: cfg.client || '',
       slots: cfg.slots || {},
+      code: cfg.code || {},
       zones: cfg.zones || {},
       tracking: cfg.tracking !== false
     };
@@ -955,20 +956,25 @@ async function initAdsControl(sbc) {
       if (t) t.checked = c.zones[z] === true;
       const s = document.querySelector('[data-zone-slot="' + z + '"]');
       if (s) s.value = c.slots[z] || '';
+      const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
+      if (codeEl) codeEl.value = c.code[z] || '';
     });
   }
 
   function collect() {
-    const slots = {}, zones = {};
+    const slots = {}, zones = {}, code = {};
     zones.forEach((z) => {
       const s = document.querySelector('[data-zone-slot="' + z + '"]');
       slots[z] = (s && s.value || '').trim();
       const t = document.querySelector('[data-zone-toggle="' + z + '"]');
       zones[z] = !!(t && t.checked);
+      const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
+      code[z] = (codeEl && codeEl.value || '').trim();
     });
     return {
       client: (clientEl && clientEl.value || '').trim(),
       slots,
+      code,
       zones,
       tracking: !!(trackingEl && trackingEl.checked)
     };
@@ -1083,20 +1089,53 @@ async function initChatInbox() {
   initChatInbox();
   initAdsControl(sb);
 
+  // View-swap between the main dashboard and the dedicated Ads & Tracking view
+  function showView(name) {
+    const dash = document.getElementById('admin-dash-view');
+    const ads = document.getElementById('admin-ads-view');
+    const active = name === 'ads' ? ads : dash;
+    const other = name === 'ads' ? dash : ads;
+    if (active) active.style.display = 'block';
+    if (other) other.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   // Smooth-scroll side-nav links to their sections (works on phone/tablet too)
   document.querySelectorAll('.side-link[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
       const id = link.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (!target) return;
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      history.replaceState(null, '', '#' + id);
-      // highlight active
       document.querySelectorAll('.side-link').forEach((l) => l.classList.remove('active'));
       link.classList.add('active');
+
+      // "Ads & Tracking" opens its own dedicated view instead of scrolling
+      if (id === 'ads-panel') {
+        e.preventDefault();
+        showView('ads');
+        history.replaceState(null, '', '#ads-panel');
+        return;
+      }
+
+      showView('dash');
+      const target = document.getElementById(id);
+      if (!target) { history.replaceState(null, '', '#' + id); return; }
+      e.preventDefault();
+      // wait a tick for the dashboard view to reappear before scrolling
+      requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      history.replaceState(null, '', '#' + id);
     });
   });
+
+  const adsBackBtn = document.getElementById('ads-back-btn');
+  if (adsBackBtn) {
+    adsBackBtn.addEventListener('click', () => {
+      showView('dash');
+      document.querySelectorAll('.side-link').forEach((l) => l.classList.remove('active'));
+      const ov = document.querySelector('.side-link[href="#overview"]');
+      if (ov) ov.classList.add('active');
+      history.replaceState(null, '', '#overview');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 
   loadAdminBookings();
   renderUsageList();

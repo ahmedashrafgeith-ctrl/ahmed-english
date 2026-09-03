@@ -88,9 +88,9 @@
         '</div>';
     }
 
-    listEl.innerHTML = rows.map(function (r) {
+    function cardHTML(r) {
       return '' +
-      '<article class="rv-card">' +
+      '<article class="rv-card rv-card-on">' +
         '<div class="rv-avatar">' + initials(r.student_name) + '</div>' +
         '<div class="rv-body">' +
           '<div class="rv-head">' +
@@ -101,7 +101,35 @@
           '<p class="rv-text">' + esc(r.review) + '</p>' +
         '</div>' +
       '</article>';
-    }).join('');
+    }
+
+    var controls = document.getElementById('reviews-controls');
+    var dotsEl = document.getElementById('rv-dots');
+    var prevBtn = document.getElementById('rv-prev');
+    var nextBtn = document.getElementById('rv-next');
+    var idx = 0;
+
+    function show(i) {
+      idx = (i + rows.length) % rows.length;
+      listEl.innerHTML = cardHTML(rows[idx]);
+      if (dotsEl) {
+        dotsEl.innerHTML = rows.map(function (_, k) {
+          return '<button type="button" class="rv-dot' + (k === idx ? ' on' : '') + '" data-i="' + k + '" aria-label="Go to review ' + (k + 1) + '"></button>';
+        }).join('');
+        dotsEl.querySelectorAll('.rv-dot').forEach(function (d) {
+          d.addEventListener('click', function () { show(parseInt(d.getAttribute('data-i'), 10)); });
+        });
+      }
+      if (prevBtn) prevBtn.disabled = rows.length < 2;
+      if (nextBtn) nextBtn.disabled = rows.length < 2;
+    }
+
+    if (controls) {
+      controls.style.display = rows.length > 1 ? 'flex' : 'none';
+      if (prevBtn) prevBtn.addEventListener('click', function () { show(idx - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { show(idx + 1); });
+    }
+    show(0);
   }
 
   // ---------------------------------------------------------------

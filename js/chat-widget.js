@@ -35,6 +35,7 @@
   var ICON_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg>';
   var CLOSE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="width:20px;height:20px;"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
   var ICON_WA = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px;"><path d="M12.04 2c-5.42 0-9.82 4.4-9.82 9.82 0 1.73.45 3.42 1.31 4.9L2 22l5.44-1.43a9.8 9.8 0 0 0 4.6 1.17h.01c5.42 0 9.82-4.4 9.82-9.82 0-2.62-1.02-5.08-2.87-6.93A9.72 9.72 0 0 0 12.04 2zm5.77 13.9c-.24.68-1.4 1.32-1.94 1.36-.5.06-.98.22-3.3-.69-2.8-1.1-4.6-3.95-4.74-4.13-.13-.18-1.13-1.5-1.13-2.87 0-1.36.72-2.03.97-2.31.25-.28.54-.35.72-.35.18 0 .36 0 .51.01.16.01.39-.06.6.46.24.57.8 1.96.87 2.1.07.14.12.31.03.5-.1.18-.14.29-.28.45-.14.16-.3.36-.42.48-.14.14-.29.29-.12.57.16.28.73 1.2 1.57 1.95 1.08.97 1.99 1.27 2.27 1.41.28.14.45.12.61-.07.17-.18.7-.82.89-1.1.19-.28.38-.23.63-.14.25.09 1.62.76 1.9.9.28.14.46.21.53.33.07.12.07.7-.17 1.38z"/></svg>';
+var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M3 13a9 9 0 0 1 18 0"/><rect x="2" y="13" width="4" height="7" rx="1.6"/><rect x="18" y="13" width="4" height="7" rx="1.6"/><path d="M8 20h1a2 2 0 0 0 2-2v-1"/><path d="M16 20h-1a2 2 0 0 1-2-2v-1"/></svg>';
 
   function css() {
     var s = document.createElement("style");
@@ -116,6 +117,21 @@
 .ahm-cmodal .ahm-field label{font-size:.76rem;font-weight:700;color:var(--c-ink-2,#555)}
 .ahm-cmodal .ahm-cok{display:flex;gap:8px;align-items:center;justify-content:center;padding:16px;background:var(--c-soft,#fff1e8);border:1px solid var(--c-border,#e5e5e5);border-radius:14px;color:var(--c-ink,#111);font-size:.9rem;text-align:center}
 
+/* ---- visitor CTA bubble (guides new visitors to the chat button) ---- */
+#ahm-cta{position:absolute;right:86px;bottom:6px;display:flex;align-items:center;gap:12px;background:var(--c-surface,#fff);color:var(--c-ink,#111);border:1.5px solid #F5A623;box-shadow:0 12px 34px rgba(0,0,0,.18);border-radius:16px;padding:12px 16px 12px 18px;max-width:252px;animation:ahmCtaIn .55s cubic-bezier(.2,.9,.3,1.25)}
+#ahm-cta.ahm-hide{display:none}
+@keyframes ahmCtaIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+#ahm-cta .ahm-cta-text{display:flex;flex-direction:column;gap:3px}
+#ahm-cta .ahm-cta-text strong{font-size:.95rem;font-weight:800;line-height:1.2;color:var(--c-ink,#111)}
+#ahm-cta .ahm-cta-text span{font-size:.72rem;color:var(--c-ink-2,#666);line-height:1.4}
+#ahm-cta #ahm-cta-close{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;background:#F5A623;color:#fff;border:none;font-size:.9rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:1}
+#ahm-cta #ahm-cta-close:hover{filter:brightness(.94)}
+.ahm-cta-arrow{position:absolute;right:64px;top:50%;width:46px;height:44px;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 3px 6px rgba(245,166,35,.35))}
+.ahm-cta-arrow .ahm-cta-curve{fill:none;stroke:#F5A623;stroke-width:3.4;stroke-linecap:round}
+.ahm-cta-arrow .ahm-cta-head{fill:#F5A623}
+.ahm-cta-arrow.ahm-hide{display:none}
+
+
 @media (max-width:640px){
   #ahm-chat-panel{right:0;bottom:0;left:0;top:0;width:100vw;max-width:100vw;height:100dvh;max-height:none;border-radius:0;border:none}
   #ahm-chat-root{bottom:max(16px,env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));left:auto}
@@ -124,6 +140,9 @@
   .ahm-cmodal{height:100dvh;max-width:100vw;border-radius:0;display:flex;flex-direction:column;padding:20px}
   .ahm-cmodal .w{max-width:420px;width:100%;margin:0 auto}
   #ahm-chat-fab{width:58px;height:58px}
+  #ahm-cta{right:80px;max-width:200px}
+  #ahm-cta .ahm-cta-text span{display:none}
+  .ahm-cta-arrow{right:60px}
 }`;
     document.head.appendChild(s);
   }
@@ -190,10 +209,22 @@
 
       <button id="ahm-chat-fab" title="Chat with us" aria-label="Chat with us" aria-expanded="false">
         <span class="fab-pulse"></span>
-        <span class="fab-open">${ICON_CHAT}</span>
+        <span class="fab-open">${ICON_HEADSET}</span>
         <span class="open-x">${CLOSE_SVG}</span>
         <span id="ahm-chat-badge">0</span>
-      </button>`;
+      </button>
+
+      <div id="ahm-cta" class="ahm-hide">
+        <button type="button" id="ahm-cta-close" aria-label="Dismiss message">&times;</button>
+        <div class="ahm-cta-text">
+          <strong>Questions? Let's chat</strong>
+          <span>Not sure where to start? Ahmed is here to help.</span>
+        </div>
+      </div>
+      <svg class="ahm-cta-arrow ahm-hide" viewBox="0 0 46 44" aria-hidden="true">
+        <path class="ahm-cta-curve" d="M2 38 C18 34, 26 26, 40 10" />
+        <path class="ahm-cta-head" d="M38 2 L46 7 L37 18 Z" />
+      </svg>`;
     document.body.appendChild(root);
 
     var fab = document.getElementById("ahm-chat-fab");
@@ -203,6 +234,7 @@
 
     fab.addEventListener("click", function (e) {
       e.stopPropagation();
+      hideCta();
       if (panel.classList.contains("open")) { closeChat(); return; }
       var open = rootEl.classList.toggle("menu");
       fab.setAttribute("aria-expanded", open ? "true" : "false");
@@ -248,6 +280,9 @@
     var cSend = document.getElementById("ahm-csend");
     if (cSend) cSend.addEventListener("click", submitContact);
 
+    var ctaClose = document.getElementById("ahm-cta-close");
+    if (ctaClose) ctaClose.addEventListener("click", hideCta);
+
     window.__ahmCloseChat = closeChat;
   }
 
@@ -259,6 +294,28 @@
     var fab = document.getElementById("ahm-chat-fab");
     if (fab) fab.setAttribute("aria-expanded", "false");
   }
+
+  // Show a short buddy bubble guiding first-time visitors to the chat button.
+  // Only appears for anonymous visitors (not signed in) and fades out on its own.
+  var ctaTimer = null;
+  function hideCta() {
+    if (ctaTimer) { clearTimeout(ctaTimer); ctaTimer = null; }
+    var box = document.getElementById("ahm-cta");
+    var arrow = document.querySelector(".ahm-cta-arrow");
+    if (box) box.classList.add("ahm-hide");
+    if (arrow) arrow.classList.add("ahm-hide");
+  }
+  function maybeShowCta() {
+    hideCta();
+    if (signedIn) return; // only for anonymous visitors
+    var box = document.getElementById("ahm-cta");
+    var arrow = document.querySelector(".ahm-cta-arrow");
+    if (!box || !arrow) return;
+    box.classList.remove("ahm-hide");
+    arrow.classList.remove("ahm-hide");
+    ctaTimer = setTimeout(hideCta, 10000); // auto-hide after 10s
+  }
+
 
   function closeChat() {
     var panel = document.getElementById("ahm-chat-panel");
@@ -274,6 +331,7 @@
   }
 
   function openChat() {
+    hideCta();
     var panel = document.getElementById("ahm-chat-panel");
     if (!panel) return;
     panel.classList.add("open");
@@ -576,6 +634,7 @@
 
   // ---------- contact form ----------
   function openWhatsApp() {
+    hideCta();
     var msg = encodeURIComponent("Hello Ahmed! I'd like to ask about your English lessons.");
     var url = "https://wa.me/601119974889?text=" + msg;
     var a = document.createElement("a");
@@ -588,6 +647,7 @@
   }
 
   function openContact() {
+    hideCta();
     var c = document.getElementById("ahm-contact");
     if (!c) return;
     c.classList.add("open");
@@ -668,6 +728,8 @@
         setTimeout(openChat, 500);
         return;
       }
+      // nudge anonymous visitors toward the chat button (auto-hides after 10s)
+      maybeShowCta();
       // keep the unread badge fresh in the background
       setInterval(function () {
         var panel = document.getElementById("ahm-chat-panel");
