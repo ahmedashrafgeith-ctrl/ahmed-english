@@ -68,8 +68,8 @@
   }
   function fmtTime(iso, tz) {
     const d = new Date(iso);
-    try { return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: tz }); }
-    catch { return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+    try { return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz }); }
+    catch { return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true }); }
   }
   function fmtDayLine(iso) {
     const d = new Date(iso);
@@ -589,8 +589,8 @@
     const start = new Date(b.start_at);
     const end = b.end_at ? new Date(b.end_at) : null;
     const dateStr = start.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
-    const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      + (end ? " – " + end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "");
+    const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
+      + (end ? " – " + end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true }) : "");
     const label = lessonLabel(b);
     const icon = SLUG_ICON[(b.event_slug || "").toLowerCase()] || "🗓";
     const cancelled = b.status !== "booked" && b.status !== "pending";

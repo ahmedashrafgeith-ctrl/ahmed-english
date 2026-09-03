@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="styles.css?v=20260902h">
+  <link rel="stylesheet" href="components.css?v=20260902h">
+  <link rel="stylesheet" href="reviews.css?v=20260902h">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,7 +14,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/admin.js?v=20260902f"></script>
+  <script src="js/ads.js?v=20260902h"></script>
+  <script src="js/admin.js?v=20260902h"></script>
 </head>
 <body>
 
@@ -48,6 +50,15 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Inbox
           <span id="inbox-badge" class="side-badge" style="display:none;">0</span>
+        </a>
+        <a class="side-link" href="#reviews-panel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Reviews
+          <span id="rv-badge" class="side-badge" style="display:none;">0</span>
+        </a>
+        <a class="side-link" href="#ads-panel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="2" fill="var(--c-surface,#fff)"/></svg>
+          Ads &amp; Tracking
         </a>
         <a class="side-link" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -323,12 +334,109 @@
             <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">On-site Cal.com bookings and package lesson balance control. Edit a plan to top up or adjust used lessons (for cancellations / reschedules).</p>
           </div>
         </div>
-        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookings…</p></div>
+        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookingsï¿½</p></div>
         <div style="overflow-x:auto;">
           <table class="table">
             <thead><tr><th>Student</th><th>Package</th><th>Total</th><th>Used</th><th>Remaining</th><th></th><th></th></tr></thead>
-            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptions…</td></tr></tbody>
+            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptionsï¿½</td></tr></tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- STUDENT REVIEWS MODERATION -->
+      <section class="panel" id="reviews-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Student Reviews</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Approve reviews to publish them on the public homepage. Rejected reviews are hidden.</p>
+          </div>
+        </div>
+        <div class="rv-tabs" role="tablist">
+          <button type="button" class="rv-tab is-on" data-rvtab="pending" role="tab" aria-selected="true">Pending</button>
+          <button type="button" class="rv-tab" data-rvtab="approved" role="tab" aria-selected="false">Approved</button>
+          <button type="button" class="rv-tab" data-rvtab="rejected" role="tab" aria-selected="false">Rejected</button>
+        </div>
+        <div id="reviews-admin-msg" style="margin-bottom:10px;font-size:.85rem;font-weight:600;display:none;"></div>
+        <div id="reviews-admin-list"><p class="muted" style="padding:22px;text-align:center;">Loading reviews&hellip;</p></div>
+      </section>
+
+      <!-- ADS & VISITOR TRACKING CONTROL -->
+      <section class="panel" id="ads-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Ads &amp; Visitor Tracking</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Paste your Google AdSense publisher &amp; slot IDs, then control where ads appear (or turn zones off). Ads render automatically in the marked zones across the site. Visitor page views are tracked below.</p>
+          </div>
+          <button type="button" class="btn btn-sm btn-ghost" id="ads-reset-btn">Reset to defaults</button>
+        </div>
+
+        <div class="grid-2" style="gap:22px;margin-top:18px;">
+          <!-- AdSense settings -->
+          <div>
+            <label class="kpi-label">AdSense Publisher ID</label>
+            <input class="field" id="ads-client" type="text" placeholder="e.g. ca-pub-1234567890123456" autocomplete="off">
+            <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense â†’ Account â†’ Settings. Leave empty to show labeled "Advertisements" placeholders instead of real ads.</p>
+
+            <div style="margin-top:18px;">
+              <label class="kpi-label">Ad Slot IDs (per zone)</label>
+              <div style="display:grid;gap:10px;margin-top:6px;">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span>Banner (top)</span></label>
+                  <input class="field" data-zone-slot="banner" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span>In-content</span></label>
+                  <input class="field" data-zone-slot="in-content" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span>Sidebar</span></label>
+                  <input class="field" data-zone-slot="sidebar" type="text" placeholder="Slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <label class="zone-toggle"><input type="checkbox" id="ads-tracking" checked> <span>Enable visitor tracking</span></label>
+            </div>
+
+            <div style="margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" id="ads-save-btn">Save Ad Settings</button>
+              <span id="ads-msg" style="font-size:.85rem;font-weight:600;display:none;"></span>
+            </div>
+
+            <div style="margin-top:18px;background:var(--c-soft);border:1px solid var(--c-border);border-radius:12px;padding:14px 16px;">
+              <strong style="font-size:.85rem;">Where ads show</strong>
+              <p class="muted" style="margin:6px 0 0;font-size:.82rem;line-height:1.6;">Each marked zone on the site becomes a real AdSense unit when its zone is enabled <em>and</em> both publisher + slot IDs are filled. Otherwise that area shows a simple "Advertisements" placeholder box. Changes you save here apply from this browser (used as the site owner's management device).</p>
+            </div>
+          </div>
+
+          <!-- Visitor stats -->
+          <div>
+            <div class="stats" style="grid-template-columns:repeat(2,1fr);margin:0 0 16px;">
+              <div class="stat" style="padding:16px;">
+                <small>Total Views</small>
+                <div class="num" id="ads-total" style="font-size:1.5rem;">0</div>
+              </div>
+              <div class="stat" style="padding:16px;">
+                <small>Views Today</small>
+                <div class="num" id="ads-today" style="font-size:1.5rem;">0</div>
+              </div>
+            </div>
+            <div class="panel-head" style="padding:0;">
+              <div>
+                <h3 style="font-size:1rem;">Top Pages</h3>
+                <p class="muted" style="margin:2px 0 0;font-size:.8rem;">Most-viewed pages over the last 14 days.</p>
+              </div>
+              <button type="button" class="btn btn-sm btn-ghost" id="ads-refresh">Refresh</button>
+            </div>
+            <div style="overflow-x:auto;margin-top:10px;">
+              <table class="table">
+                <thead><tr><th>Page</th><th style="text-align:right;">Views</th></tr></thead>
+                <tbody id="ads-top-list"><tr><td colspan="2" class="muted">Loading stats...</td></tr></tbody>
+              </table>
+            </div>
+            <p class="muted" style="margin:14px 0 0;font-size:.78rem;">Tracking logs one lightweight row per page view into Supabase (no cookies, best-effort, anonymous).</p>
+          </div>
         </div>
       </section>
 
@@ -337,7 +445,7 @@
         <div class="panel-head bk-inbox-head">
           <div>
             <h3>Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here — they see it instantly and get an email.</p>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here ï¿½ they see it instantly and get an email.</p>
           </div>
           <div class="bk-inbox-tools">
             <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
@@ -353,13 +461,13 @@
 
         <div class="bk-inbox-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="inbox-search" placeholder="Search name, email, or message…" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+          <input type="text" id="inbox-search" placeholder="Search name, email, or messageï¿½" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
         </div>
 
         <div id="inbox-wrap">
           <div id="inbox-side">
             <div id="inbox-list">
-              <p class="muted" style="padding:18px;text-align:center;">Loading conversations…</p>
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversationsï¿½</p>
             </div>
           </div>
           <div id="inbox-thread">
@@ -435,7 +543,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="an-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 — Past tense review" required>
+        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 ï¿½ Past tense review" required>
         <label class="kpi-label">Note / Summary</label>
         <textarea class="field" id="an-content" rows="4" placeholder="What was covered, feedback, next steps..." required></textarea>
         <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
@@ -458,7 +566,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="ah-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice — daily routine" required>
+        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice ï¿½ daily routine" required>
         <label class="kpi-label">Description / Task</label>
         <textarea class="field" id="ah-desc" rows="3" placeholder="Full instructions for the task..." required></textarea>
         <label class="kpi-label">Due Date</label>
@@ -472,6 +580,7 @@
     </div>
   </div>
 
+<script src="js/reviews.js?v=20260902h"></script>
 </body>
 </html>
 

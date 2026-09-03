@@ -34,6 +34,7 @@
   var ICON_FORM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="14" y2="13"/><line x1="7" y1="17" x2="11" y2="17"/></svg>';
   var ICON_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg>';
   var CLOSE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="width:20px;height:20px;"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+  var ICON_WA = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px;"><path d="M12.04 2c-5.42 0-9.82 4.4-9.82 9.82 0 1.73.45 3.42 1.31 4.9L2 22l5.44-1.43a9.8 9.8 0 0 0 4.6 1.17h.01c5.42 0 9.82-4.4 9.82-9.82 0-2.62-1.02-5.08-2.87-6.93A9.72 9.72 0 0 0 12.04 2zm5.77 13.9c-.24.68-1.4 1.32-1.94 1.36-.5.06-.98.22-3.3-.69-2.8-1.1-4.6-3.95-4.74-4.13-.13-.18-1.13-1.5-1.13-2.87 0-1.36.72-2.03.97-2.31.25-.28.54-.35.72-.35.18 0 .36 0 .51.01.16.01.39-.06.6.46.24.57.8 1.96.87 2.1.07.14.12.31.03.5-.1.18-.14.29-.28.45-.14.16-.3.36-.42.48-.14.14-.29.29-.12.57.16.28.73 1.2 1.57 1.95 1.08.97 1.99 1.27 2.27 1.41.28.14.45.12.61-.07.17-.18.7-.82.89-1.1.19-.28.38-.23.63-.14.25.09 1.62.76 1.9.9.28.14.46.21.53.33.07.12.07.7-.17 1.38z"/></svg>';
 
   function css() {
     var s = document.createElement("style");
@@ -59,6 +60,10 @@
 .ahm-act .ahm-ic{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--c-accent,#0b3b2c);flex-shrink:0}
 .ahm-act .ahm-ic svg{width:16px;height:16px}
 .ahm-act:hover{background:var(--c-soft,#fff1e8);transform:translateX(-4px)}
+.ahm-act-wa{border-color:#25D366;color:#0c7a3a}
+.ahm-ic-wa{background:#25D366!important;box-shadow:0 0 0 0 rgba(37,211,102,.65);animation:ahmNeon 2s ease-out infinite}
+@keyframes ahmNeon{0%{box-shadow:0 0 0 0 rgba(37,211,102,.7)}70%{box-shadow:0 0 0 12px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+.ahm-act-wa:hover{background:#e7fbe9;transform:translateX(-4px)}
 
 /* ---- chat panel ---- */
 #ahm-chat-panel{position:fixed;right:20px;bottom:92px;width:min(372px,calc(100vw - 40px));max-height:min(560px,calc(100dvh - 130px));background:var(--c-surface,#fff);color:var(--c-ink,#111);border:1px solid var(--c-border,#e5e5e5);border-radius:20px;box-shadow:0 22px 60px rgba(0,0,0,.24);display:none;flex-direction:column;overflow:hidden}
@@ -178,6 +183,7 @@
       </div>
 
       <div id="ahm-actions">
+        <button class="ahm-act ahm-act-wa" data-a="wa"><span class="ahm-ic ahm-ic-wa">${ICON_WA}</span>WhatsApp us</button>
         <button class="ahm-act" data-a="chat"><span class="ahm-ic">${ICON_CHAT}</span>Chat with us</button>
         <button class="ahm-act" data-a="form"><span class="ahm-ic">${ICON_FORM}</span>Leave a message!</button>
       </div>
@@ -226,7 +232,8 @@
       b.addEventListener("click", function () {
         var kind = b.dataset.a;
         closeMenu();
-        if (kind === "form") openContact();
+        if (kind === "wa") { openWhatsApp(); }
+        else if (kind === "form") openContact();
         else openChat();
       });
     });
@@ -568,6 +575,18 @@
   }
 
   // ---------- contact form ----------
+  function openWhatsApp() {
+    var msg = encodeURIComponent("Hello Ahmed! I'd like to ask about your English lessons.");
+    var url = "https://wa.me/601119974889?text=" + msg;
+    var a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   function openContact() {
     var c = document.getElementById("ahm-contact");
     if (!c) return;

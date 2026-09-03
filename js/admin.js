@@ -515,7 +515,7 @@
         const start = new Date(b.start_at);
         const end = b.end_at ? new Date(b.end_at) : null;
         const dateStr = start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + (end ? ' – ' + end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
+        const timeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) + (end ? ' – ' + end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) : '');
         const dur = b.duration_min ? b.duration_min + 'm' : (end ? Math.round((end - start) / 60000) + 'm' : '—');
         const booked = b.status === 'booked';
         const calShort = b.cal_uid ? b.cal_uid.slice(0, 8) + '…' : '—';
@@ -857,7 +857,7 @@ async function openInboxThread(chatId) {
     b.textContent = m.body;
     const t = document.createElement('span');
     t.className = 'bk-btime';
-    t.textContent = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    t.textContent = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     b.appendChild(t);
     bodyEl.appendChild(b);
   });
@@ -877,7 +877,7 @@ async function openInboxThread(chatId) {
       b.textContent = text;
       const t = document.createElement('span');
       t.className = 'bk-btime';
-      t.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      t.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
       b.appendChild(t);
       bodyEl.appendChild(b);
       bodyEl.scrollTop = bodyEl.scrollHeight;
@@ -919,8 +919,121 @@ async function openInboxThread(chatId) {
       .subscribe();
   }
 
+async function initAdsControl(sbc) {
+  const ads = window.__ahmAds;
+  if (!ads) return;
+
+  const esc = (v) => String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  const zones = ['banner', 'in-content', 'sidebar', 'mobile'];
+  const clientEl = document.getElementById('ads-client');
+  const trackingEl = document.getElementById('ads-tracking');
+  const msgEl = document.getElementById('ads-msg');
+  const saveBtn = document.getElementById('ads-save-btn');
+  const resetBtn = document.getElementById('ads-reset-btn');
+  const refreshBtn = document.getElementById('ads-refresh');
+  const totalEl = document.getElementById('ads-total');
+  const todayEl = document.getElementById('ads-today');
+  const topList = document.getElementById('ads-top-list');
+
+  function current() {
+    const cfg = ads.get();
+    return {
+      client: cfg.client || '',
+      slots: cfg.slots || {},
+      zones: cfg.zones || {},
+      tracking: cfg.tracking !== false
+    };
+  }
+
+  function fillForm() {
+    const c = current();
+    if (clientEl) clientEl.value = c.client;
+    if (trackingEl) trackingEl.checked = c.tracking;
+    zones.forEach((z) => {
+      const t = document.querySelector('[data-zone-toggle="' + z + '"]');
+      if (t) t.checked = c.zones[z] === true;
+      const s = document.querySelector('[data-zone-slot="' + z + '"]');
+      if (s) s.value = c.slots[z] || '';
+    });
+  }
+
+  function collect() {
+    const slots = {}, zones = {};
+    zones.forEach((z) => {
+      const s = document.querySelector('[data-zone-slot="' + z + '"]');
+      slots[z] = (s && s.value || '').trim();
+      const t = document.querySelector('[data-zone-toggle="' + z + '"]');
+      zones[z] = !!(t && t.checked);
+    });
+    return {
+      client: (clientEl && clientEl.value || '').trim(),
+      slots,
+      zones,
+      tracking: !!(trackingEl && trackingEl.checked)
+    };
+  }
+
+  function flash(m, ok) {
+    if (!msgEl) return;
+    msgEl.textContent = (ok ? 'Saved ✓ ' : '') + m;
+    msgEl.style.color = ok ? '#065F46' : '#B45309';
+    msgEl.style.display = 'inline-block';
+    setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3000);
+  }
+
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    ads.save(collect());
+    flash('Ad settings saved for this browser.', true);
+  });
+
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    try { localStorage.removeItem('ahm_ads'); } catch (e) {}
+    fillForm();
+    flash('Reset to defaults.');
+  });
+
+  async function loadStats() {
+    if (!totalEl || !topList) return;
+    try {
+      const since = new Date(Date.now() - 14 * 86400000).toISOString();
+      let res = await sbc.from('visitor_views').select('id').gte('created_at', since);
+      const rows = (res && res.data) || [];
+      const total = rows.length;
+      if (totalEl) totalEl.textContent = total.toLocaleString();
+      if (todayEl) {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const tRes = await sbc.from('visitor_views').select('id').gte('created_at', todayStart);
+        todayEl.textContent = ((tRes && tRes.data) || []).length.toLocaleString();
+      }
+      const byPath = {};
+      rows.forEach((r) => { const p = r.path || '/'; byPath[p] = (byPath[p] || 0) + 1; });
+      const sorted = Object.entries(byPath).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      if (!sorted.length) {
+        topList.innerHTML = '<tr><td colspan="2" class="muted">No views recorded yet. Open any page to start tracking.</td></tr>';
+        return;
+      }
+      const max = sorted[0][1] || 1;
+      topList.innerHTML = sorted.map(([p, n]) => `
+        <tr>
+          <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p) || '/'}</td>
+          <td style="text-align:right;font-weight:700;">${n}</td>
+        </tr>`).join('');
+    } catch (e) {
+      console.error('ads stats error:', e);
+      if (topList) topList.innerHTML = '<tr><td colspan="2" class="muted">Could not load stats.</td></tr>';
+    }
+  }
+
+  fillForm();
+  loadStats();
+  if (refreshBtn) refreshBtn.addEventListener('click', loadStats);
+}
+
 async function initChatInbox() {
   if (!CHAT_FN) return;
+
 
   const { data: { session } } = await sb.auth.getSession();
   if (session && session.access_token) inboxToken = session.access_token;
@@ -968,6 +1081,7 @@ async function initChatInbox() {
 }
 
   initChatInbox();
+  initAdsControl(sb);
 
   loadAdminBookings();
   renderUsageList();

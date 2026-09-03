@@ -1,0 +1,89 @@
+/* ============================================================
+   TutorEnglishPro - Reviews (Preply-style)
+   Warm orange/peach theme that matches styles.css tokens.
+   ============================================================ */
+
+/* ---------- Public section ---------- */
+.rv-section .sec-head { margin-bottom: 26px; }
+
+.rv-summary {
+  display: flex; align-items: center; gap: 22px;
+  background: var(--c-soft); border: 1px solid var(--c-card-border);
+  border-radius: var(--r-lg); padding: 22px 26px; margin-bottom: 22px;
+}
+.rv-sum-big {
+  font-family: var(--font-h); font-size: 3rem; font-weight: 800; line-height: 1;
+  color: var(--c-ink); flex-shrink: 0;
+}
+.rv-sum-right { display: flex; flex-direction: column; gap: 3px; }
+.rv-sum-count { font-size: .95rem; color: var(--c-ink-2); font-weight: 600; }
+.rv-sum-sub { font-size: .8rem; color: var(--c-ink-3); }
+
+.rv-stars { display: inline-flex; gap: 2px; align-items: center; }
+.rv-stars svg { width: 17px; height: 17px; fill: none; stroke: var(--c-ink-3); }
+.rv-stars svg.on { fill: #F5A623; stroke: #F5A623; }
+
+.rv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.rv-card {
+  display: flex; gap: 14px; padding: 20px;
+  background: var(--c-surface); border: 1px solid var(--c-card-border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+  transition: transform .25s, box-shadow .25s;
+}
+.rv-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.rv-avatar {
+  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 1.05rem;
+  color: #fff; background: linear-gradient(135deg, var(--c-accent), var(--c-accent-2));
+}
+.rv-body { min-width: 0; }
+.rv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rv-name { font-size: .98rem; color: var(--c-ink); }
+.rv-vbadge {
+  font-size: .66rem; font-weight: 800; color: #fff; background: #059669;
+  padding: 2px 8px; border-radius: 20px; margin-left: 4px; white-space: nowrap;
+}
+.rv-vbadge.none { background: var(--c-ink-3); }
+.rv-date { font-size: .74rem; color: var(--c-ink-3); }
+.rv-rating { margin-top: 6px; }
+.rv-rating .rv-stars svg { width: 16px; height: 16px; }
+.rv-text { margin-top: 8px; font-size: .9rem; line-height: 1.55; color: var(--c-ink-2); }
+
+/* ---------- Student form ---------- */
+.rv-form { display: flex; flex-direction: column; gap: 12px; }
+.rv-pick-row { display: inline-flex; gap: 6px; }
+.rv-pick {
+  border: 0; background: transparent; cursor: pointer; padding: 0;
+}
+.rv-pick svg { width: 30px; height: 30px; fill: none; stroke: var(--c-ink-3); transition: transform .15s, fill .15s; }
+.rv-pick:hover svg { transform: scale(1.15); }
+.rv-pick.on svg { fill: #F5A623; stroke: #F5A623; }
+.rv-form textarea {
+  width: 100%; resize: vertical; min-height: 90px;
+  border: 1px solid var(--c-border); border-radius: var(--r-sm);
+  padding: 12px 14px; font-family: var(--font); font-size: .92rem;
+  background: var(--c-surface); color: var(--c-ink); outline: none;
+}
+.rv-form textarea:focus { border-color: var(--c-accent); }
+
+/* ---------- Admin moderation ---------- */
+.rv-tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--c-soft); border: 1px solid var(--c-card-border); border-radius: 14px; margin-bottom: 16px; }
+.rv-tab { border: 0; background: transparent; cursor: pointer; padding: 8px 18px; border-radius: 10px; font-size: .84rem; font-weight: 700; color: var(--c-ink-3); font-family: inherit; }
+.rv-tab.is-on { background: var(--c-accent); color: #fff; }
+
+.rv-adm { padding: 18px; border: 1px solid var(--c-card-border); border-radius: var(--r-lg); margin-bottom: 12px; background: var(--c-surface); }
+.rv-adm-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rv-adm-top strong { color: var(--c-ink); }
+.rv-adm-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: .8rem; color: var(--c-ink-3); }
+.rv-adm-meta .rv-stars svg { width: 15px; height: 15px; }
+.rv-stat { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 4px 10px; border-radius: 20px; }
+.rv-stat-pend { color: #B45309; background: color-mix(in srgb, #B45309 12%, transparent); border: 1px solid color-mix(in srgb, #B45309 28%, transparent); }
+.rv-stat-ok { color: #059669; background: color-mix(in srgb, #059669 12%, transparent); border: 1px solid color-mix(in srgb, #059669 28%, transparent); }
+.rv-stat-rej { color: var(--c-ink-3); background: var(--c-soft); border: 1px solid var(--c-card-border); }
+.rv-adm .rv-text { color: var(--c-ink-2); }
+.rv-adm-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+@media (max-width: 720px) {
+  .rv-grid { grid-template-columns: 1fr; }
+  .rv-summary { flex-direction: column; align-items: flex-start; gap: 12px; }
+}

@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TutorEnglishPro - Personal 1-on-1 English Tutoring</title>
   <meta name="description" content="Personalized 1-on-1 private English lessons for business professionals, career growth, spoken confidence, and travel. Book your free trial.">
-  <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="styles.css?v=20260902h">
+<link rel="stylesheet" href="components.css?v=20260902h">
+  <link rel="stylesheet" href="reviews.css?v=20260902h">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,6 +16,7 @@
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/ads.js?v=20260902h"></script>
 </head>
 <body>
 
@@ -98,6 +100,8 @@
       </div>
     </div>
   </header>
+
+  <div class="wrap" style="padding-top:26px;"><div class="ad-zone" data-ad-zone="banner"></div></div>
 
   <section class="section section-line">
     <div class="wrap">
@@ -192,6 +196,22 @@
     </div>
   </section>
 
+  <section class="section section-alt rv-section" id="reviews-section" style="display:block;">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow"><span class="dot"></span> Student Reviews</span>
+        <h2>What My Students <span class="grad-text">Say</span></h2>
+        <p class="lead">Real feedback from the people who matter most &mdash; the students I work with every week.</p>
+      </div>
+      <div id="reviews-summary" class="rv-summary reveal" style="display:flex;">
+        <div class="rv-sum-big">&hellip;</div>
+      </div>
+      <div id="reviews-list" class="rv-grid reveal">
+        <p class="muted" style="padding:30px;text-align:center;">Loading reviews&hellip;</p>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="padding-top:0;">
     <div class="wrap">
       <div class="plan-band reveal">
@@ -203,6 +223,7 @@
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
+      <div class="ad-zone ad-inline" data-ad-zone="in-content"></div>
     </div>
   </section>
 
@@ -237,7 +258,8 @@
     setTimeout(resize, 800);
   })();
 </script>
-<script src="js/chat-widget.js?v=20260902g"></script>
+<script src="js/reviews.js?v=20260902h"></script>
+<script src="js/chat-widget.js?v=20260902h"></script>
 </body>
 </html>
 

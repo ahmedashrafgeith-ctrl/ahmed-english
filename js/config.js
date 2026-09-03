@@ -63,6 +63,18 @@
       chatUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/chat",
       contactUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/contact"
     },
+    story: {},
+    adsense: {
+      // Owner can paste these here OR via the Dashboard → Ads control tab.
+      // Left empty → a labeled "Advertisements" placeholder box is shown.
+      client: "",
+      // per-zone slot ids: { banner, in-content, sidebar, mobile }
+      slots: { banner: "", "in-content": "", sidebar: "", mobile: "" },
+      // zones turned on by default (boolean)
+      zones: { banner: false, "in-content": false, sidebar: false, mobile: false },
+      // visitor tracking on/off
+      tracking: true
+    },
     drive: "https://drive.google.com",
     contactEmail: "ahmedashrafgeith@gmail.com"
   };
