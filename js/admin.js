@@ -1223,6 +1223,24 @@ async function initChatInbox() {
     });
   }
 
+  // Open the right view when the page is loaded (or navigated) with a hash,
+  // so e.g. admin.html#ads-panel shows the Ads & Visitor Tracking panel instead
+  // of a blank area (the panel is hidden until this runs).
+  function applyHash() {
+    const h = (location.hash || '').toLowerCase();
+    const isAds = h.indexOf('ads') !== -1 || h.indexOf('tracking') !== -1;
+    if (isAds) {
+      showView('ads');
+      document.querySelectorAll('.side-link').forEach((l) => l.classList.remove('active'));
+      const al = document.querySelector('.side-link[href="#ads-panel"]');
+      if (al) al.classList.add('active');
+    } else {
+      showView('dash');
+    }
+  }
+  applyHash();
+  window.addEventListener('hashchange', applyHash);
+
   loadAdminBookings();
   renderUsageList();
 });

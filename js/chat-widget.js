@@ -439,7 +439,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
       return;
     }
     var chats = r.chats || [];
-    var unreadTotal = chats.reduce(function (n, c) { return n + (c.unread_student || 0); }, 0);
+    var unreadTotal = chats.reduce(function (n, c) { return n + unreadOf(c); }, 0);
     setBadge(unreadTotal);
 
     var target = chats.length ? chats[0] : null;
@@ -519,8 +519,8 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     await callFn("read", { action: "read", chatId: chatId });
     var r2 = await callFn("chats", { action: "chats" });
     if (r2.status === "success") {
-      var total = (r2.chats || []).reduce(function (n, c) { return n + (c.unread_student || 0); }, 0);
-      setBadge(total);
+  var total = (r2.chats || []).reduce(function (n, c) { return n + unreadOf(c); }, 0);
+  setBadge(total);
     }
     if (!signedIn && guest && window.__ahmGuestPoll === undefined) {
       window.__ahmGuestPoll = setInterval(async function () {
@@ -583,12 +583,27 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "chat_id=eq." + chatId }, function (payload) {
         var m = payload.new;
         addBubble({ sender: m.sender, body: m.body, created_at: m.created_at });
-        if (m.sender === "admin") {
+        if (m.sender !== mySenderCol()) {
           var panel = document.getElementById("ahm-chat-panel");
           if (!panel || !panel.classList.contains("open")) setBadge(1 + getBadge());
         }
       })
       .subscribe();
+  }
+
+  function isStaffRole() {
+    return myRole === "admin" || myRole === "staff";
+  }
+  // The widget badge reflects the CURRENT viewer's own unread count:
+  // staff see unread_admin (replies from students), everyone else sees unread_student.
+  function myUnreadCol() {
+    return isStaffRole() ? "unread_admin" : "unread_student";
+  }
+  function mySenderCol() {
+    return isStaffRole() ? "admin" : "student";
+  }
+  function unreadOf(c) {
+    return (c && c[myUnreadCol()]) || 0;
   }
 
   function getBadge() {
@@ -738,8 +753,8 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
           if ((!signedIn && !guest)) return;
           callFn("chats", { action: "chats" }).then(function (r) {
             if (r.status === "success") {
-              var total = (r.chats || []).reduce(function (n, c) { return n + (c.unread_student || 0); }, 0);
-              setBadge(total);
+  var total = (r.chats || []).reduce(function (n, c) { return n + unreadOf(c); }, 0);
+  setBadge(total);
             }
           });
         });
