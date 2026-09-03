@@ -1,12 +1,12 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles.css?v=20260903a">
-  <link rel="stylesheet" href="components.css?v=20260903a">
-  <link rel="stylesheet" href="reviews.css?v=20260903a">
+  <link rel="stylesheet" href="styles.css?v=20260903b">
+  <link rel="stylesheet" href="components.css?v=20260903b">
+  <link rel="stylesheet" href="reviews.css?v=20260903b">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,8 +14,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/ads.js?v=20260903a"></script>
-  <script src="js/admin.js?v=20260903a"></script>
+  <script src="js/ads.js?v=20260903b"></script>
+  <script src="js/admin.js?v=20260903b"></script>
 </head>
 <body>
 
@@ -337,11 +337,11 @@
             <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">On-site Cal.com bookings and package lesson balance control. Edit a plan to top up or adjust used lessons (for cancellations / reschedules).</p>
           </div>
         </div>
-        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookings�</p></div>
+        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookingsï¿½</p></div>
         <div style="overflow-x:auto;">
           <table class="table">
             <thead><tr><th>Student</th><th>Package</th><th>Total</th><th>Used</th><th>Remaining</th><th></th><th></th></tr></thead>
-            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptions�</td></tr></tbody>
+            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptionsï¿½</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -368,7 +368,7 @@
         <div class="panel-head bk-inbox-head">
           <div>
             <h3>Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here � they see it instantly and get an email.</p>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here ï¿½ they see it instantly and get an email.</p>
           </div>
           <div class="bk-inbox-tools">
             <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
@@ -384,13 +384,13 @@
 
         <div class="bk-inbox-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="inbox-search" placeholder="Search name, email, or message�" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+          <input type="text" id="inbox-search" placeholder="Search name, email, or messageï¿½" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
         </div>
 
         <div id="inbox-wrap">
           <div id="inbox-side">
             <div id="inbox-list">
-              <p class="muted" style="padding:18px;text-align:center;">Loading conversations�</p>
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversationsï¿½</p>
             </div>
           </div>
           <div id="inbox-thread">
@@ -428,34 +428,69 @@
           <div>
             <label class="kpi-label">AdSense Publisher ID</label>
             <input class="field" id="ads-client" type="text" placeholder="e.g. ca-pub-1234567890123456" autocomplete="off">
-            <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense → Account → Settings. Leave empty to show labeled "Advertisements" placeholders instead of real ads.</p>
+            <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense â†’ Account â†’ Settings. Leave empty to show labeled "Advertisements" placeholders instead of real ads.</p>
 
             <div style="margin-top:18px;">
               <label class="kpi-label">Ad Zones &amp; Placements</label>
               <p class="muted" style="margin:2px 0 10px;font-size:.78rem;line-height:1.5;">For each zone pick a method: paste your own ad code (AdSense / other network), OR use the managed AdSense slot below. Paste WordPress-style custom HTML/script whether the zone is on or off &mdash; custom code always wins.</p>
               <div style="display:grid;gap:14px;margin-top:6px;" id="ads-zones">
-                <div class="ad-zone-card">
+                <div class="ad-zone-card" data-zone="banner">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span>Banner (top)</span></label>
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span><b>Header Banner</b></span></label>
+                    <span class="zone-tag">Display</span>
+                    <span class="zone-loc">Top of every page</span>
                     <input class="field" data-zone-slot="banner" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
                   </div>
                   <textarea class="field ad-code" data-zone-code="banner" rows="3" placeholder="Paste your own ad code here (e.g. AdSense snippet, Amazon ad, etc.)" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card">
+                <div class="ad-zone-card" data-zone="in-content">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span>In-content</span></label>
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span><b>In-Content</b></span></label>
+                    <span class="zone-tag">In-feed</span>
+                    <span class="zone-loc">Between content blocks on the home page</span>
                     <input class="field" data-zone-slot="in-content" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
                   </div>
                   <textarea class="field ad-code" data-zone-code="in-content" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card">
+                <div class="ad-zone-card" data-zone="in-article">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span>Sidebar</span></label>
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-article"> <span><b>In-Article</b></span></label>
+                    <span class="zone-tag">In-article</span>
+                    <span class="zone-loc">Inside lesson / article body text</span>
+                    <input class="field" data-zone-slot="in-article" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="in-article" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                </div>
+                <div class="ad-zone-card" data-zone="sidebar">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span><b>Sidebar</b></span></label>
+                    <span class="zone-tag">Widget</span>
+                    <span class="zone-loc">Right sidebar of content pages</span>
                     <input class="field" data-zone-slot="sidebar" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
                   </div>
                   <textarea class="field ad-code" data-zone-code="sidebar" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
+                <div class="ad-zone-card" data-zone="footer">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="footer"> <span><b>Footer</b></span></label>
+                    <span class="zone-tag">Display</span>
+                    <span class="zone-loc">Before the footer on all pages</span>
+                    <input class="field" data-zone-slot="footer" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="footer" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                </div>
+                <div class="ad-zone-card" data-zone="mobile">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label class="zone-toggle"><input type="checkbox" data-zone-toggle="mobile"> <span><b>Mobile Sticky</b></span></label>
+                    <span class="zone-tag">Mobile</span>
+                    <span class="zone-loc">Fixed bar at the bottom on phones only</span>
+                    <input class="field" data-zone-slot="mobile" type="text" placeholder="Managed AdSense slot ID" style="flex:1;min-width:160px;" autocomplete="off">
+                  </div>
+                  <textarea class="field ad-code" data-zone-code="mobile" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                </div>
               </div>
+              <button type="button" class="btn btn-sm btn-ghost" id="ads-preview-toggle" style="margin-top:14px;">&#128065; Show live preview of ad locations</button>
+              <div id="ads-preview" style="display:none;margin-top:16px;"></div>
             </div>
 
             <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -571,7 +606,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="an-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 � Past tense review" required>
+        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 ï¿½ Past tense review" required>
         <label class="kpi-label">Note / Summary</label>
         <textarea class="field" id="an-content" rows="4" placeholder="What was covered, feedback, next steps..." required></textarea>
         <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
@@ -594,7 +629,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="ah-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice � daily routine" required>
+        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice ï¿½ daily routine" required>
         <label class="kpi-label">Description / Task</label>
         <textarea class="field" id="ah-desc" rows="3" placeholder="Full instructions for the task..." required></textarea>
         <label class="kpi-label">Due Date</label>
@@ -608,7 +643,7 @@
     </div>
   </div>
 
-<script src="js/reviews.js?v=20260903a"></script>
+<script src="js/reviews.js?v=20260903b"></script>
 </body>
 </html>
 

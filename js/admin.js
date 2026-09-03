@@ -925,7 +925,17 @@ async function initAdsControl(sbc) {
 
   const esc = (v) => String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-  const zones = ['banner', 'in-content', 'sidebar', 'mobile'];
+  const zones = ['banner', 'in-content', 'in-article', 'sidebar', 'footer', 'mobile']; // types & locations
+  const zoneInfo = {
+    banner:     { loc: 'Top of every page',                       type: 'Display' },
+    'in-content':{ loc: 'Between content blocks (home page)',     type: 'In-feed' },
+    'in-article':{ loc: 'Inside lesson / article body text',      type: 'In-article' },
+    sidebar:    { loc: 'Right sidebar of content pages',          type: 'Widget' },
+    footer:     { loc: 'Before the footer on all pages',          type: 'Display' },
+    mobile:     { loc: 'Fixed bar at the bottom on phones only',  type: 'Mobile' }
+  };
+  const previewToggle = document.getElementById('ads-preview-toggle');
+  const previewBox = document.getElementById('ads-preview');
   const clientEl = document.getElementById('ads-client');
   const trackingEl = document.getElementById('ads-tracking');
   const msgEl = document.getElementById('ads-msg');
@@ -988,6 +998,64 @@ async function initAdsControl(sbc) {
     setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3000);
   }
 
+  // Google-Ads-style live preview: shows where each ad will actually sit on the site
+  function renderPreview() {
+    if (!previewBox) return;
+    const active = {};
+    zones.forEach((z) => {
+      const t = document.querySelector('[data-zone-toggle="' + z + '"]');
+      const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
+      const slotEl = document.querySelector('[data-zone-slot="' + z + '"]');
+      const enabled = !!(t && t.checked);
+      const hasCode = !!(codeEl && codeEl.value.trim());
+      const hasSlot = !!(slotEl && slotEl.value.trim() && clientEl && clientEl.value.trim());
+      const info = zoneInfo[z] || { type: z, loc: z };
+      active[z] = hasCode ? 'g' : ((enabled && hasSlot) ? 'y' : (enabled ? 'y' : ''));
+    });
+    const ad = (z) => {
+      const info = zoneInfo[z] || { type: z, loc: z };
+      if (!active[z]) return '';
+      return '<div class="ads-prev-ad ' + (active[z] === 'g' ? 'g' : '') + '" title="' + esc(info.type) + ' · ' + esc(info.loc) + '"><span class="adx">AD</span> ' + (active[z] === 'g' ? 'Custom code' : info.type) + '</div>';
+    };
+    const legend = '<div class="ads-prev-label" style="margin-bottom:8px;">Live placement preview — <span style="color:#065F46;font-weight:800;">green</span> = your custom code · <span style="color:#b45309;font-weight:800;">amber</span> = enabled managed AdSense unit</div>';
+    previewBox.innerHTML = legend +
+      '<div class="ads-prev-browser">' +
+        '<div class="ads-prev-bar"><i></i><i></i><i></i><span class="ads-prev-url">tutorenglishpro.com</span></div>' +
+        '<div class="ads-prev-site">' +
+          '<div class="ads-prev-nav"><span></span><span></span><span></span><span></span></div>' +
+          (ad('banner') || '') +
+          '<div class="ads-prev-row">' +
+            '<div class="ads-prev-main">' +
+              '<div class="ads-prev-h w60"></div><div class="ads-prev-h w80"></div><div class="ads-prev-h w80"></div>' +
+              (ad('in-content') || '') +
+              '<div class="ads-prev-h w80"></div><div class="ads-prev-h w60"></div><div class="ads-prev-h w80"></div>' +
+              (ad('in-article') || '') +
+            '</div>' +
+            '<div class="ads-prev-side">' +
+              '<div class="ads-prev-h w80"></div><div class="ads-prev-h w80"></div>' +
+              (ad('sidebar') || '') +
+            '</div>' +
+          '</div>' +
+          (ad('footer') || '') +
+          '<div class="ads-prev-h"></div>' +
+        '</div>' +
+      '</div>' +
+      (active.mobile ? '<div class="ads-prev-ad' + (active.mobile === 'g' ? ' g' : '') + '" style="border-radius:0;margin-top:10px;"><span class="adx">AD</span> Mobile Sticky (phones only)</div>' : '');
+  }
+
+  if (previewToggle && previewBox) {
+    previewToggle.addEventListener('click', () => {
+      const show = previewBox.style.display !== 'block';
+      previewBox.style.display = show ? 'block' : 'none';
+      previewToggle.innerHTML = show ? 'Hide live preview of ad locations' : '&#128065; Show live preview of ad locations';
+      if (show) renderPreview();
+    });
+    document.querySelectorAll('#ads-zones input, #ads-zones textarea').forEach((n) => {
+      n.addEventListener('input', renderPreview);
+      n.addEventListener('change', renderPreview);
+    });
+  }
+
   if (saveBtn) saveBtn.addEventListener('click', () => {
     ads.save(collect());
     flash('Ad settings saved for this browser.', true);
@@ -1013,17 +1081,35 @@ async function initAdsControl(sbc) {
         const tRes = await sbc.from('visitor_views').select('id').gte('created_at', todayStart);
         todayEl.textContent = ((tRes && tRes.data) || []).length.toLocaleString();
       }
-      const byPath = {};
-      rows.forEach((r) => { const p = r.path || '/'; byPath[p] = (byPath[p] || 0) + 1; });
-      const sorted = Object.entries(byPath).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const PAGE_NAMES = {
+        '/': 'Home', '//index.html': 'Home', '/index.html': 'Home',
+        '/about.html': 'About', '/lessons.html': 'Lessons', '/packages.html': 'Packages & Pricing',
+        '/booking.html': 'Book a Lesson', '/login.html': 'Login', '/signup.html': 'Sign Up',
+        '/dashboard.html': 'Teacher Workspace', '/student.html': 'Student Portal',
+        '/admin.html': 'Admin Console', '/privacy.html': 'Privacy Policy', '/terms.html': 'Terms'
+      };
+      const pageName = (r) => {
+        if (r && r.title && r.title.trim()) return r.title.trim();
+        const raw = (r && r.path) || '/';
+        const p = raw.split('?')[0];
+        if (PAGE_NAMES[p]) return PAGE_NAMES[p];
+        const base = p.split('/').pop() || 'Home';
+        return base === '' || base === 'index.html' ? 'Home'
+          : base.replace(/\.html$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      };
+      const byPage = {};
+      rows.forEach((r) => {
+        const name = pageName(r);
+        byPage[name] = (byPage[name] || 0) + 1;
+      });
+      const sorted = Object.entries(byPage).sort((a, b) => b[1] - a[1]).slice(0, 10);
       if (!sorted.length) {
         topList.innerHTML = '<tr><td colspan="2" class="muted">No views recorded yet. Open any page to start tracking.</td></tr>';
         return;
       }
-      const max = sorted[0][1] || 1;
-      topList.innerHTML = sorted.map(([p, n]) => `
+      topList.innerHTML = sorted.map(([name, n]) => `
         <tr>
-          <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p) || '/'}</td>
+          <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;">${esc(name) || 'Home'}</td>
           <td style="text-align:right;font-weight:700;">${n}</td>
         </tr>`).join('');
     } catch (e) {

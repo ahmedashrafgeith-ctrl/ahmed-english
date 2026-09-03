@@ -68,10 +68,11 @@
       // Owner can paste these here OR via the Dashboard → Ads control tab.
       // Left empty → a labeled "Advertisements" placeholder box is shown.
       client: "",
-      // per-zone slot ids: { banner, in-content, sidebar, mobile }
-      slots: { banner: "", "in-content": "", sidebar: "", mobile: "" },
+      // per-zone slot ids (types & locations):
+      // { banner(header), in-content(in article), in-article(article body), sidebar, footer, mobile }
+      slots: { banner: "", "in-content": "", "in-article": "", sidebar: "", footer: "", mobile: "" },
       // zones turned on by default (boolean)
-      zones: { banner: false, "in-content": false, sidebar: false, mobile: false },
+      zones: { banner: false, "in-content": false, "in-article": false, sidebar: false, footer: false, mobile: false },
       // visitor tracking on/off
       tracking: true
     },

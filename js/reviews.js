@@ -82,23 +82,30 @@
       metaEl.innerHTML =
         '<div class="rv-sum-big">' + avg.toFixed(1) + '</div>' +
         '<div class="rv-sum-right">' +
-          stars(avg) +
+          '<span class="rv-sum-rate">' + stars(avg) + '</span>' +
           '<span class="rv-sum-count"><strong>' + rows.length + '</strong> verified review' + (rows.length === 1 ? '' : 's') + '</span>' +
           '<span class="rv-sum-sub">' + Math.round((fives / rows.length) * 100) + '% of students rated 5&#9733;</span>' +
         '</div>';
     }
 
+    function quoteSVG() {
+      return '<svg viewBox="0 0 24 24"><path d="M9.6 5.2C6.4 6.7 4.2 9.3 4.2 12.7c0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L9.6 5.2zm9.4 0c-3.2 1.5-5.4 4.1-5.4 7.5 0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L19 5.2z"/></svg>';
+    }
     function cardHTML(r) {
       return '' +
       '<article class="rv-card rv-card-on">' +
-        '<div class="rv-avatar">' + initials(r.student_name) + '</div>' +
-        '<div class="rv-body">' +
-          '<div class="rv-head">' +
-            '<strong class="rv-name">' + esc(r.student_name) + (r.verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : '') + '</strong>' +
-            '<span class="rv-date">' + timeAgo(r.created_at) + '</span>' +
-          '</div>' +
+        '<span class="rv-quote">' + quoteSVG() + '</span>' +
+        '<div class="rv-top">' +
           '<div class="rv-rating">' + stars(r.rating) + '</div>' +
-          '<p class="rv-text">' + esc(r.review) + '</p>' +
+          '<span class="rv-date">' + timeAgo(r.created_at) + '</span>' +
+        '</div>' +
+        '<p class="rv-text">' + esc(r.review) + '</p>' +
+        '<div class="rv-author">' +
+          '<div class="rv-avatar-wrap"><div class="rv-avatar">' + initials(r.student_name) + '</div></div>' +
+          '<div class="rv-meta">' +
+            '<div class="rv-name">' + esc(r.student_name) + (r.verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : '') + '</div>' +
+            '<span class="rv-date-sub">Verified student review</span>' +
+          '</div>' +
         '</div>' +
       '</article>';
     }
