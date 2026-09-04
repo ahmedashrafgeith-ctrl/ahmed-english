@@ -35,15 +35,16 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; -webkit-text-size-adjust: 100%; overflow-x: clip; }
+html { scroll-behavior: smooth; font-size: 16px; -webkit-text-size-adjust: 100%; overflow-x: clip; max-width: 100%; }
 body {
   font-family: var(--font); color: var(--c-ink);
   background: var(--c-bg); line-height: 1.6;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
   transition: background .4s ease, color .4s ease;
-  overflow-x: clip;
+  overflow-x: clip; max-width: 100%;
 }
-img { max-width: 100%; display: block; }
+img, svg, video, canvas, embed, object, iframe, table, pre, code { max-width: 100%; height: auto; }
+pre, code { white-space: pre-wrap; word-break: break-word; }
 a { color: inherit; }
 button { font-family: var(--font); cursor: pointer; }
 
@@ -348,6 +349,8 @@ p { color: var(--c-ink-2); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
 
 .table { width: 100%; border-collapse: collapse; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-responsive .table { min-width: 0; }
 .table th, .table td { padding: 14px 16px; text-align: left; font-size: .9rem; border-bottom: 1px solid var(--c-border); }
 .table th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); background: var(--c-soft); }
 .table td { color: var(--c-ink-2); }
@@ -1358,12 +1361,17 @@ html, body { overflow-x: hidden; }
 @media (max-width: 820px) {
   .dash-main, .dash-main > *, .panel, .panel > * { max-width: 100%; }
   .dash-main > * { min-width: 0; }
-  .panel { overflow: hidden; }
+  /* Panels scroll horizontally IN PLACE instead of stretching the page (fixes "half page" cutoff) */
+  .panel, .panel > .table-responsive, .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .panel table, .table { width: 100%; }
   .table th, .table td { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
-  /* any data grid/row must be able to shrink within the phone */
+  /* data grids/rows must shrink within the phone */
   .grid-2, .grid-3, .grid-4, .stats, .portal-stats { min-width: 0; }
   .dash-top, .panel-head, .tool-row { min-width: 0; }
+  /* horizontal flex toolbars/rows must wrap instead of overflowing */
+  .tool-row, .panel-head, .dash-topbar, .tb-actions, .inbox-top,
+  .side-nav, .zone-row, .bk-actions, .btn-row { flex-wrap: wrap !important; }
+  .tool-row > *, .panel-head > *, .dash-topbar > *, .tb-actions > * { max-width: 100%; }
 }
 
 /* ============ Ads zone cards: clean stacked mobile layout ============ */
