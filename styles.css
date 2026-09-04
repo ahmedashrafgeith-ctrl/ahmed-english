@@ -43,8 +43,9 @@ body {
   transition: background .4s ease, color .4s ease;
   overflow-x: clip; max-width: 100%;
 }
-img, svg, video, canvas, embed, object, iframe, table, pre, code { max-width: 100%; height: auto; }
-pre, code { white-space: pre-wrap; word-break: break-word; }
+img { max-width: 100%; height: auto; }
+svg, video, canvas, embed, object, iframe, table { max-width: 100%; }
+pre { white-space: pre-wrap; word-break: break-word; }
 a { color: inherit; }
 button { font-family: var(--font); cursor: pointer; }
 
