@@ -972,12 +972,12 @@ async function initAdsControl(sbc) {
   }
 
   function collect() {
-    const slots = {}, zones = {}, code = {};
+    const slots = {}, zoneFlags = {}, code = {};
     zones.forEach((z) => {
       const s = document.querySelector('[data-zone-slot="' + z + '"]');
       slots[z] = (s && s.value || '').trim();
       const t = document.querySelector('[data-zone-toggle="' + z + '"]');
-      zones[z] = !!(t && t.checked);
+      zoneFlags[z] = !!(t && t.checked);
       const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
       code[z] = (codeEl && codeEl.value || '').trim();
     });
@@ -985,7 +985,7 @@ async function initAdsControl(sbc) {
       client: (clientEl && clientEl.value || '').trim(),
       slots,
       code,
-      zones,
+      zones: zoneFlags,
       tracking: !!(trackingEl && trackingEl.checked)
     };
   }
@@ -1056,7 +1056,8 @@ async function initAdsControl(sbc) {
 
   // Live placement preview is shown immediately (and stays in sync with the form).
   // The toggle just collapses/expands it for users who want the cleaner form view.
-  renderPreview();
+  function safePreview() { try { renderPreview(); } catch (e) { console.error('preview error', e); } }
+  safePreview();
   if (previewToggle && previewBox) {
     previewToggle.addEventListener('click', () => {
       const show = previewBox.style.display !== 'block';
@@ -1064,8 +1065,8 @@ async function initAdsControl(sbc) {
       previewToggle.innerHTML = show ? '&#128065; Hide placement preview' : '&#128065; Toggle placement preview';
     });
     document.querySelectorAll('#ads-zones input, #ads-zones textarea').forEach((n) => {
-      n.addEventListener('input', renderPreview);
-      n.addEventListener('change', renderPreview);
+      n.addEventListener('input', safePreview);
+      n.addEventListener('change', safePreview);
     });
   }
 
