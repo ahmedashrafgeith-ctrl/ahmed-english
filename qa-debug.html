@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QA Debug</title>
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+</head>
+<body>
+<pre id="out">starting...</pre>
+<script>
+  var out = document.getElementById('out');
+  function log(s) { out.textContent += '\n' + s; }
+  (async function () {
+    var sb = getSupabase();
+    if (!sb) { log('NO_SB'); return; }
+    try {
+      await sb.auth.signInWithPassword({ email: 'qa-admin-03c69c7d@proenglishtutor.online', password: 'Qa03c69c7d!T9xZ2' });
+    } catch (e) { log('SIGNIN ' + (e.message||'')); return; }
+    var f = document.createElement('iframe');
+    f.src = 'admin.html';
+    f.style.width = '900px'; f.style.height = '1400px';
+    document.body.appendChild(f);
+    f.onload = function(){ setTimeout(run, 3000); };
+    function run() {
+      var w = f.contentWindow, d = f.contentDocument;
+      var errs = [];
+      try { w.onerror = function(msg,src,ln,col){ errs.push(String(msg)+' @'+ln+':'+col); }; } catch(e){}
+      function q(s){ return d.querySelector(s); }
+      function cnt(s){ return d.querySelectorAll(s).length; }
+      try {
+        log('initial: dash=' + q('#admin-dash-view').style.display + ' ads=' + q('#admin-ads-view').style.display);
+        log('ads-panel exists: ' + !!q('#ads-panel'));
+        log('ads-panel innerHTML len: ' + (q('#ads-panel') ? q('#ads-panel').innerHTML.length : -1));
+        log('zones cards: ' + cnt('.ad-zone-card'));
+        var al = q('.side-link[href="#ads-panel"]');
+        al.click();
+        setTimeout(function(){
+          try {
+            log('after ads click: dash=' + q('#admin-dash-view').style.display + ' ads=' + q('#admin-ads-view').style.display);
+            log('ads-panel innerHTML len: ' + q('#ads-panel').innerHTML.length);
+            log('preview slots: ' + cnt('.ads-slot-meta'));
+            log('zones cards: ' + cnt('.ad-zone-card'));
+            log('ads-client value: ' + (q('#ads-client')?q('#ads-client').value:'NA'));
+            log('ERRORS: ' + (errs.length?errs.join(' | '):'none'));
+            log('DONE');
+          } catch(e2){ log('step2 ERR ' + e2.message); }
+        }, 900);
+      } catch(e){ log('step1 ERR ' + e.message); }
+    }
+  })();
+</script>
+</body>
+</html>
