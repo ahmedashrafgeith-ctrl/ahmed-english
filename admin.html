@@ -1,12 +1,12 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles.css?v=20260903e">
-  <link rel="stylesheet" href="components.css?v=20260903e">
-  <link rel="stylesheet" href="reviews.css?v=20260903e">
+  <link rel="stylesheet" href="styles.css?v=20260904a">
+  <link rel="stylesheet" href="components.css?v=20260904a">
+  <link rel="stylesheet" href="reviews.css?v=20260904a">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,8 +14,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/ads.js?v=20260903e"></script>
-  <script src="js/admin.js?v=20260903e"></script>
+  <script src="js/ads.js?v=20260904a"></script>
+  <script src="js/admin.js?v=20260904a"></script>
 </head>
 <body>
 
@@ -337,11 +337,11 @@
             <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">On-site Cal.com bookings and package lesson balance control. Edit a plan to top up or adjust used lessons (for cancellations / reschedules).</p>
           </div>
         </div>
-        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookings…</p></div>
+        <div id="admin-bookings" style="margin-bottom:18px;"><p class="muted">Loading bookingsâ€¦</p></div>
         <div style="overflow-x:auto;">
           <table class="table">
             <thead><tr><th>Student</th><th>Package</th><th>Total</th><th>Used</th><th>Remaining</th><th></th><th></th></tr></thead>
-            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptions…</td></tr></tbody>
+            <tbody id="usage-list"><tr><td colspan="6" class="muted">Loading subscriptionsâ€¦</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -368,7 +368,7 @@
         <div class="panel-head bk-inbox-head">
           <div>
             <h3>Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here … they see it instantly and get an email.</p>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here â€¦ they see it instantly and get an email.</p>
           </div>
           <div class="bk-inbox-tools">
             <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
@@ -384,13 +384,13 @@
 
         <div class="bk-inbox-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="inbox-search" placeholder="Search name, email, or message…" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+          <input type="text" id="inbox-search" placeholder="Search name, email, or messageâ€¦" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
         </div>
 
         <div id="inbox-wrap">
           <div id="inbox-side">
             <div id="inbox-list">
-              <p class="muted" style="padding:18px;text-align:center;">Loading conversations…</p>
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversationsâ€¦</p>
             </div>
           </div>
           <div id="inbox-thread">
@@ -428,7 +428,7 @@
           <div>
             <label class="kpi-label">AdSense Publisher ID</label>
             <input class="field" id="ads-client" type="text" placeholder="e.g. ca-pub-1234567890123456" autocomplete="off">
-            <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense › Account › Settings. Leave empty and the ad areas on the site stay hidden until you set this up.</p>
+            <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense â€º Account â€º Settings. Leave empty and the ad areas on the site stay hidden until you set this up.</p>
 
             <div style="margin-top:18px;">
               <label class="kpi-label">Ad Zones &amp; Placements</label>
@@ -489,8 +489,8 @@
                   <textarea class="field ad-code" data-zone-code="mobile" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
               </div>
-              <button type="button" class="btn btn-sm btn-ghost" id="ads-preview-toggle" style="margin-top:14px;">&#128065; Show live preview of ad locations</button>
-              <div id="ads-preview" style="display:none;margin-top:16px;"></div>
+              <button type="button" class="btn btn-sm btn-ghost" id="ads-preview-toggle" style="margin-top:14px;">&#128065; Toggle placement preview</button>
+              <div id="ads-preview" style="margin-top:16px;"></div>
             </div>
 
             <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -606,7 +606,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="an-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 … Past tense review" required>
+        <input class="field" id="an-title" type="text" placeholder="e.g. Lesson 4 â€¦ Past tense review" required>
         <label class="kpi-label">Note / Summary</label>
         <textarea class="field" id="an-content" rows="4" placeholder="What was covered, feedback, next steps..." required></textarea>
         <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
@@ -629,7 +629,7 @@
         <label class="kpi-label">Student</label>
         <select class="field" id="ah-student" required></select>
         <label class="kpi-label">Title</label>
-        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice … daily routine" required>
+        <input class="field" id="ah-title" type="text" placeholder="e.g. Paragraph practice â€¦ daily routine" required>
         <label class="kpi-label">Description / Task</label>
         <textarea class="field" id="ah-desc" rows="3" placeholder="Full instructions for the task..." required></textarea>
         <label class="kpi-label">Due Date</label>
@@ -643,7 +643,7 @@
     </div>
   </div>
 
-<script src="js/reviews.js?v=20260903e"></script>
+<script src="js/reviews.js?v=20260904a"></script>
 </body>
 </html>
 

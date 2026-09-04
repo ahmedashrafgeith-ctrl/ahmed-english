@@ -1299,3 +1299,48 @@ p { color: var(--c-ink-2); }
 .ads-prev-ad .adx { font-size: .7rem; font-weight: 900; }
 .ads-prev-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--c-ink-3,#6b7280); margin-bottom: 2px; }
 
+/* Google-Ads-style placement map legends + zone chips */
+.ads-prev-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; }
+.ads-leg { display: inline-flex; align-items: center; gap: 6px; font-size: .68rem; font-weight: 700; color: var(--c-ink-2,#444); }
+.ads-leg .sw { width: 11px; height: 11px; border-radius: 4px; display: inline-block; border: 1px solid rgba(0,0,0,.08); }
+.ads-leg .sw.g { background: #10B981; } .ads-leg .sw.y { background: #F5A623; } .ads-leg .sw.off { background: #e5e7eb; }
+.ads-slot { display: flex; flex-direction: column; gap: 4px; margin: 2px 0; }
+.ads-slot .ads-prev-ad { padding: 6px; font-size: .6rem; }
+.ads-slot-meta { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.ads-slot-meta strong { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--c-ink-2,#444); }
+.ads-slot-meta span { font-size: .6rem; color: #94a3b8; font-weight: 600; }
+.ads-slot.off { opacity: .55; }
+.ads-prev-mobile { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed var(--c-border,#e5e7eb); padding-top: 12px; }
+
+/* ============ Dashboard mobile hardening (prevents clipped / cut-off content) ============ */
+@media (max-width: 820px) {
+  .dash-main, .dash-main > *, .panel, .panel > * { max-width: 100%; }
+  .dash-main > * { min-width: 0; }
+  .panel { overflow: hidden; }
+  .panel table, .table { width: 100%; }
+  .table th, .table td { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
+  /* any data grid/row must be able to shrink within the phone */
+  .grid-2, .grid-3, .grid-4, .stats, .portal-stats { min-width: 0; }
+  .dash-top, .panel-head, .tool-row { min-width: 0; }
+}
+
+/* ============ Ads zone cards: clean stacked mobile layout ============ */
+@media (max-width: 640px) {
+  .ad-zone-card { grid-template-columns: 1fr; padding: 12px; }
+  .ad-zone-card > div[style] { flex-wrap: wrap; }
+  .ad-zone-card .field[data-zone-slot] { min-width: 0 !important; flex-basis: 100% !important; }
+  .ad-zone-card .zone-loc { width: 100%; }
+  #ads-zones { grid-template-columns: 1fr !important; }
+  #ads-preview { overflow-x: auto; }
+  .ads-prev-site { min-width: 320px; }
+  /* ads view header + button stack cleanly */
+  #admin-ads-view > div[style] { align-items: flex-start !important; }
+}
+
+/* ============ Ads control: modern card headers ============ */
+.ad-zone-card { background: var(--c-surface, #fff); border: 1px solid var(--c-card-border, #e5e7eb); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; transition: border-color .2s, box-shadow .2s; }
+.ad-zone-card:has(input[type="checkbox"]:checked) { border-color: var(--c-accent, #E8724A); box-shadow: 0 0 0 3px var(--c-glow, rgba(232,114,74,.15)); }
+.zone-toggle b { font-size: .92rem; }
+.zone-tag { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; background: var(--c-soft, #f3f4f6); color: var(--c-ink-2, #444); padding: 3px 8px; border-radius: 999px; }
+.zone-loc { font-size: .72rem; font-weight: 600; color: var(--c-ink-3, #9ca3af); }
+

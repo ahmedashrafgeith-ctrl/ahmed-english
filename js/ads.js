@@ -126,6 +126,7 @@
       var url = SB.url.replace(/\/$/, "");
       var row = {
         path: location.pathname + location.search,
+        title: document.title ? document.title.replace(/\s*-\s*TutorEnglishPro.*$/i, '').trim() : "",
         referrer: document.referrer || "",
         created_at: new Date().toISOString()
       };

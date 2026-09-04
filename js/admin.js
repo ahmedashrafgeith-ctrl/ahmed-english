@@ -1012,43 +1012,56 @@ async function initAdsControl(sbc) {
       const info = zoneInfo[z] || { type: z, loc: z };
       active[z] = hasCode ? 'g' : ((enabled && hasSlot) ? 'y' : (enabled ? 'y' : ''));
     });
-    const ad = (z) => {
+    const slot = (z) => {
       const info = zoneInfo[z] || { type: z, loc: z };
-      if (!active[z]) return '';
-      return '<div class="ads-prev-ad ' + (active[z] === 'g' ? 'g' : '') + '" title="' + esc(info.type) + ' · ' + esc(info.loc) + '"><span class="adx">AD</span> ' + (active[z] === 'g' ? 'Custom code' : info.type) + '</div>';
+      const on = active[z];
+      const off = !on;
+      return '<div class="ads-slot ' + (on ? (on === 'g' ? 'g' : 'y') : 'off') + '">' +
+               '<div class="ads-prev-ad ' + (on && on === 'g' ? 'g' : '') + '"><span class="adx">AD</span> ' + (on ? (on === 'g' ? 'Custom code' : 'AdSense unit') : 'Zone off') + '</div>' +
+               '<div class="ads-slot-meta"><strong>' + esc(info.type) + '</strong><span>' + esc(info.loc) + '</span></div>' +
+             '</div>';
     };
-    const legend = '<div class="ads-prev-label" style="margin-bottom:8px;">Live placement preview — <span style="color:#065F46;font-weight:800;">green</span> = your custom code · <span style="color:#b45309;font-weight:800;">amber</span> = enabled managed AdSense unit</div>';
+    const legend = '<div class="ads-prev-legend">' +
+        '<span class="ads-prev-label">Live placement preview</span>' +
+        '<span class="ads-leg itm"><i class="sw g"></i> Custom code</span>' +
+        '<span class="ads-leg itm"><i class="sw y"></i> Enabled AdSense</span>' +
+        '<span class="ads-leg itm"><i class="sw off"></i> Zone off</span>' +
+      '</div>';
     previewBox.innerHTML = legend +
       '<div class="ads-prev-browser">' +
         '<div class="ads-prev-bar"><i></i><i></i><i></i><span class="ads-prev-url">tutorenglishpro.com</span></div>' +
         '<div class="ads-prev-site">' +
           '<div class="ads-prev-nav"><span></span><span></span><span></span><span></span></div>' +
-          (ad('banner') || '') +
+          slot('banner') +
           '<div class="ads-prev-row">' +
             '<div class="ads-prev-main">' +
               '<div class="ads-prev-h w60"></div><div class="ads-prev-h w80"></div><div class="ads-prev-h w80"></div>' +
-              (ad('in-content') || '') +
-              '<div class="ads-prev-h w80"></div><div class="ads-prev-h w60"></div><div class="ads-prev-h w80"></div>' +
-              (ad('in-article') || '') +
+              slot('in-content') +
+              '<div class="ads-prev-h w80"></div><div class="ads-prev-h w60"></div>' +
+              slot('in-article') +
+              '<div class="ads-prev-h w80"></div>' +
             '</div>' +
             '<div class="ads-prev-side">' +
-              '<div class="ads-prev-h w80"></div><div class="ads-prev-h w80"></div>' +
-              (ad('sidebar') || '') +
+              '<div class="ads-prev-h w80"></div>' +
+              slot('sidebar') +
+              '<div class="ads-prev-h w80"></div>' +
             '</div>' +
           '</div>' +
-          (ad('footer') || '') +
+          slot('footer') +
           '<div class="ads-prev-h"></div>' +
         '</div>' +
       '</div>' +
-      (active.mobile ? '<div class="ads-prev-ad' + (active.mobile === 'g' ? ' g' : '') + '" style="border-radius:0;margin-top:10px;"><span class="adx">AD</span> Mobile Sticky (phones only)</div>' : '');
+      '<div class="ads-prev-mobile">' + slot('mobile') + '</div>';
   }
 
+  // Live placement preview is shown immediately (and stays in sync with the form).
+  // The toggle just collapses/expands it for users who want the cleaner form view.
+  renderPreview();
   if (previewToggle && previewBox) {
     previewToggle.addEventListener('click', () => {
       const show = previewBox.style.display !== 'block';
       previewBox.style.display = show ? 'block' : 'none';
-      previewToggle.innerHTML = show ? 'Hide live preview of ad locations' : '&#128065; Show live preview of ad locations';
-      if (show) renderPreview();
+      previewToggle.innerHTML = show ? '&#128065; Hide placement preview' : '&#128065; Toggle placement preview';
     });
     document.querySelectorAll('#ads-zones input, #ads-zones textarea').forEach((n) => {
       n.addEventListener('input', renderPreview);
