@@ -1195,8 +1195,21 @@ async function initChatInbox() {
     const ads = document.getElementById('admin-ads-view');
     const active = name === 'ads' ? ads : dash;
     const other = name === 'ads' ? dash : ads;
-    if (active) active.style.display = 'block';
-    if (other) other.style.display = 'none';
+    if (active) {
+      active.style.display = 'block';
+      active.style.visibility = 'visible';
+    }
+    if (other) { other.style.display = 'none'; }
+    // make sure the inner Ads panel + its grid are visible and never clipped
+    if (name === 'ads') {
+      const panel = document.getElementById('ads-panel');
+      if (panel) {
+        panel.style.display = 'block';
+        panel.style.visibility = 'visible';
+        const grid = panel.firstElementChild && panel.firstElementChild.tagName === 'DIV' && panel.firstElementChild.className.indexOf('grid') === 0 ? panel.firstElementChild : panel.querySelector('.grid-2');
+        if (grid) grid.style.display = 'grid';
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 

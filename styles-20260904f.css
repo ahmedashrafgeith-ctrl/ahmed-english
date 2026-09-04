@@ -1372,6 +1372,11 @@ html, body { overflow-x: hidden; }
   .tool-row, .panel-head, .dash-topbar, .tb-actions, .inbox-top,
   .side-nav, .zone-row, .bk-actions, .btn-row { flex-wrap: wrap !important; }
   .tool-row > *, .panel-head > *, .dash-topbar > *, .tb-actions > * { max-width: 100%; }
+  /* comfortable, readable phone text for dashboard content (no stretching) */
+  .dash-main .panel h3 { font-size: 1.08rem; }
+  .dash-main .panel, .dash-main .panel p, .dash-main .panel li, .dash-main .panel td,
+  .dash-main .panel th, .dash-main .panel small, .dash-main .panel .muted { line-height: 1.55; }
+  .dash-main .num { font-size: 1.6rem; }
 }
 
 /* ============ Ads zone cards: clean stacked mobile layout ============ */
