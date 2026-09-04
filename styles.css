@@ -636,6 +636,34 @@ p { color: var(--c-ink-2); }
   .hero-float.c1 { right: 4px; }
   .hero-float.c2 { left: 4px; }
   .footer-grid { flex-direction: column; align-items: flex-start; }
+
+  /* Phone-safe: collapse the pre-login showcase hero into a compact brand strip
+     so the login/portal form is immediately visible (no tall empty hero). */
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-panel {
+    padding: 14px 18px; display: flex; flex-direction: row; align-items: center;
+    gap: 12px; min-height: 0; justify-content: flex-start;
+  }
+  .auth-panel .brand-sub, .auth-panel h1, .auth-panel p.big, .auth-panel .auth-proof { display: none; }
+  .auth-panel .brand { margin: 0; }
+  .auth-side { padding: 28px 16px; }
+  .auth-box { padding: 26px 20px; }
+}
+
+/* ---- Phone safety: never allow stray wide children to cause sideways scroll ---- */
+html, body { overflow-x: hidden; }
+.dash-main, .dash-main > *, .panel, .panel > *, .auth-side, .auth-box, main, section, article { max-width: 100%; min-width: 0; }
+
+/* ---- Older-browser fallbacks (phones without color-mix / backdrop-filter / dvh) ---- */
+.bk-ok-check { background: rgba(5,150,105,.12); }
+.bk-type-btn.is-active { background: var(--c-soft); box-shadow: inset 0 0 0 2px var(--c-accent); }
+.p-stat { background: rgba(255,255,255,.2); }
+.auth-proof .pp { background: rgba(255,255,255,.2); }
+.sidebar { height: auto; min-height: 0; }
+
+@media (max-width: 480px) {
+  .hero-float, .ring-wrap { display: none; }
+  .auth-panel .brand-mark { width: 32px; height: 32px; }
 }
 
 /* ============ Booking page: toasts ============ */
