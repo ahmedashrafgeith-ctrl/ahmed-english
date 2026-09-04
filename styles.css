@@ -322,7 +322,9 @@ p { color: var(--c-ink-2); }
    DASHBOARD / PORTAL
    ============================================================ */
 .dash-shell { display: grid; grid-template-columns: 252px 1fr; min-height: 100vh; }
-.sidebar { background: var(--c-surface); border-right: 1px solid var(--c-border); padding: 26px 18px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+@supports (min-height: 100dvh) { .dash-shell { min-height: 100dvh; } }
+.sidebar { background: var(--c-surface); border-right: 1px solid var(--c-border); padding: 26px 18px; position: sticky; top: 0; align-self: start; height: auto; min-height: 100vh; display: flex; flex-direction: column; }
+@supports (min-height: 100dvh) { .sidebar { min-height: 100dvh; } }
 .side-nav { display: grid; gap: 4px; margin: 34px 0 auto; }
 .side-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; font-size: .9rem; font-weight: 600; color: var(--c-ink-2); transition: all .2s; }
 .side-link svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
@@ -395,6 +397,7 @@ p { color: var(--c-ink-2); }
    AUTH SPLIT (BEFORE LOGIN)
    ============================================================ */
 .auth-shell { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
+@supports (min-height: 100dvh) { .auth-shell { min-height: 100dvh; } }
 .auth-panel {
   position: relative; overflow: hidden; color: #fff; padding: 52px 56px;
   display: flex; flex-direction: column; justify-content: space-between;
