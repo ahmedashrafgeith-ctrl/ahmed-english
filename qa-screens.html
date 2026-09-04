@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QA Screens</title>
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <style> body { margin:0; } pre{background:#111;color:#0f0;font-size:11px;white-space:pre-wrap;padding:4px;} .shot{position:relative;width:390px;border:1px solid #ccc;} </style>
+</head>
+<body>
+<pre id="log">loading...</pre>
+<div id="host"></div>
+<script>
+  var logEl = document.getElementById('log');
+  function log(s){ logEl.textContent += '\n' + s; }
+  (async function () {
+    var sb = getSupabase();
+    if (!sb) { log('NO_SB'); return; }
+    try { await sb.auth.signInWithPassword({ email: 'qa-admin-03c69c7d@proenglishtutor.online', password: 'Qa03c69c7d!T9xZ2' }); log('SIGNIN OK'); }
+    catch (e) { log('SIGNIN ERR ' + (e.message||'')); return; }
+    var host = document.getElementById('host');
+    document.getElementById('log').style.display = 'none';
+    var targets = ['admin.html','dashboard.html','student.html'];
+    for (var t = 0; t < targets.length; t++) {
+      var label = document.createElement('div');
+      label.textContent = '===== ' + targets[t] + ' =====';
+      label.style.cssText = 'font:700 14px sans-serif;padding:6px;background:#eee;';
+      host.appendChild(label);
+      var f = document.createElement('iframe');
+      f.src = targets[t];
+      f.className = 'shot';
+      f.style.width = '390px';
+      f.style.height = '1500px';
+      host.appendChild(f);
+      await new Promise(r => f.onload = r);
+      await new Promise(r => setTimeout(r, 5000));
+    }
+    // force full scroll height capture by expanding iframes after load handled above
+    log('DONE');
+    document.title = 'DONE';
+  })();
+</script>
+</body>
+</html>
