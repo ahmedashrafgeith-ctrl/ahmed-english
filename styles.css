@@ -351,7 +351,6 @@ p { color: var(--c-ink-2); }
 
 .table { width: 100%; border-collapse: collapse; }
 .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.table-responsive .table { min-width: 0; }
 .table th, .table td { padding: 14px 16px; text-align: left; font-size: .9rem; border-bottom: 1px solid var(--c-border); }
 .table th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); background: var(--c-soft); }
 .table td { color: var(--c-ink-2); }
