@@ -652,7 +652,18 @@ p { color: var(--c-ink-2); }
 
 /* ---- Phone safety: never allow stray wide children to cause sideways scroll ---- */
 html, body { overflow-x: hidden; }
-.dash-main, .dash-main > *, .panel, .panel > *, .auth-side, .auth-box, main, section, article { max-width: 100%; min-width: 0; }
+.dash-main, .dash-main > *, .panel, .panel > *, .auth-side, .auth-box, main, section, article, .hero-grid, .hero-visual, .hero-card { max-width: 100%; min-width: 0; }
+
+/* ---- Reveal-animation safety: on small/narrow screens the scroll-entrance
+   transforms (translateX/Y + opacity) can fail to finish on phones, leaving
+   content shifted/squished and the page overflowing sideways. On phones they
+   are always shown fully in place instead. ---- */
+@media (max-width: 900px) {
+  .reveal, .reveal-left, .reveal-right,
+  .reveal.in, .reveal-left.in, .reveal-right.in {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+}
 
 /* ---- Older-browser fallbacks (phones without color-mix / backdrop-filter / dvh) ---- */
 .bk-ok-check { background: rgba(5,150,105,.12); }
