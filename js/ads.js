@@ -126,10 +126,12 @@
       var url = SB.url.replace(/\/$/, "");
       var row = {
         path: location.pathname + location.search,
-        title: document.title ? document.title.replace(/\s*-\s*TutorEnglishPro.*$/i, '').trim() : "",
         referrer: document.referrer || "",
         created_at: new Date().toISOString()
       };
+      // NOTE: the visitor_views table has (path, referrer, created_at) only.
+      // Do NOT add a 'title' column here — it 400s and kills all tracking until
+      // an admin runs:  ALTER TABLE visitor_views ADD COLUMN IF NOT EXISTS title text;
       fetch(url + "/rest/v1/visitor_views", {
         method: "POST",
         headers: {
