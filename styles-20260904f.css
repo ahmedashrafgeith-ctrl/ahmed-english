@@ -1474,3 +1474,13 @@ html, body { overflow-x: hidden; }
   .ads-jump { padding: 10px; }
   .ads-jump-link { padding: 5px 10px; font-size: .75rem; }
 }
+
+/* Defensive: ensure admin-ads-view and all its children are always visible */
+#admin-ads-view { display: block !important; visibility: visible !important; }
+#admin-ads-view * { visibility: visible !important; }
+#ads-panel { display: block !important; visibility: visible !important; }
+#ads-panel .grid-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 22px !important; }
+#ads-panel .ad-zone-card { display: grid !important; }
+@media (max-width: 900px) {
+  #ads-panel .grid-2 { grid-template-columns: 1fr !important; }
+}

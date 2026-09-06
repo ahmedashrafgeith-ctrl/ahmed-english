@@ -1338,8 +1338,25 @@ async function initChatInbox() {
       if (panel) {
         panel.style.display = 'block';
         panel.style.visibility = 'visible';
+        // Force all child elements to be visible (defense against CSS overrides)
+        panel.querySelectorAll('.grid-2, .ad-zone-card, .panel-head, .kpi-label, .field, textarea, select, button').forEach((el) => {
+          el.style.visibility = 'visible';
+        });
         const grid = panel.firstElementChild && panel.firstElementChild.tagName === 'DIV' && panel.firstElementChild.className.indexOf('grid') === 0 ? panel.firstElementChild : panel.querySelector('.grid-2');
-        if (grid) grid.style.display = 'grid';
+        if (grid) {
+          grid.style.display = 'grid';
+          grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+          grid.style.visibility = 'visible';
+        }
+      }
+      // Force the entire admin-ads-view to be visible
+      if (ads) {
+        ads.style.display = 'block';
+        ads.style.visibility = 'visible';
+        ads.style.opacity = '1';
+        ads.querySelectorAll('*').forEach((el) => {
+          if (el.style.display === 'none') el.style.display = '';
+        });
       }
       requestAnimationFrame(() => {
         const p = document.getElementById('ads-panel');
