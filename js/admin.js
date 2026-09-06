@@ -1341,6 +1341,11 @@ async function initChatInbox() {
         const grid = panel.firstElementChild && panel.firstElementChild.tagName === 'DIV' && panel.firstElementChild.className.indexOf('grid') === 0 ? panel.firstElementChild : panel.querySelector('.grid-2');
         if (grid) grid.style.display = 'grid';
       }
+      requestAnimationFrame(() => {
+        const p = document.getElementById('ads-panel');
+        if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

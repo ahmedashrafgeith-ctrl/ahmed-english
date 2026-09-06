@@ -33,6 +33,24 @@ alter table public.visitor_views add column if not exists screen text;
 -- Lightweight read policy so the logged-in admin can view stats.
 alter table public.visitor_views enable row level security;
 
+-- Tutor + admin share a "staff" helper so teachers can view stats too.
+create or replace function public.is_staff_or_admin()
+returns boolean
+language sql stable security definer
+set search_path to public
+as $function$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role in ('tutor','admin')
+  );
+$function$;
+
+drop policy if exists "staff can read visitor_views" on public.visitor_views;
+create policy "staff can read visitor_views"
+  on public.visitor_views for select
+  to authenticated
+  using (public.is_staff_or_admin());
+
 drop policy if exists "admin can read visitor views" on public.visitor_views;
 create policy "admin can read visitor views"
   on public.visitor_views for select
@@ -44,6 +62,12 @@ create policy "admin can read visitor views"
   );
 
 -- Inserts come from the anon key (js/ads.js best-effort tracking).
+drop policy if exists "anon can insert visitor_views" on public.visitor_views;
+create policy "anon can insert visitor_views"
+  on public.visitor_views for insert
+  to anon, authenticated
+  with check (true);
+
 drop policy if exists "anyone can insert visitor views" on public.visitor_views;
 create policy "anyone can insert visitor views"
   on public.visitor_views for insert

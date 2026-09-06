@@ -44,18 +44,27 @@
       const hwCountEl = document.getElementById('homework-count');
       if (hwCountEl) hwCountEl.textContent = hwCount || 0;
 
-      const { data: students } = await sb.from('profiles').select('*').eq('role', 'student').limit(50);
+const { data: students } = await sb.from('profiles').select('*').eq('role', 'student').limit(50);
+      const { data: allSubs } = await sb.from('subscriptions').select('*').order('created_at', { ascending: false });
+      const subMap = {};
+      (allSubs || []).forEach(s => { if (!subMap[s.student_id]) subMap[s.student_id] = s; });
       const studentList = document.getElementById('student-list');
       if (studentList) {
         if (students && students.length) {
-          studentList.innerHTML = students.map(s => `
-            <tr>
+          studentList.innerHTML = students.map(s => {
+            const p = subMap[s.id];
+            const pkg = p ? p.package_name : '—';
+            const lessons = p ? `${p.lessons_used || 0} / ${p.lessons_total || 0}` : '—';
+            const badge = !p ? '' : p.status === 'active'
+              ? '<span class="badge badge-ok">Active</span>'
+              : '<span class="badge badge-warn">Canceled</span>';
+            return `<tr>
               <td><strong>${s.full_name || 'Student'}</strong><br><small style="color:var(--c-ink-3);">${s.email || ''}</small></td>
               <td>${s.english_level || 'Intermediate'}</td>
-              <td>${s.learning_goal || 'Spoken Fluency'}</td>
-              <td><span class="badge badge-ok">Active</span></td>
-            </tr>
-          `).join('');
+              <td><strong>${pkg}</strong><br><small style="color:var(--c-ink-3);">${lessons} lessons</small></td>
+              <td>${badge}</td>
+            </tr>`;
+          }).join('');
         } else {
           studentList.innerHTML = '<tr><td colspan="4" class="muted">No students enrolled yet.</td></tr>';
         }

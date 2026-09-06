@@ -1,5 +1,6 @@
 ﻿document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const user = sb ? await (async () => {
     try {
       const { data: { session } } = await sb.auth.getSession();
@@ -104,8 +105,35 @@
     if (statHw) statHw.textContent = done.length;
     const statStreak = document.getElementById('stat-streak');
     if (statStreak) statStreak.textContent = Math.max(done.length + 1, 1);
-    const statHours = document.getElementById('stat-hours');
+const statHours = document.getElementById('stat-hours');
     if (statHours) statHours.textContent = lessonsTaken;
+
+    // ── 5. My Purchases ──
+    const { data: purchases } = await sb.from('subscriptions')
+      .select('*').eq('student_id', user.id).order('created_at', { ascending: false });
+    const purchasesEl = document.getElementById('purchases-list');
+    if (purchasesEl) {
+      if (purchases && purchases.length) {
+        purchasesEl.innerHTML = purchases.map(p => {
+          const statusBadge = p.status === 'active'
+            ? '<span class="badge badge-ok" style="background:rgba(255,255,255,.9);color:#059669;border:none;">Active</span>'
+            : '<span class="badge badge-warn">Canceled</span>';
+          return `
+            <div class="purchase-card" style="border:1px solid var(--c-card-border);border-radius:12px;padding:16px;background:var(--c-surface);">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                <strong>${esc(p.package_name || 'Starter Package')}</strong>
+                ${statusBadge}
+              </div>
+              <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;color:var(--c-ink-2);font-size:.9rem;">
+                <span>${p.lessons_total} Lessons (used ${p.lessons_used})</span>
+                <span>${new Date(p.created_at).toLocaleDateString()}</span>
+              </div>
+            </div>`;
+        }).join('');
+      } else {
+        purchasesEl.innerHTML = '<p class="muted" style="padding:20px;text-align:center;">No purchases yet. Choose a package on the <a href="packages.html">Pricing</a> page.</p>';
+      }
+    }
 
   } catch (err) {
     console.error('Error loading student dashboard data:', err);

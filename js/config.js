@@ -49,6 +49,7 @@
       starterPaymentLink: "https://book.stripe.com/5kQaEW6WKeUi3J51hKgrS09",
       progressPaymentLink: "https://book.stripe.com/cNieVcch43bAgvR4tWgrS0a",
       intensivePaymentLink: "https://book.stripe.com/cNi8wO94SeUi0wT6C4grS0b",
+      checkoutUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/create-checkout",
       dashboardUrl: "https://dashboard.stripe.com"
     },
     booking: {

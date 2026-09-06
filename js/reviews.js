@@ -116,6 +116,13 @@
     var nextBtn = document.getElementById('rv-next');
     var idx = 0;
 
+    var paused = false;
+    var autoTimer = null;
+    function pauseAuto() {
+      paused = true;
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
     function show(i) {
       idx = (i + rows.length) % rows.length;
       listEl.innerHTML = cardHTML(rows[idx]);
@@ -124,7 +131,7 @@
           return '<button type="button" class="rv-dot' + (k === idx ? ' on' : '') + '" data-i="' + k + '" aria-label="Go to review ' + (k + 1) + '"></button>';
         }).join('');
         dotsEl.querySelectorAll('.rv-dot').forEach(function (d) {
-          d.addEventListener('click', function () { show(parseInt(d.getAttribute('data-i'), 10)); });
+          d.addEventListener('click', function () { pauseAuto(); show(parseInt(d.getAttribute('data-i'), 10)); });
         });
       }
       if (prevBtn) prevBtn.disabled = rows.length < 2;
@@ -133,8 +140,16 @@
 
     if (controls) {
       controls.style.display = rows.length > 1 ? 'flex' : 'none';
-      if (prevBtn) prevBtn.addEventListener('click', function () { show(idx - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { show(idx + 1); });
+      if (prevBtn) prevBtn.addEventListener('click', function () { pauseAuto(); show(idx - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { pauseAuto(); show(idx + 1); });
+    }
+    if (rows.length > 1) {
+      autoTimer = setInterval(function () { if (!paused) show(idx + 1); }, 6000);
+      var carouselEl = document.getElementById('reviews-carousel');
+      if (carouselEl) {
+        carouselEl.addEventListener('mouseenter', pauseAuto);
+        carouselEl.addEventListener('touchstart', pauseAuto, { passive: true });
+      }
     }
     show(0);
   }

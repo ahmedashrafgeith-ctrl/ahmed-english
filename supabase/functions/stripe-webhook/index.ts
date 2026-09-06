@@ -47,6 +47,16 @@ function planFromAmount(amount: number) {
   return PLAN_MAP[amount] || { name: "Custom Package", lessons: 1 };
 }
 
+// Sessions created by the create-checkout function carry metadata.plan
+// ("starter" | "progress" | "intensive"); prefer that over amount mapping.
+function planFromMeta(meta: Record<string, string> | undefined) {
+  const key = (meta && meta.plan) || "";
+  if (key === "starter") return PLAN_MAP[14900];
+  if (key === "progress") return PLAN_MAP[57900];
+  if (key === "intensive") return PLAN_MAP[129900];
+  return null;
+}
+
 function normalizeEmail(email: string | null | undefined): string {
   return (email || "").trim().toLowerCase();
 }
@@ -142,7 +152,7 @@ async function handleCheckoutSession(session: any) {
     amount = session.line_items.data.reduce((s: number, li: any) => s + (li.amount_total || 0), 0);
   }
 
-  const plan = planFromAmount(amount);
+  const plan = planFromMeta(session.metadata) || planFromAmount(amount);
 
   const student = await findOrCreateStudent(email);
   if (!student) {

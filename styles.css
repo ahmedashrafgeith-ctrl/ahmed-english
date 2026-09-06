@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Sora:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Sora:wght@400;500;600;700;800&display=swap');
 
 /* ============================================================
    THEME TOKENS (overridden by js/theme.js)
@@ -1430,3 +1430,47 @@ html, body { overflow-x: hidden; }
 @media (max-width: 900px) { .dist-cols { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .dist-cols { grid-template-columns: 1fr; gap: 12px; } }
 
+
+/* Ads & SEO view: jump bar between the header and the Ads panel */
+.ads-jump {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(110, 43, 178, .18);
+  border-radius: 12px;
+  background: rgba(110, 43, 178, .06);
+}
+.ads-jump-label {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--c-ink-2, #6b7280);
+  white-space: nowrap;
+}
+.ads-jump-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 43, 178, .22);
+  background: rgba(255, 255, 255, .8);
+  color: #6E2BB2;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.ads-jump-link:hover,
+.ads-jump-link:focus {
+  background: #6E2BB2;
+  color: #fff;
+}
+.ads-jump-link:active { transform: translateY(1px); }
+@media (max-width: 640px) {
+  .ads-jump { padding: 10px; }
+  .ads-jump-link { padding: 5px 10px; font-size: .75rem; }
+}
