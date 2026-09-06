@@ -106,7 +106,12 @@
     }
 
     if (clientId) {
-      if (!document.getElementById("adsbygoogle-loader") && !window.adsbygoogle) {
+      // The AdSense loader may already be on the page (either the one a page
+      // author pasted in <head>, or one we injected). Only inject when neither
+      // an existing loader <script> nor the loaded adsbygoogle global is present.
+      var hasLoader = document.getElementById("adsbygoogle-loader") ||
+        document.querySelector('script[src*="adsbygoogle.js"], script[id="adsbygoogle-loader"]');
+      if (!hasLoader && !window.adsbygoogle) {
         var s = document.createElement("script");
         s.id = "adsbygoogle-loader";
         s.async = true;
@@ -124,14 +129,14 @@
     if (!SB.url || !SB.anonKey) return;
     try {
       var url = SB.url.replace(/\/$/, "");
-      var row = {
+var row = {
         path: location.pathname + location.search,
         referrer: document.referrer || "",
+        title: (document.title || "").replace(/\s*-\s*TutorEnglishPro.*$/i, "").trim(),
         created_at: new Date().toISOString()
       };
-      // NOTE: the visitor_views table has (path, referrer, created_at) only.
-      // Do NOT add a 'title' column here — it 400s and kills all tracking until
-      // an admin runs:  ALTER TABLE visitor_views ADD COLUMN IF NOT EXISTS title text;
+      // Requires: ALTER TABLE visitor_views ADD COLUMN IF NOT EXISTS title text;
+      // (run once in Supabase SQL Editor, then Top Pages shows real page names)
       fetch(url + "/rest/v1/visitor_views", {
         method: "POST",
         headers: {

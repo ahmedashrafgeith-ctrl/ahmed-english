@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Private / authenticated pages never need indexing
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /student.html
+Disallow: /google-sites-embed.html
+Disallow: /google-sites-dashboard-embed.html
+
+Sitemap: https://www.proenglishtutor.online/sitemap.xml

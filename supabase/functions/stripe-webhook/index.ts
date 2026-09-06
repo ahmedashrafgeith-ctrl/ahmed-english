@@ -21,21 +21,26 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY") || "";
+// Accept either name; the README documents SUPABASE_SERVICE_ROLE_KEY, but older
+// deploys / dashboards used SERVICE_ROLE_KEY. Support both so the key is never empty.
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 const stripe = new Stripe(stripeSecret, { apiVersion: "2023-10-16" });
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Maps a Stripe price/amount (in cents) to a package + lesson count.
-// Programming-Price-Lookups from your Stripe payment link line items
-// are matched here. Add/remove entries to match your live amounts.
+// These match the LIVE Stripe Payment Links:
+//   Starter   -> $149.00  (14900 cents)  -> 4 lessons
+//   Progress  -> $579.00  (57900 cents)  -> 8 lessons
+//   Intensive -> $1299.00 (129900 cents) -> 12 lessons
+// Add/remove entries to match your real live amounts.
 const PLAN_MAP: Record<number, { name: string; lessons: number }> = {
-  // Starter $40.00
-  4000: { name: "Starter", lessons: 4 },
-  // Progress $70.00
-  7000: { name: "Progress", lessons: 8 },
-  // Intensive $100.00
-  10000: { name: "Intensive", lessons: 12 },
+  // Starter $149.00
+  14900: { name: "Starter", lessons: 4 },
+  // Progress $579.00
+  57900: { name: "Progress", lessons: 8 },
+  // Intensive $1299.00
+  129900: { name: "Intensive", lessons: 12 },
 };
 
 function planFromAmount(amount: number) {

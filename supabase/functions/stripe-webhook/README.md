@@ -26,7 +26,9 @@ In Supabase Dashboard → **Edge Functions → stripe-webhook → Secrets**, add
 | `SUPABASE_URL` | `https://gggziewyeqsnuixwhvoe.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Dashboard → Settings → API → `service_role` key |
 
-> The service_role key is a server secret only — never put it in browser code.
+> The function also accepts `SERVICE_ROLE_KEY` (older name) if present, so either
+> key name works. The service_role key is a server secret only — never put it in
+> browser code.
 
 ## 3. Create the Stripe webhook endpoint
 
@@ -64,3 +66,25 @@ Amounts are in **cents**. Add or change entries to match your real prices.
 > in the dashboard. When they later sign up, the auto-profile trigger keeps their
 > existing profile (no duplicate). The service_role key bypasses RLS for the webhook
 > writes only.
+
+## Troubleshooting "Stripe ping is failing / not received"
+
+When Stripe Dashboard → Developers → Webhooks shows the endpoint failing or "ping not received":
+
+1. **Function must be deployed.** Run `npx supabase functions deploy stripe-webhook --project-ref gggziewyeqsnuixwhvoe`.
+2. **Secrets must be set.** Edge Functions → stripe-webhook → Secrets must contain
+   `STRIPE_WEBHOOK_SECRET` (the `whsec_...` shown on *that endpoint's* page), plus
+   `STRIPE_SECRET_KEY`, `SUPABASE_URL` and a service-role key. If the webhook secret
+   is empty/mismatched the function responds **400 "Missing signature or secret"**
+   → Stripe marks the ping as failed.
+3. **Signature secret must match the endpoint.** Stripe's "Send test webhook" signs
+   with the endpoint's signing secret. If a different `whsec_` was pasted into
+   Supabase, verification fails → **400 Webhook Error: No signatures found**.
+4. **Endpoint URL must be exact.** `https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/stripe-webhook`
+   (POST). Supabase responds 401/403 to unauthenticated invokes only when the function
+   was deployed with JWT verification ON; if so, redeploy with
+   `npx supabase functions deploy stripe-webhook --project-ref gggziewyeqsnuixwhvoe --no-verify-jwt`
+   (Stripe cannot sign Supabase JWTs).
+5. "Received" (200) is returned even if DB writes fail — check function logs at
+   Supabase → Edge Functions → stripe-webhook → Logs for `findOrCreateStudent` /
+   `upsertSubscription` errors (usually an empty service-role key → 401 on writes).

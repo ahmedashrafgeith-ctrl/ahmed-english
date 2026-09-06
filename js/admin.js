@@ -919,6 +919,84 @@ async function openInboxThread(chatId) {
       .subscribe();
   }
 
+async function initSeoControl(sbc) {
+  const kwEl = document.getElementById('seo-keywords');
+  const msgEl = document.getElementById('seo-msg');
+  const saveBtn = document.getElementById('seo-save-btn');
+  const scanBtn = document.getElementById('seo-scan-btn');
+  const healthList = document.getElementById('seo-health-list');
+
+  const SEO_KEY = 'ahm_seo';
+  const DEFAULT_KEYWORDS = 'online english tutor, 1-on-1 english lessons, private english teacher, learn english online, spoken english confidence, business english coaching, tefl certified english tutor';
+  const escSeo = (v) => String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  function loadKw() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SEO_KEY) || 'null');
+      if (saved && typeof saved.keywords === 'string' && saved.keywords.trim()) return saved.keywords;
+    } catch (e) {}
+    return DEFAULT_KEYWORDS;
+  }
+
+  function flash(m, ok) {
+    if (!msgEl) return;
+    msgEl.textContent = m;
+    msgEl.style.color = ok ? '#065F46' : '#B45309';
+    msgEl.style.display = 'inline-block';
+    setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3500);
+  }
+
+  if (kwEl) kwEl.value = loadKw();
+
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    try { localStorage.setItem(SEO_KEY, JSON.stringify({ keywords: (kwEl ? kwEl.value : '').trim() })); } catch (e) {}
+    flash('SEO keywords saved for this browser. Update the public pages\' meta to match when you rebuild.', true);
+  });
+
+  // Per-page SEO health scan. Uses live fetches so it reflects the deployed pages.
+  const PAGES = [
+    { file: 'index.html',   name: 'Home' },
+    { file: 'about.html',   name: 'About' },
+    { file: 'lessons.html', name: 'Lessons' },
+    { file: 'packages.html',name: 'Packages & Pricing' },
+    { file: 'booking.html', name: 'Book a Lesson' },
+    { file: 'login.html',   name: 'Login' }
+  ];
+
+  async function scan() {
+    if (!healthList) return;
+    healthList.innerHTML = '<tr><td colspan="4" class="muted">Scanning pages...</td></tr>';
+    const rows = [];
+    for (const p of PAGES) {
+      const meta = { title: false, desc: false, canonical: false, keywords: false, og: false, twitter: false, jsonld: false };
+      try {
+        const res = await fetch(p.file + '?t=' + Date.now(), { cache: 'no-store' });
+        const html = await res.text();
+        meta.title = /<title>[\s\S]{5,}<\/title>/i.test(html);
+        meta.desc = /<meta name="description"[^>]*content="[^"]{50,}"/i.test(html);
+        meta.canonical = /<link rel="canonical"[^>]*>/i.test(html);
+        meta.keywords = /<meta name="keywords"[^>]*>/i.test(html);
+        meta.og = /<meta property="og:(title|description|image)"/i.test(html);
+        meta.twitter = /<meta name="twitter:card"/i.test(html);
+        meta.jsonld = /application\/ld\+json/i.test(html);
+      } catch (e) {}
+      const check = (k) => meta[k] ? '<span class="ok">&#10003;</span>' : '<span class="warn">&#10007;</span>';
+      rows.push(
+        '<tr>' +
+          '<td><strong>' + escSeo(p.name) + '</strong><br><small class="muted">' + p.file + '</small></td>' +
+          '<td>' + (meta.title ? '<span class="ok">&#10003; Title</span>' : '<span class="warn">&#10007; Title</span>') + '</td>' +
+          '<td>' + check('desc') + ' Desc &nbsp;' + check('keywords') + ' Kw &nbsp;' + check('canonical') + ' Canonical</td>' +
+          '<td>' + check('og') + ' OG &nbsp;' + check('twitter') + ' TW &nbsp;' + check('jsonld') + ' Schema</td>' +
+        '</tr>'
+      );
+    }
+    healthList.innerHTML = rows.join('');
+  }
+
+  if (scanBtn) scanBtn.addEventListener('click', scan);
+  scan();
+}
+
 async function initAdsControl(sbc) {
   const ads = window.__ahmAds;
   if (!ads) return;
@@ -1188,6 +1266,7 @@ async function initChatInbox() {
 
   initChatInbox();
   initAdsControl(sb);
+  initSeoControl(sb);
 
   // View-swap between the main dashboard and the dedicated Ads & Tracking view
   function showView(name) {
