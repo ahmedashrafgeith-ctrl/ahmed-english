@@ -960,7 +960,13 @@ async function initSeoControl(sbc) {
     { file: 'lessons.html', name: 'Lessons' },
     { file: 'packages.html',name: 'Packages & Pricing' },
     { file: 'booking.html', name: 'Book a Lesson' },
-    { file: 'login.html',   name: 'Login' }
+    { file: 'login.html',   name: 'Login' },
+    { file: 'student.html', name: 'Student Portal' },
+    { file: 'dashboard.html', name: 'Teacher Workspace' },
+    { file: 'admin.html',   name: 'Admin Console' },
+    { file: 'privacy.html', name: 'Privacy Policy' },
+    { file: 'terms.html',   name: 'Terms of Service' },
+    { file: 'success.html', name: 'Booking Success' }
   ];
 
   async function scan() {
