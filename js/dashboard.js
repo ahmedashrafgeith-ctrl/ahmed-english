@@ -47,7 +47,12 @@
 const { data: students } = await sb.from('profiles').select('*').eq('role', 'student').limit(50);
       const { data: allSubs } = await sb.from('subscriptions').select('*').order('created_at', { ascending: false });
       const subMap = {};
-      (allSubs || []).forEach(s => { if (!subMap[s.student_id]) subMap[s.student_id] = s; });
+      (allSubs || []).forEach(s => {
+        const existing = subMap[s.student_id];
+        if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+          subMap[s.student_id] = s;
+        }
+      });
       const studentList = document.getElementById('student-list');
       if (studentList) {
         if (students && students.length) {
