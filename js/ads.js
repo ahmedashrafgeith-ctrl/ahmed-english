@@ -131,20 +131,107 @@
     for (var j = 0; j < zones.length; j++) renderZone(zones[j]);
   }
 
+  // Best-effort device fingerprint: no cookies, works from the browser only.
+  function uaInfo() {
+    var ua = navigator.userAgent || "";
+    var browser = "Other";
+    if (/Edg\//.test(ua)) browser = "Edge";
+    else if (/OPR\/|Opera/.test(ua)) browser = "Opera";
+    else if (/SamsungBrowser/.test(ua)) browser = "Samsung Internet";
+    else if (/Firefox\//.test(ua)) browser = "Firefox";
+    else if (/Chrome\/|CriOS\//.test(ua)) browser = "Chrome";
+    else if (/Safari\//.test(ua)) browser = "Safari";
+    var os = "Other";
+    if (/Windows/.test(ua)) os = "Windows";
+    else if (/Android/.test(ua)) os = "Android";
+    else if (/iPhone|iPad|iPod/.test(ua)) os = "iOS";
+    else if (/Mac OS X|Macintosh/.test(ua)) os = "macOS";
+    else if (/Linux/.test(ua)) os = "Linux";
+    else if (/CrOS/.test(ua)) os = "Chrome OS";
+    var device = "desktop";
+    if (/Mobi|Android|iPhone|iPod/.test(ua)) device = "mobile";
+    else if (/iPad|Tablet|Silk/.test(ua)) device = "tablet";
+    else if (navigator.platform && /Mac|Win|Linux/.test(navigator.platform) && "ontouchstart" in window) device = "tablet";
+    var country = "Unknown";
+    try {
+      var tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "").toUpperCase();
+      var c = tzMatch(tz);
+      if (!c) {
+        var lang = (navigator.language || "");
+        var ll = lang.split("-")[1] || lang.split("_")[1] || "";
+        if (/^[A-Z]{2}$/.test(ll)) c = ll;
+      }
+      if (c) country = c;
+    } catch (e) {}
+    return {
+      device: device,
+      browser: browser,
+      os: os,
+      country: country,
+      screen: (screen.width || 0) + "x" + (screen.height || 0)
+    };
+  }
+
+  function tzMatch(tz) {
+    var known = {
+      "AFRICA/CAIRO":"EG","AFRICA/JOHANNESBURG":"ZA","AFRICA/LAGOS":"NG","AFRICA/NAIROBI":"KE",
+      "AFRICA/CASABLANCA":"MA","AFRICA/ABIDJAN":"CI","AFRICA/ALGIERS":"DZ","AFRICA/ACCRA":"GH","AFRICA/TUNIS":"TN",
+      "ASIA/KOLKATA":"IN","ASIA/DUBAI":"AE","ASIA/KARACHI":"PK","ASIA/DHAKA":"BD","ASIA/RIYADH":"SA",
+      "ASIA/SINGAPORE":"SG","ASIA/KUALA_LUMPUR":"MY","ASIA/JAKARTA":"ID","ASIA/BANGKOK":"TH","ASIA/HO_CHI_MINH":"VN",
+      "ASIA/MANILA":"PH","ASIA/SHANGHAI":"CN","ASIA/HONG_KONG":"HK","ASIA/TAIPEI":"TW","ASIA/TOKYO":"JP",
+      "ASIA/SEOUL":"KR","ASIA/BEIRUT":"LB","ASIA/AMMAN":"JO","ASIA/KUWAIT":"KW","ASIA/QATAR":"QA",
+      "ASIA/BAGHDAD":"IQ","ASIA/ISTANBUL":"TR","ASIA/TEL_AVIV":"IL","ASIA/COLOMBO":"LK","ASIA/KATHMANDU":"NP",
+      "ASIA/RANGOON":"MM","ASIA/PHNOM_PENH":"KH","ASIA/TASHKENT":"UZ","ASIA/ALMATY":"KZ","ASIA/TBILISI":"GE", 
+      "AMERICA/NEW_YORK":"US","AMERICA/CHICAGO":"US","AMERICA/LOS_ANGELES":"US","AMERICA/DENVER":"US",
+      "AMERICA/PHOENIX":"US","AMERICA/ANCHORAGE":"US","AMERICA/HONOLULU":"US","AMERICA/TORONTO":"CA",
+      "AMERICA/VANCOUVER":"CA","AMERICA/MEXICO_CITY":"MX","AMERICA/BOGOTA":"CO","AMERICA/LIMA":"PE",
+      "AMERICA/SANTIAGO":"CL","AMERICA/BUENOS_AIRES":"AR","AMERICA/SAO_PAULO":"BR","AMERICA/CARACAS":"VE",
+      "AMERICA/LA_PAZ":"BO","AMERICA/GUAYAQUIL":"EC","AMERICA/MANAGUA":"NI","AMERICA/GUATEMALA":"GT",
+      "EUROPE/LONDON":"GB","EUROPE/PARIS":"FR","EUROPE/BERLIN":"DE","EUROPE/MADRID":"ES","EUROPE/LISBON":"PT",
+      "EUROPE/ROME":"IT","EUROPE/AMSTERDAM":"NL","EUROPE/BRUSSELS":"BE","EUROPE/ZURICH":"CH","EUROPE/VIENNA":"AT",
+      "EUROPE/STOCKHOLM":"SE","EUROPE/OSLO":"NO","EUROPE/COPENHAGEN":"DK","EUROPE/HELSINKI":"FI",
+      "EUROPE/PRAGUE":"CZ","EUROPE/WARSAW":"PL","EUROPE/BUDAPEST":"HU","EUROPE/BUCHAREST":"RO",
+      "EUROPE/ATHENS":"GR","EUROPE/DUBLIN":"IE","EUROPE/KYIV":"UA","EUROPE/MOSCOW":"RU",
+      "AUSTRALIA/SYDNEY":"AU","AUSTRALIA/MELBOURNE":"AU","AUSTRALIA/BRISBANE":"AU","AUSTRALIA/PERTH":"AU",
+      "PACIFIC/AUCKLAND":"NZ","PACIFIC/FIJI":"FJ"
+    };
+    return known[tz] || "";
+  }
+
+  var post = function (payload) {
+    fetch(SB.url.replace(/\/$/, "") + "/rest/v1/visitor_views", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SB.anonKey,
+        "Authorization": "Bearer " + SB.anonKey,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    }).catch(function () {});
+  };
+
   function track() {
     if (!cfg.tracking) return;
     if (!SB.url || !SB.anonKey) return;
     try {
-      var url = SB.url.replace(/\/$/, "");
-var row = {
+      var info = uaInfo();
+      var row = {
         path: location.pathname + location.search,
         referrer: document.referrer || "",
         title: (document.title || "").replace(/\s*-\s*TutorEnglishPro.*$/i, "").trim(),
+        device: info.device,
+        browser: info.browser,
+        os: info.os,
+        country: info.country,
+        screen: info.screen,
         created_at: new Date().toISOString()
       };
       // Requires: ALTER TABLE visitor_views ADD COLUMN IF NOT EXISTS title text;
-      // (run once in Supabase SQL Editor, then Top Pages shows real page names)
-      fetch(url + "/rest/v1/visitor_views", {
+      // and the device/browser/os/country/screen columns (see supabase-visitor-views.sql).
+      // If the migration isn't applied yet, retry on 400 with fewer columns so the
+      // POST still succeeds with no console errors.
+      fetch(SB.url.replace(/\/$/, "") + "/rest/v1/visitor_views", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,21 +241,13 @@ var row = {
         },
         body: JSON.stringify(row)
       }).then(function (res) {
-        // If visitor_views has no "title" column yet (migration not run),
-        // retry once without it so the POST succeeds with no console errors.
-        if (res.status === 400) {
-          var slim = { path: row.path, referrer: row.referrer, created_at: row.created_at };
-          fetch(url + "/rest/v1/visitor_views", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "apikey": SB.anonKey,
-              "Authorization": "Bearer " + SB.anonKey,
-              "Prefer": "return=minimal"
-            },
-            body: JSON.stringify(slim)
+        if (res.status !== 400) return;
+        post({ path: row.path, referrer: row.referrer, title: row.title, created_at: row.created_at })
+          .then(function (r2) {
+            if (r2 && r2.status === 400) {
+              post({ path: row.path, created_at: row.created_at });
+            }
           });
-        }
       }).catch(function () {});
     } catch (e) {}
   }

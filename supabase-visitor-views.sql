@@ -13,12 +13,22 @@ create table if not exists public.visitor_views (
   path text not null,
   referrer text,
   title text,
+  device text,
+  browser text,
+  os text,
+  country text,
+  screen text,
   created_at timestamptz not null default now()
 );
 
--- Column required by js/ads.js track() (added 2026).
--- Safe to run even if it already exists.
+-- Columns required by js/ads.js track() (analytics built into the Ads & SEO panel).
+-- Safe to run even if they already exist.
 alter table public.visitor_views add column if not exists title text;
+alter table public.visitor_views add column if not exists device text;
+alter table public.visitor_views add column if not exists browser text;
+alter table public.visitor_views add column if not exists os text;
+alter table public.visitor_views add column if not exists country text;
+alter table public.visitor_views add column if not exists screen text;
 
 -- Lightweight read policy so the logged-in admin can view stats.
 alter table public.visitor_views enable row level security;

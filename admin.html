@@ -21,9 +21,9 @@
 <meta name="twitter:image" content="https://www.proenglishtutor.online/assets/og-image.png">
 
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles-20260904f.css?v=20260906c">
-  <link rel="stylesheet" href="components.css?v=20260906c">
-  <link rel="stylesheet" href="reviews.css?v=20260906c">
+  <link rel="stylesheet" href="styles-20260904f.css?v=20260906e">
+  <link rel="stylesheet" href="components.css?v=20260906e">
+  <link rel="stylesheet" href="reviews.css?v=20260906e">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,8 +31,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/ads.js?v=20260906c"></script>
-  <script src="js/admin.js?v=20260906c"></script>
+  <script src="js/ads.js?v=20260906e"></script>
+  <script src="js/admin.js?v=20260906e"></script>
 </head>
 <body>
 
@@ -587,22 +587,46 @@
 
           <!-- Visitor stats -->
           <div>
-            <div class="stats" style="grid-template-columns:repeat(2,1fr);margin:0 0 16px;">
-              <div class="stat" style="padding:16px;">
-                <small>Total Views</small>
-                <div class="num" id="ads-total" style="font-size:1.5rem;">0</div>
+            <div class="panel-head" style="padding:0 0 4px;">
+              <div>
+                <h3 style="font-size:1.05rem;">Visitor Activity</h3>
+                <p class="muted" style="margin:2px 0 0;font-size:.8rem;">Page views over the last 14 days, with device, browser and country breakdowns.</p>
               </div>
-              <div class="stat" style="padding:16px;">
+              <button type="button" class="btn btn-sm btn-ghost" id="ads-refresh">Refresh</button>
+            </div>
+            <div class="stats" style="grid-template-columns:repeat(3,1fr);margin:14px 0 18px;">
+              <div class="stat" style="padding:18px 20px;">
+                <small>Total Views (14&nbsp;days)</small>
+                <div class="num" id="ads-total" style="font-size:1.6rem;">0</div>
+              </div>
+              <div class="stat" style="padding:18px 20px;">
                 <small>Views Today</small>
-                <div class="num" id="ads-today" style="font-size:1.5rem;">0</div>
+                <div class="num" id="ads-today" style="font-size:1.6rem;">0</div>
+              </div>
+              <div class="stat" style="padding:18px 20px;">
+                <small>Most Viewed Page</small>
+                <div class="num" id="ads-kpi-top" style="font-size:1.05rem;line-height:1.35;">—</div>
               </div>
             </div>
-            <div class="panel-head" style="padding:0;">
+            <div class="dist-cols">
+              <div class="dist-card">
+                <h4>By Device</h4>
+                <div id="ads-dist-devices" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+              </div>
+              <div class="dist-card">
+                <h4>By Country</h4>
+                <div id="ads-dist-countries" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+              </div>
+              <div class="dist-card">
+                <h4>By Browser</h4>
+                <div id="ads-dist-browsers" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+              </div>
+            </div>
+            <div class="panel-head" style="padding:0;margin-top:22px;">
               <div>
                 <h3 style="font-size:1rem;">Top Pages</h3>
                 <p class="muted" style="margin:2px 0 0;font-size:.8rem;">Most-viewed pages over the last 14 days.</p>
               </div>
-              <button type="button" class="btn btn-sm btn-ghost" id="ads-refresh">Refresh</button>
             </div>
             <div style="overflow-x:auto;margin-top:10px;">
               <table class="table">
@@ -796,7 +820,7 @@
     </div>
   </div>
 
-<script src="js/reviews.js?v=20260906c"></script>
+<script src="js/reviews.js?v=20260906e"></script>
 </body>
 </html>
 

@@ -1171,22 +1171,31 @@ async function initAdsControl(sbc) {
     if (!totalEl || !topList) return;
     try {
       const since = new Date(Date.now() - 14 * 86400000).toISOString();
-      let res = await sbc.from('visitor_views').select('id').gte('created_at', since);
-      const rows = (res && res.data) || [];
+      let res = await sbc.from('visitor_views')
+        .select('path,title,referrer,device,os,browser,country,created_at')
+        .gte('created_at', since)
+        .limit(5000);
+      const rows = ((res && res.data) || []).filter((r) => {
+        const p = r.path || '';
+        return p && p.indexOf('/D:') !== 0 && p.indexOf('admin-bypass') === -1 && p.indexOf(':') !== 1;
+      });
       const total = rows.length;
-      if (totalEl) totalEl.textContent = total.toLocaleString();
+      const isTest = (p) => p && (p.indexOf('/D:') === 0 || p.indexOf('admin-bypass') !== -1 || p.indexOf(':') === 1);
+      const clean = rows.filter((r) => !isTest(r.path));
+      const TOTAL = clean.length;
+      if (totalEl) totalEl.textContent = TOTAL.toLocaleString();
       if (todayEl) {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        const tRes = await sbc.from('visitor_views').select('id').gte('created_at', todayStart);
-        todayEl.textContent = ((tRes && tRes.data) || []).length.toLocaleString();
+        todayEl.textContent = clean.filter((r) => r.created_at && r.created_at >= todayStart).length.toLocaleString();
       }
       const PAGE_NAMES = {
-        '/': 'Home', '//index.html': 'Home', '/index.html': 'Home',
+        '/': 'Home', '/index.html': 'Home', '/index.php': 'Home', '/index': 'Home',
         '/about.html': 'About', '/lessons.html': 'Lessons', '/packages.html': 'Packages & Pricing',
         '/booking.html': 'Book a Lesson', '/login.html': 'Login', '/signup.html': 'Sign Up',
         '/dashboard.html': 'Teacher Workspace', '/student.html': 'Student Portal',
-        '/admin.html': 'Admin Console', '/privacy.html': 'Privacy Policy', '/terms.html': 'Terms'
+        '/admin.html': 'Admin Console', '/privacy.html': 'Privacy Policy', '/terms.html': 'Terms',
+        '/contact.html': 'Contact'
       };
       const pageName = (r) => {
         if (r && r.title && r.title.trim()) return r.title.trim();
@@ -1197,21 +1206,47 @@ async function initAdsControl(sbc) {
         return base === '' || base === 'index.html' ? 'Home'
           : base.replace(/\.html$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       };
+
       const byPage = {};
-      rows.forEach((r) => {
+      clean.forEach((r) => {
         const name = pageName(r);
         byPage[name] = (byPage[name] || 0) + 1;
       });
       const sorted = Object.entries(byPage).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const kpiEl = document.getElementById('ads-kpi-top');
+      if (kpiEl) kpiEl.textContent = sorted.length ? `${sorted[0][0]} · ${sorted[0][1]}` : '—';
       if (!sorted.length) {
         topList.innerHTML = '<tr><td colspan="2" class="muted">No views recorded yet. Open any page to start tracking.</td></tr>';
-        return;
+      } else {
+        topList.innerHTML = sorted.map(([name, n]) => `
+          <tr>
+            <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;">${esc(name) || 'Home'}</td>
+            <td style="text-align:right;font-weight:700;">${n}</td>
+          </tr>`).join('');
       }
-      topList.innerHTML = sorted.map(([name, n]) => `
-        <tr>
-          <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;">${esc(name) || 'Home'}</td>
-          <td style="text-align:right;font-weight:700;">${n}</td>
-        </tr>`).join('');
+
+      const dist = (key, label, id) => {
+        const el = document.getElementById(id);
+        const map = {};
+        clean.forEach((r) => {
+          const v = (r[key] || '').trim() || label;
+          map[v] = (map[v] || 0) + 1;
+        });
+        const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
+        if (!el) return;
+        if (!entries.length) { el.innerHTML = '<p class="muted" style="font-size:.8rem;">No data yet.</p>'; return; }
+        const base = clean.length || 1;
+        el.innerHTML = entries.map(([name, n]) => {
+          const pct = Math.round((n / base) * 100);
+          return '<div class="dist-row">' +
+            '<div class="dist-top"><span>' + esc(name) + '</span><b>' + n + ' · ' + pct + '%</b></div>' +
+            '<div class="dist-bar"><i style="width:' + Math.max(pct, 2) + '%"></i></div>' +
+          '</div>';
+        }).join('');
+      };
+      dist('device', 'Unknown', 'ads-dist-devices');
+      dist('country', 'Unknown', 'ads-dist-countries');
+      dist('browser', 'Other', 'ads-dist-browsers');
     } catch (e) {
       console.error('ads stats error:', e);
       if (topList) topList.innerHTML = '<tr><td colspan="2" class="muted">Could not load stats.</td></tr>';

@@ -175,9 +175,12 @@ Deno.serve(async (req) => {
     return new Response("Missing signature or secret", { status: 400 });
   }
 
-  let event: Stripe.Event;
+let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    // constructEvent() uses the synchronous crypto path which the Deno worker
+    // does NOT support (throws "SubtleCryptoProvider cannot be used in a
+    // synchronous context"). Always use the async variant in edge functions.
+    event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err.message);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
