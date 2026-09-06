@@ -1235,6 +1235,10 @@ async function initAdsControl(sbc) {
         const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
         if (!el) return;
         if (!entries.length) { el.innerHTML = '<p class="muted" style="font-size:.8rem;">No data yet.</p>'; return; }
+        if (entries.length === 1 && (entries[0][0] === label || entries[0][0] === 'Unknown')) {
+          el.innerHTML = '<p class="muted" style="font-size:.8rem;">Collecting… breakdown appears on the next page visit.</p>';
+          return;
+        }
         const base = clean.length || 1;
         el.innerHTML = entries.map(([name, n]) => {
           const pct = Math.round((n / base) * 100);
