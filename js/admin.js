@@ -1031,9 +1031,12 @@ async function initAdsControl(sbc) {
       slots: cfg.slots || {},
       code: cfg.code || {},
       zones: cfg.zones || {},
+      formats: cfg.formats || {},
       tracking: cfg.tracking !== false
     };
   }
+
+  const FORMAT_VALUES = ['auto', 'horizontal', 'vertical', 'rectangle', 'fluid'];
 
   function fillForm() {
     const c = current();
@@ -1046,11 +1049,13 @@ async function initAdsControl(sbc) {
       if (s) s.value = c.slots[z] || '';
       const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
       if (codeEl) codeEl.value = c.code[z] || '';
+      const fmtEl = document.querySelector('[data-zone-format="' + z + '"]');
+      if (fmtEl) fmtEl.value = FORMAT_VALUES.indexOf(c.formats[z]) !== -1 ? c.formats[z] : 'auto';
     });
   }
 
   function collect() {
-    const slots = {}, zoneFlags = {}, code = {};
+    const slots = {}, zoneFlags = {}, code = {}, formats = {};
     zones.forEach((z) => {
       const s = document.querySelector('[data-zone-slot="' + z + '"]');
       slots[z] = (s && s.value || '').trim();
@@ -1058,12 +1063,15 @@ async function initAdsControl(sbc) {
       zoneFlags[z] = !!(t && t.checked);
       const codeEl = document.querySelector('[data-zone-code="' + z + '"]');
       code[z] = (codeEl && codeEl.value || '').trim();
+      const fmtEl = document.querySelector('[data-zone-format="' + z + '"]');
+      formats[z] = fmtEl ? (FORMAT_VALUES.indexOf(fmtEl.value) !== -1 ? fmtEl.value : 'auto') : 'auto';
     });
     return {
       client: (clientEl && clientEl.value || '').trim(),
       slots,
       code,
       zones: zoneFlags,
+      formats,
       tracking: !!(trackingEl && trackingEl.checked)
     };
   }
@@ -1142,7 +1150,7 @@ async function initAdsControl(sbc) {
       previewBox.style.display = show ? 'block' : 'none';
       previewToggle.innerHTML = show ? '&#128065; Hide placement preview' : '&#128065; Toggle placement preview';
     });
-    document.querySelectorAll('#ads-zones input, #ads-zones textarea').forEach((n) => {
+    document.querySelectorAll('#ads-zones input, #ads-zones textarea, #ads-zones select').forEach((n) => {
       n.addEventListener('input', safePreview);
       n.addEventListener('change', safePreview);
     });

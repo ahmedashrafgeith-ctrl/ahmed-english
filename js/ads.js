@@ -16,12 +16,17 @@
 
   var KEY = "ahm_ads";
 
+  function validFormat(v) {
+    return v === "horizontal" || v === "vertical" || v === "rectangle" || v === "fluid" ? v : "auto";
+  }
+
   function settings() {
     var s = {
       client: DEFAULTS.client || "",
       slots: DEFAULTS.slots || {},
       code: DEFAULTS.code || {},
       zones: DEFAULTS.zones || {},
+      formats: DEFAULTS.formats || {},
       tracking: DEFAULTS.tracking !== false
     };
     try {
@@ -31,6 +36,7 @@
         if (saved.slots) for (var k in saved.slots) if (saved.slots[k]) s.slots[k] = saved.slots[k];
         if (saved.code) for (var c in saved.code) if (saved.code[c]) s.code[c] = saved.code[c];
         if (saved.zones) for (var z in saved.zones) if (typeof saved.zones[z] === "boolean") s.zones[z] = saved.zones[z];
+        if (saved.formats) for (var f in saved.formats) if (validFormat(saved.formats[f])) s.formats[f] = saved.formats[f];
         if (typeof saved.tracking === "boolean") s.tracking = saved.tracking;
       }
     } catch (e) {}
@@ -74,11 +80,12 @@
 
     // 2) Managed AdSense unit (client + slot)
     if (enabled && cfg.client && slot) {
+      var fmt = validFormat(cfg.formats[zone]);
       el.innerHTML =
         '<ins class="adsbygoogle" style="display:block" ' +
         'data-ad-client="' + slug + '" ' +
         'data-ad-slot="' + slot + '" ' +
-        'data-ad-format="auto" data-full-width-responsive="true"></ins>';
+        'data-ad-format="' + fmt + '" data-full-width-responsive="true"></ins>';
       el.classList.add("ad-rendered");
       if (window.adsbygoogle) {
         try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
@@ -146,6 +153,22 @@ var row = {
           "Prefer": "return=minimal"
         },
         body: JSON.stringify(row)
+      }).then(function (res) {
+        // If visitor_views has no "title" column yet (migration not run),
+        // retry once without it so the POST succeeds with no console errors.
+        if (res.status === 400) {
+          var slim = { path: row.path, referrer: row.referrer, created_at: row.created_at };
+          fetch(url + "/rest/v1/visitor_views", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SB.anonKey,
+              "Authorization": "Bearer " + SB.anonKey,
+              "Prefer": "return=minimal"
+            },
+            body: JSON.stringify(slim)
+          });
+        }
       }).catch(function () {});
     } catch (e) {}
   }

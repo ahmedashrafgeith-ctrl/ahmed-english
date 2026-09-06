@@ -74,6 +74,8 @@
       slots: { banner: "", "in-content": "", "in-article": "", sidebar: "", footer: "", mobile: "" },
       // zones turned on by default (boolean)
       zones: { banner: true, "in-content": true, "in-article": true, sidebar: true, footer: true, mobile: true },
+      // per-zone AdSense ad format (data-ad-format value): auto | horizontal | vertical | rectangle | fluid
+      formats: { banner: "auto", "in-content": "auto", "in-article": "auto", sidebar: "auto", footer: "auto", mobile: "auto" },
       // visitor tracking on/off
       tracking: true
     },
