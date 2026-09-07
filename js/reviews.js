@@ -114,44 +114,71 @@
     var dotsEl = document.getElementById('rv-dots');
     var prevBtn = document.getElementById('rv-prev');
     var nextBtn = document.getElementById('rv-next');
+    var carouselEl = document.getElementById('reviews-carousel');
     var idx = 0;
-
+    var enabled = rows.length > 1;
     var paused = false;
-    var autoTimer = null;
-    function pauseAuto() {
-      paused = true;
-      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    var timer = null;
+
+    function stopTimer() {
+      if (timer) { clearTimeout(timer); timer = null; }
     }
 
-    function show(i) {
+    function renderDots() {
+      if (!dotsEl) return;
+      dotsEl.innerHTML = rows.map(function (_, k) {
+        return '<button type="button" class="rv-dot' + (k === idx ? ' on' : '') + '" data-i="' + k + '" aria-label="Go to review ' + (k + 1) + '" aria-pressed="' + (k === idx) + '"></button>';
+      }).join('');
+      dotsEl.querySelectorAll('.rv-dot').forEach(function (d) {
+        d.addEventListener('click', function () { go(parseInt(d.getAttribute('data-i'), 10)); });
+      });
+    }
+
+    // Self-correcting autoplay: recomputes against the real clock every
+    // second, so it keeps its 6s rhythm even after a backgrounded tab or a
+    // suspended timer, and it never gets stuck "paused until refresh".
+    function startAutoplay() {
+      stopTimer();
+      if (!enabled || paused) return;
+      var at = Date.now() + 6000;
+      var tick = function () {
+        if (!enabled || paused) { stopTimer(); return; }
+        if (Date.now() >= at) { go(idx + 1); return; }
+        timer = setTimeout(tick, Math.min(1000, at - Date.now()));
+      };
+      timer = setTimeout(tick, 6000);
+    }
+
+    function go(i) {
+      if (!rows.length) return;
       idx = (i + rows.length) % rows.length;
       listEl.innerHTML = cardHTML(rows[idx]);
-      if (dotsEl) {
-        dotsEl.innerHTML = rows.map(function (_, k) {
-          return '<button type="button" class="rv-dot' + (k === idx ? ' on' : '') + '" data-i="' + k + '" aria-label="Go to review ' + (k + 1) + '"></button>';
-        }).join('');
-        dotsEl.querySelectorAll('.rv-dot').forEach(function (d) {
-          d.addEventListener('click', function () { pauseAuto(); show(parseInt(d.getAttribute('data-i'), 10)); });
-        });
-      }
-      if (prevBtn) prevBtn.disabled = rows.length < 2;
-      if (nextBtn) nextBtn.disabled = rows.length < 2;
+      renderDots();
+      if (prevBtn) prevBtn.disabled = !enabled;
+      if (nextBtn) nextBtn.disabled = !enabled;
+      startAutoplay();
     }
 
+    function hold() { paused = true; stopTimer(); }
+    function release() { paused = false; startAutoplay(); }
+
     if (controls) {
-      controls.style.display = rows.length > 1 ? 'flex' : 'none';
-      if (prevBtn) prevBtn.addEventListener('click', function () { pauseAuto(); show(idx - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { pauseAuto(); show(idx + 1); });
+      controls.style.display = enabled ? 'flex' : 'none';
+      if (prevBtn) prevBtn.addEventListener('click', function () { go(idx - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { go(idx + 1); });
     }
-    if (rows.length > 1) {
-      autoTimer = setInterval(function () { if (!paused) show(idx + 1); }, 6000);
-      var carouselEl = document.getElementById('reviews-carousel');
-      if (carouselEl) {
-        carouselEl.addEventListener('mouseenter', pauseAuto);
-        carouselEl.addEventListener('touchstart', pauseAuto, { passive: true });
-      }
+    if (carouselEl) {
+      carouselEl.setAttribute('role', 'group');
+      carouselEl.setAttribute('aria-roledescription', 'carousel');
+      carouselEl.addEventListener('mouseenter', hold);
+      carouselEl.addEventListener('mouseleave', release);
+      carouselEl.addEventListener('touchstart', hold, { passive: true });
+      carouselEl.addEventListener('touchend', release, { passive: true });
+      carouselEl.addEventListener('touchcancel', release, { passive: true });
     }
-    show(0);
+    if (listEl) listEl.setAttribute('aria-live', 'polite');
+    if (enabled) startAutoplay();
+    go(0);
   }
 
   // ---------------------------------------------------------------

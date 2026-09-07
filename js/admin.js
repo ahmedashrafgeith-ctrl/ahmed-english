@@ -919,6 +919,37 @@ async function openInboxThread(chatId) {
       .subscribe();
   }
 
+// Copy-to-clipboard for the AdSense / AMP setup reference snippets
+function initPubTagCopies() {
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const pre = document.getElementById(btn.getAttribute('data-copy'));
+      if (!pre) return;
+      const txt = pre.textContent;
+      const revert = function () { btn.textContent = 'Copy'; };
+      const done = function (ok) {
+        btn.textContent = ok ? 'Copied!' : 'Copy failed';
+        window.setTimeout(revert, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { done(false); });
+      } else {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = txt;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done(true);
+        } catch (e) { done(false); }
+      }
+    });
+  });
+}
+
 async function initSeoControl(sbc) {
   const kwEl = document.getElementById('seo-keywords');
   const msgEl = document.getElementById('seo-msg');
@@ -971,28 +1002,43 @@ async function initSeoControl(sbc) {
 
   async function scan() {
     if (!healthList) return;
+    const base = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
     healthList.innerHTML = '<tr><td colspan="4" class="muted">Scanning pages...</td></tr>';
     const rows = [];
+    const start = Date.now();
     for (const p of PAGES) {
-      const meta = { title: false, desc: false, canonical: false, keywords: false, og: false, twitter: false, jsonld: false };
+      const meta = { title: false, desc: false, canonical: false, keywords: false, og: false, twitter: false, jsonld: false, failed: false };
       try {
-        const res = await fetch(p.file + '?t=' + Date.now(), { cache: 'no-store' });
-        const html = await res.text();
-        meta.title = /<title>[\s\S]{5,}<\/title>/i.test(html);
-        meta.desc = /<meta name="description"[^>]*content="[^"]{50,}"/i.test(html);
-        meta.canonical = /<link rel="canonical"[^>]*>/i.test(html);
-        meta.keywords = /<meta name="keywords"[^>]*>/i.test(html);
-        meta.og = /<meta property="og:(title|description|image)"/i.test(html);
-        meta.twitter = /<meta name="twitter:card"/i.test(html);
-        meta.jsonld = /application\/ld\+json/i.test(html);
-      } catch (e) {}
+        const res = await fetch(base + '/' + p.file + '?t=' + (start + Math.floor(Math.random() * 1e6)), { cache: 'no-store' });
+        if (res.status >= 400) { meta.failed = true; }
+        else {
+          const html = await res.text();
+          meta.title = /<title>[\s\S]{5,}<\/title>/i.test(html);
+          meta.desc = /<meta name="description"[^>]*content="[^"]{50,}"/i.test(html);
+          meta.canonical = /<link rel="canonical"[^>]*>/i.test(html);
+          meta.keywords = /<meta name="keywords"[^>]*>/i.test(html);
+          meta.og = /<meta property="og:(title|description|image)"/i.test(html);
+          meta.twitter = /<meta name="twitter:card"/i.test(html);
+          meta.jsonld = /application\/ld\+json/i.test(html);
+        }
+      } catch (e) { meta.failed = true; }
       const check = (k) => meta[k] ? '<span class="ok">&#10003;</span>' : '<span class="warn">&#10007;</span>';
+      let titleCell, metaCell, richCell;
+      if (meta.failed) {
+        titleCell = '<span class="warn">&#10007; Fetch failed</span>';
+        metaCell = '<span class="muted">check network / hostname</span>';
+        richCell = '<span class="muted">n/a</span>';
+      } else {
+        titleCell = (meta.title ? '<span class="ok">&#10003; Title</span>' : '<span class="warn">&#10007; Title</span>') + (meta.desc ? ' &nbsp;<span class="ok">&#10003; Desc</span>' : ' &nbsp;<span class="warn">&#10007; Desc</span>');
+        metaCell = check('keywords') + ' Kw &nbsp;' + check('canonical') + ' Canonical &nbsp;' + check('og') + ' OG &nbsp;' + check('twitter') + ' TW';
+        richCell = check('jsonld') + ' Schema';
+      }
       rows.push(
         '<tr>' +
           '<td><strong>' + escSeo(p.name) + '</strong><br><small class="muted">' + p.file + '</small></td>' +
-          '<td>' + (meta.title ? '<span class="ok">&#10003; Title</span>' : '<span class="warn">&#10007; Title</span>') + '</td>' +
-          '<td>' + check('desc') + ' Desc &nbsp;' + check('keywords') + ' Kw &nbsp;' + check('canonical') + ' Canonical</td>' +
-          '<td>' + check('og') + ' OG &nbsp;' + check('twitter') + ' TW &nbsp;' + check('jsonld') + ' Schema</td>' +
+          '<td>' + titleCell + '</td>' +
+          '<td>' + metaCell + '</td>' +
+          '<td>' + richCell + '</td>' +
         '</tr>'
       );
     }
@@ -1320,6 +1366,7 @@ async function initChatInbox() {
   initChatInbox();
   initAdsControl(sb);
   initSeoControl(sb);
+  initPubTagCopies();
 
   // View-swap between the main dashboard and the dedicated Ads & Tracking view
   function showView(name) {
