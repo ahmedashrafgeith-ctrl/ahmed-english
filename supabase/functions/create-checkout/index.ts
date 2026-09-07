@@ -2,7 +2,7 @@
 // TutorEnglishPro — Create Stripe Checkout Session (Supabase Edge Function)
 // ------------------------------------------------------------
 // Purpose: creates a hosted Stripe Checkout Session that expires
-// in ~30 minutes (Stripe enforces 30 min minimum / 24 h max for
+// in ~24 hours (Stripe enforces 30 min minimum / 24 h max for
 // expires_at, versus the 24 h forced on Payment Links).
 //
 // Endpoint: POST
@@ -32,7 +32,7 @@ const PLANS: Record<string, { name: string; lessons: number; amountCents: number
 
 // Stripe requires expires_at >= now + 30 minutes and <= now + 24 hours.
 function sessionExpiry(): number {
-  return Math.floor(Date.now() / 1000) + 31 * 60;
+  return Math.floor(Date.now() / 1000) + 24 * 60 * 60;
 }
 
 function json(data: unknown, status = 200) {

@@ -115,29 +115,46 @@
 
 /* ---------- Public carousel ---------- */
 .rv-carousel { position: relative; padding: 4px 0 2px; }
-.rv-grid { display: flex; justify-content: center; }
-.rv-grid .rv-card {
-  max-width: 680px; width: 100%; margin: 0 auto; padding: 34px 40px 30px;
-  border-radius: 24px; position: relative; overflow: hidden;
+#reviews-list.rv-grid { display: block; overflow: hidden; }
+
+.rv-track {
+  display: flex; gap: 18px;
+  transition: transform .65s cubic-bezier(.4, 0, .2, 1);
+  will-change: transform;
+}
+.rv-track .rv-card {
+  flex: 0 0 calc((100% - 54px) / 4);
+  min-width: 0;
+  margin: 0;
+  padding: 26px 22px 22px;
+  border-radius: 20px;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
   background:
-    linear-gradient(160deg, color-mix(in srgb, var(--c-accent) 7%, var(--c-surface)), var(--c-surface) 46%),
+    linear-gradient(160deg, color-mix(in srgb, var(--c-accent) 6%, var(--c-surface)), var(--c-surface) 46%),
     var(--c-surface);
   border: 1px solid var(--c-card-border);
-  box-shadow: var(--shadow-md), 0 24px 60px -28px color-mix(in srgb, var(--c-accent) 45%, transparent);
+  box-shadow: var(--shadow-sm), 0 18px 44px -26px color-mix(in srgb, var(--c-accent) 45%, transparent);
+  transition: transform .25s, box-shadow .25s, border-color .25s;
 }
-.rv-grid .rv-card::before {
-  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+.rv-track .rv-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
   background: linear-gradient(90deg, var(--c-accent), var(--c-accent-2));
-  opacity: .85;
+  opacity: .9;
 }
-.rv-grid .rv-card .rv-quote { top: 26px; right: 30px; opacity: .22; width: 40px; height: 40px; }
-.rv-grid .rv-card .rv-quote svg { width: 40px; height: 40px; }
-.rv-grid .rv-card .rv-text { font-size: 1.1rem; line-height: 1.75; }
-.rv-card-on { animation: rvPop .45s cubic-bezier(.22, .68, 0, 1) both; }
-@keyframes rvPop {
-  from { opacity: 0; transform: translateY(14px) scale(.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.rv-track .rv-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--c-accent) 45%, var(--c-card-border));
+  box-shadow: var(--shadow-md), 0 26px 52px -26px color-mix(in srgb, var(--c-accent) 60%, transparent);
 }
+.rv-track .rv-card .rv-quote { top: 20px; right: 20px; opacity: .18; width: 30px; height: 30px; }
+.rv-track .rv-card .rv-quote svg { width: 30px; height: 30px; }
+.rv-track .rv-card .rv-text {
+  font-size: .98rem; line-height: 1.66; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rv-track .rv-card .rv-author { margin-top: auto; }
+
 .rv-car-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 26px; }
 .rv-car-btn {
   width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
@@ -161,8 +178,11 @@
 .rv-dot:hover { background: color-mix(in srgb, var(--c-accent) 50%, var(--c-card-border)); transform: scale(1.25); }
 .rv-dot.on { width: 26px; background: var(--c-accent); transform: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-accent) 18%, transparent); }
 
-@media (max-width: 720px) {
-  .rv-grid .rv-card { padding: 28px 24px 24px; }
-  .rv-grid .rv-card .rv-text { font-size: 1rem; line-height: 1.7; }
-  .rv-grid .rv-card .rv-quote { top: 22px; right: 22px; }
+@media (max-width: 1100px) {
+  .rv-track .rv-card { flex: 0 0 calc((100% - 18px) / 2); }
+}
+@media (max-width: 700px) {
+  .rv-track { gap: 0; }
+  .rv-track .rv-card { flex: 0 0 100%; padding: 24px 20px 20px; }
+  .rv-track .rv-card .rv-text { font-size: .95rem; -webkit-line-clamp: 6; }
 }

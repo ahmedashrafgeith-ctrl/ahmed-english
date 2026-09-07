@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260906j">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="google-adsense-account" content="ca-pub-7286796230795532">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7286796230795532" crossorigin="anonymous" id="adsbygoogle-loader"></script>
@@ -23,9 +23,9 @@
 <meta name="keywords" content="online english tutor, 1-on-1 english lessons, private english teacher, learn english online, spoken english confidence, business english coaching, tefl certified english tutor">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"TutorEnglishPro","url":"https://www.proenglishtutor.online/admin.html","potentialAction":{"@type":"SearchAction","target":"https://www.proenglishtutor.online/?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"EducationalOrganization","name":"TutorEnglishPro","url":"https://www.proenglishtutor.online/admin.html","description":"Personal 1-on-1 online English tutoring for business professionals, interview prep, and spoken confidence.","foundingDate":"2023","founder":{"@type":"Person","name":"Ahmed"},"sameAs":[]}]}</script>
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles-20260904f.css?v=20260906i">
-  <link rel="stylesheet" href="components.css?v=20260906i">
-  <link rel="stylesheet" href="reviews.css?v=20260906i">
+  <link rel="stylesheet" href="styles-20260904f.css?v=20260906j">
+  <link rel="stylesheet" href="components.css?v=20260906j">
+  <link rel="stylesheet" href="reviews.css?v=20260906j">
   <script src="js/config.js"></script>
   <script src="js/tutor-photo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -33,8 +33,8 @@
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/ads.js?v=20260906i"></script>
-  <script src="js/admin.js?v=20260906i"></script>
+  <script src="js/ads.js?v=20260906j"></script>
+  <script src="js/admin.js?v=20260906j"></script>
 </head>
 <body>
 
@@ -75,7 +75,7 @@
           Reviews
           <span id="rv-badge" class="side-badge" style="display:none;">0</span>
         </a>
-        <a class="side-link" href="#ads-panel">
+        <a class="side-link" href="#monet-panel">
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="2" fill="var(--c-surface,#fff)"/></svg>
           Ads &amp; SEO
         </a>
@@ -420,50 +420,50 @@
       </div><!-- /#admin-dash-view -->
 
       <!-- ============ ADS & TRACKING VIEW ============ -->
-      <div id="admin-ads-view" style="display:none;">
+      <div id="monet-view" style="display:none;">
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
           <div>
             <div class="eyebrow" style="margin-bottom:4px;"><span class="dot"></span> Monetization + Visibility</div>
             <h2 style="font-size:1.5rem;margin:0;">Ads &amp; SEO Control</h2>
             <p class="muted" style="margin:4px 0 0;font-size:.9rem;">Manage Google AdSense zones, visitor stats, AND search-engine visibility &mdash; sitemap, keywords, and per-page SEO health.</p>
           </div>
-          <button type="button" class="btn btn-ghost" id="ads-back-btn">
+          <button type="button" class="btn btn-ghost" id="monet-back-btn">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><polyline points="15 18 9 12 15 6"/></svg>
             Back to Dashboard
           </button>
         </div>
 
-      <nav class="ads-jump" aria-label="Ads & SEO sections">
-        <span class="ads-jump-label">Jump to:</span>
-        <a href="#ads-zones" class="ads-jump-link">Ad Zones</a>
-        <a href="#ads-preview" class="ads-jump-link">Placement Preview</a>
-        <a href="#ads-stats" class="ads-jump-link">Visitor Stats</a>
-        <a href="#seo-panel" class="ads-jump-link">Google Search Visibility</a>
-        <a href="#seo-health-list" class="ads-jump-link">SEO Health</a>
-        <a href="#adsense-setup-panel" class="ads-jump-link">AdSense Tags</a>
+      <nav class="jump-nav" aria-label="Ads & SEO sections">
+        <span class="jump-nav-label">Jump to:</span>
+        <a href="#zone-cards" class="jump-nav-link">Ad Zones</a>
+        <a href="#zone-preview" class="jump-nav-link">Placement Preview</a>
+        <a href="#visit-stats" class="jump-nav-link">Visitor Stats</a>
+        <a href="#seo-panel" class="jump-nav-link">Google Search Visibility</a>
+        <a href="#seo-health-list" class="jump-nav-link">SEO Health</a>
+        <a href="#publisher-ref-panel" class="jump-nav-link">AdSense Tags</a>
       </nav>
 
-      <section class="panel" id="ads-panel">
+      <section class="panel" id="monet-panel">
         <div class="panel-head">
           <div>
             <h3>AdSense Publisher &amp; Slots</h3>
             <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Paste your Google AdSense publisher &amp; slot IDs, then control where ads appear (or turn zones off). Ad units render automatically in the marked zones across the site.</p>
           </div>
-          <button type="button" class="btn btn-sm btn-ghost" id="ads-reset-btn">Reset to defaults</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="reset-settings-btn">Reset to defaults</button>
         </div>
 
         <div class="grid-2" style="gap:22px;margin-top:18px;">
           <!-- AdSense settings -->
           <div>
             <label class="kpi-label">AdSense Publisher ID</label>
-            <input class="field" id="ads-client" type="text" placeholder="e.g. ca-pub-1234567890123456" autocomplete="off">
+            <input class="field" id="publisher-client" type="text" placeholder="e.g. ca-pub-1234567890123456" autocomplete="off">
             <p class="muted" style="margin:6px 0 0;font-size:.78rem;">Found in AdSense › Account › Settings. Leave empty and the ad areas on the site stay hidden until you set this up.</p>
 
             <div style="margin-top:18px;">
               <label class="kpi-label">Ad Zones &amp; Placements</label>
               <p class="muted" style="margin:2px 0 10px;font-size:.78rem;line-height:1.5;">For each zone pick a method: paste your own ad code (AdSense / other network), OR use the managed AdSense slot below. Paste WordPress-style custom HTML/script whether the zone is on or off &mdash; custom code always wins.</p>
-              <div style="display:grid;gap:14px;margin-top:6px;" id="ads-zones">
-                <div class="ad-zone-card" data-zone="banner">
+              <div style="display:grid;gap:14px;margin-top:6px;" id="zone-cards">
+                <div class="zone-card" data-zone="banner">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="banner"> <span><b>Header Banner</b></span></label>
                     <span class="zone-tag">Display</span>
@@ -480,9 +480,9 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="banner" rows="3" placeholder="Paste your own ad code here (e.g. AdSense snippet, Amazon ad, etc.)" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="banner" rows="3" placeholder="Paste your own ad code here (e.g. AdSense snippet, Amazon ad, etc.)" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card" data-zone="in-content">
+                <div class="zone-card" data-zone="in-content">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-content"> <span><b>In-Content</b></span></label>
                     <span class="zone-tag">In-feed</span>
@@ -499,9 +499,9 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="in-content" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="in-content" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card" data-zone="in-article">
+                <div class="zone-card" data-zone="in-article">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="in-article"> <span><b>In-Article</b></span></label>
                     <span class="zone-tag">In-article</span>
@@ -518,9 +518,9 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="in-article" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="in-article" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card" data-zone="sidebar">
+                <div class="zone-card" data-zone="sidebar">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="sidebar"> <span><b>Sidebar</b></span></label>
                     <span class="zone-tag">Widget</span>
@@ -537,9 +537,9 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="sidebar" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="sidebar" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card" data-zone="footer">
+                <div class="zone-card" data-zone="footer">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="footer"> <span><b>Footer</b></span></label>
                     <span class="zone-tag">Display</span>
@@ -556,9 +556,9 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="footer" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="footer" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
-                <div class="ad-zone-card" data-zone="mobile">
+                <div class="zone-card" data-zone="mobile">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <label class="zone-toggle"><input type="checkbox" data-zone-toggle="mobile"> <span><b>Mobile Sticky</b></span></label>
                     <span class="zone-tag">Mobile</span>
@@ -575,20 +575,20 @@
                       <option value="fluid">Fluid</option>
                     </select>
                     <span class="muted" style="font-size:.74rem;line-height:1.4;">AdSense unit size: sets data-ad-format so the slot matches the AdSense ad type you created.</span>
-                  </div><textarea class="field ad-code" data-zone-code="mobile" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
+                  </div><textarea class="field zone-code" data-zone-code="mobile" rows="3" placeholder="Paste your own ad code here" autocomplete="off"></textarea>
                 </div>
               </div>
-              <button type="button" class="btn btn-sm btn-ghost" id="ads-preview-toggle" style="margin-top:14px;">&#128065; Toggle placement preview</button>
-              <div id="ads-preview" style="margin-top:16px;"></div>
+              <button type="button" class="btn btn-sm btn-ghost" id="toggle-preview-btn" style="margin-top:14px;">&#128065; Toggle placement preview</button>
+              <div id="zone-preview" style="margin-top:16px;"></div>
             </div>
 
             <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <label class="zone-toggle"><input type="checkbox" id="ads-tracking" checked> <span>Enable visitor tracking</span></label>
+              <label class="zone-toggle"><input type="checkbox" id="tracking-on" checked> <span>Enable visitor tracking</span></label>
             </div>
 
             <div style="margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <button type="button" class="btn btn-primary" id="ads-save-btn">Save Ad Settings</button>
-              <span id="ads-msg" style="font-size:.85rem;font-weight:600;display:none;"></span>
+              <button type="button" class="btn btn-primary" id="save-settings-btn">Save Ad Settings</button>
+              <span id="settings-msg" style="font-size:.85rem;font-weight:600;display:none;"></span>
             </div>
 
             <div style="margin-top:18px;background:var(--c-soft);border:1px solid var(--c-border);border-radius:12px;padding:14px 16px;">
@@ -598,40 +598,40 @@
           </div>
 
           <!-- Visitor stats -->
-          <div id="ads-stats">
+          <div id="visit-stats">
             <div class="panel-head" style="padding:0 0 4px;">
               <div>
                 <h3 style="font-size:1.05rem;">Visitor Activity</h3>
                 <p class="muted" style="margin:2px 0 0;font-size:.8rem;">Page views over the last 14 days, with device, browser and country breakdowns.</p>
               </div>
-              <button type="button" class="btn btn-sm btn-ghost" id="ads-refresh">Refresh</button>
+              <button type="button" class="btn btn-sm btn-ghost" id="stats-refresh">Refresh</button>
             </div>
             <div class="stats" style="grid-template-columns:repeat(3,1fr);margin:14px 0 18px;">
               <div class="stat" style="padding:18px 20px;">
                 <small>Total Views (14&nbsp;days)</small>
-                <div class="num" id="ads-total" style="font-size:1.6rem;">0</div>
+                <div class="num" id="views-total" style="font-size:1.6rem;">0</div>
               </div>
               <div class="stat" style="padding:18px 20px;">
                 <small>Views Today</small>
-                <div class="num" id="ads-today" style="font-size:1.6rem;">0</div>
+                <div class="num" id="views-today" style="font-size:1.6rem;">0</div>
               </div>
               <div class="stat" style="padding:18px 20px;">
                 <small>Most Viewed Page</small>
-                <div class="num" id="ads-kpi-top" style="font-size:1.05rem;line-height:1.35;">—</div>
+                <div class="num" id="views-top-page" style="font-size:1.05rem;line-height:1.35;">—</div>
               </div>
             </div>
             <div class="dist-cols">
               <div class="dist-card">
                 <h4>By Device</h4>
-                <div id="ads-dist-devices" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+                <div id="stat-devices" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
               </div>
               <div class="dist-card">
                 <h4>By Country</h4>
-                <div id="ads-dist-countries" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+                <div id="stat-countries" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
               </div>
               <div class="dist-card">
                 <h4>By Browser</h4>
-                <div id="ads-dist-browsers" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
+                <div id="stat-browsers" class="dist-list"><p class="muted" style="font-size:.8rem;">Loading…</p></div>
               </div>
             </div>
             <div class="panel-head" style="padding:0;margin-top:22px;">
@@ -643,7 +643,7 @@
             <div style="overflow-x:auto;margin-top:10px;">
               <table class="table">
                 <thead><tr><th>Page</th><th style="text-align:right;">Views</th></tr></thead>
-                <tbody id="ads-top-list"><tr><td colspan="2" class="muted">Loading stats...</td></tr></tbody>
+                <tbody id="top-pages-list"><tr><td colspan="2" class="muted">Loading stats...</td></tr></tbody>
               </table>
             </div>
             <p class="muted" style="margin:14px 0 0;font-size:.78rem;">Tracking logs one lightweight row per page view into Supabase (no cookies, best-effort, anonymous).</p>
@@ -692,7 +692,7 @@
           <!-- Keyword manager -->
           <div>
             <label class="kpi-label">Site Keywords (comma separated)</label>
-            <textarea class="field ad-code" id="seo-keywords" rows="5" placeholder="online english tutor, 1-on-1 english lessons, private english teacher, business english coaching, ..." autocomplete="off"></textarea>
+            <textarea class="field zone-code" id="seo-keywords" rows="5" placeholder="online english tutor, 1-on-1 english lessons, private english teacher, business english coaching, ..." autocomplete="off"></textarea>
             <p class="muted" style="margin:6px 0 0;font-size:.78rem;">These are already baked into every page&rsquo;s <code>&lt;meta name="keywords"&gt;</code>. Edit + save here to keep them updated and re-print to the public pages.</p>
             <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
               <button type="button" class="btn btn-primary" id="seo-save-btn">Save SEO Settings</button>
@@ -718,7 +718,7 @@
       </section>
 
       <!-- ============ PUBLISHER TAGS & SETUP REFERENCE ============ -->
-      <section class="panel" id="adsense-setup-panel" style="margin-top:24px;">
+      <section class="panel" id="publisher-ref-panel" style="margin-top:24px;">
         <div class="panel-head">
           <div>
             <h3>Publisher Tags &amp; Setup Reference</h3>
@@ -731,20 +731,20 @@
           <div style="background:var(--c-soft);border:1px solid var(--c-border);border-radius:12px;padding:14px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <strong style="font-size:.85rem;">1) AdSense site-wide script &mdash; in the <code>&lt;head&gt;</code> of every page</strong>
-              <button type="button" class="btn btn-sm btn-ghost" data-copy="adsense-head-code">Copy</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-copy="ref-head-code">Copy</button>
             </div>
             <p class="muted" style="margin:6px 0 10px;font-size:.8rem;">Google picks the best placements automatically across the site. Already live on all 14 pages; can take up to an hour for ads to appear.</p>
-            <pre id="adsense-head-code" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7286796230795532"
+            <pre id="ref-head-code" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7286796230795532"
      crossorigin="anonymous"&gt;&lt;/script&gt;</pre>
           </div>
 
           <div style="background:var(--c-soft);border:1px solid var(--c-border);border-radius:12px;padding:14px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <strong style="font-size:.85rem;">2) AMP Auto Ads &mdash; Step 1, in the <code>&lt;head&gt;</code></strong>
-              <button type="button" class="btn btn-sm btn-ghost" data-copy="amp-head-code">Copy</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-copy="ref-amp-head">Copy</button>
             </div>
             <p class="muted" style="margin:6px 0 10px;font-size:.8rem;">Loads the amp-auto-ads library. <strong>Applies only if you publish AMP versions of the pages</strong> &mdash; this site is standard HTML, so ads here run through snippet 1 instead.</p>
-            <pre id="amp-head-code" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;script async custom-element="amp-auto-ads"
+            <pre id="ref-amp-head" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;script async custom-element="amp-auto-ads"
         src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"&gt;
 &lt;/script&gt;</pre>
           </div>
@@ -752,10 +752,10 @@
           <div style="background:var(--c-soft);border:1px solid var(--c-border);border-radius:12px;padding:14px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <strong style="font-size:.85rem;">3) AMP Auto Ads &mdash; Step 2, right after the <code>&lt;body&gt;</code> tag</strong>
-              <button type="button" class="btn btn-sm btn-ghost" data-copy="amp-body-code">Copy</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-copy="ref-amp-body">Copy</button>
             </div>
             <p class="muted" style="margin:6px 0 10px;font-size:.8rem;">Placement doesn&rsquo;t reflect where the ad shows &mdash; AMP decides automatically. AMP-only, same caveat as above.</p>
-            <pre id="amp-body-code" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;amp-auto-ads type="adsense"
+            <pre id="ref-amp-body" style="background:#0f172a;color:#e2e8f0;font-size:.78rem;line-height:1.55;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:0;">&lt;amp-auto-ads type="adsense"
         data-ad-client="ca-pub-7286796230795532"&gt;
 &lt;/amp-auto-ads&gt;</pre>
           </div>
@@ -776,7 +776,7 @@
         <span data-seo-page="booking.html" data-def="WebPage">Booking</span>
         <span data-seo-page="login.html" data-def="WebPage">Login</span>
       </div>
-      </div><!-- /#admin-ads-view -->
+      </div><!-- /#monet-view -->
     </main>
   </div>
 
@@ -882,7 +882,7 @@
     </div>
   </div>
 
-<script src="js/reviews.js?v=20260906i"></script>
+<script src="js/reviews.js?v=20260906j"></script>
 </body>
 </html>
 

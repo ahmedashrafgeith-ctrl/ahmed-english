@@ -1064,17 +1064,17 @@ async function initAdsControl(sbc) {
     footer:     { loc: 'Before the footer on all pages',          type: 'Display' },
     mobile:     { loc: 'Fixed bar at the bottom on phones only',  type: 'Mobile' }
   };
-  const previewToggle = document.getElementById('ads-preview-toggle');
-  const previewBox = document.getElementById('ads-preview');
-  const clientEl = document.getElementById('ads-client');
-  const trackingEl = document.getElementById('ads-tracking');
-  const msgEl = document.getElementById('ads-msg');
-  const saveBtn = document.getElementById('ads-save-btn');
-  const resetBtn = document.getElementById('ads-reset-btn');
-  const refreshBtn = document.getElementById('ads-refresh');
-  const totalEl = document.getElementById('ads-total');
-  const todayEl = document.getElementById('ads-today');
-  const topList = document.getElementById('ads-top-list');
+  const previewToggle = document.getElementById('toggle-preview-btn');
+  const previewBox = document.getElementById('zone-preview');
+  const clientEl = document.getElementById('publisher-client');
+  const trackingEl = document.getElementById('tracking-on');
+  const msgEl = document.getElementById('settings-msg');
+  const saveBtn = document.getElementById('save-settings-btn');
+  const resetBtn = document.getElementById('reset-settings-btn');
+  const refreshBtn = document.getElementById('stats-refresh');
+  const totalEl = document.getElementById('views-total');
+  const todayEl = document.getElementById('views-today');
+  const topList = document.getElementById('top-pages-list');
 
   function current() {
     const cfg = ads.get();
@@ -1202,7 +1202,7 @@ async function initAdsControl(sbc) {
       previewBox.style.display = show ? 'block' : 'none';
       previewToggle.innerHTML = show ? '&#128065; Hide placement preview' : '&#128065; Toggle placement preview';
     });
-    document.querySelectorAll('#ads-zones input, #ads-zones textarea, #ads-zones select').forEach((n) => {
+    document.querySelectorAll('#zone-cards input, #zone-cards textarea, #zone-cards select').forEach((n) => {
       n.addEventListener('input', safePreview);
       n.addEventListener('change', safePreview);
     });
@@ -1265,7 +1265,7 @@ async function initAdsControl(sbc) {
         byPage[name] = (byPage[name] || 0) + 1;
       });
       const sorted = Object.entries(byPage).sort((a, b) => b[1] - a[1]).slice(0, 10);
-      const kpiEl = document.getElementById('ads-kpi-top');
+      const kpiEl = document.getElementById('views-top-page');
       if (kpiEl) kpiEl.textContent = sorted.length ? `${sorted[0][0]} · ${sorted[0][1]}` : '—';
       if (!sorted.length) {
         topList.innerHTML = '<tr><td colspan="2" class="muted">No views recorded yet. Open any page to start tracking.</td></tr>';
@@ -1300,9 +1300,9 @@ async function initAdsControl(sbc) {
           '</div>';
         }).join('');
       };
-      dist('device', 'Unknown', 'ads-dist-devices');
-      dist('country', 'Unknown', 'ads-dist-countries');
-      dist('browser', 'Other', 'ads-dist-browsers');
+      dist('device', 'Unknown', 'stat-devices');
+      dist('country', 'Unknown', 'stat-countries');
+      dist('browser', 'Other', 'stat-browsers');
     } catch (e) {
       console.error('ads stats error:', e);
       if (topList) topList.innerHTML = '<tr><td colspan="2" class="muted">Could not load stats.</td></tr>';
@@ -1371,7 +1371,7 @@ async function initChatInbox() {
   // View-swap between the main dashboard and the dedicated Ads & Tracking view
   function showView(name) {
     const dash = document.getElementById('admin-dash-view');
-    const ads = document.getElementById('admin-ads-view');
+    const ads = document.getElementById('monet-view');
     const active = name === 'ads' ? ads : dash;
     const other = name === 'ads' ? dash : ads;
     if (active) {
@@ -1381,12 +1381,12 @@ async function initChatInbox() {
     if (other) { other.style.display = 'none'; }
     // make sure the inner Ads panel + its grid are visible and never clipped
     if (name === 'ads') {
-      const panel = document.getElementById('ads-panel');
+      const panel = document.getElementById('monet-panel');
       if (panel) {
         panel.style.display = 'block';
         panel.style.visibility = 'visible';
         // Force all child elements to be visible (defense against CSS overrides)
-        panel.querySelectorAll('.grid-2, .ad-zone-card, .panel-head, .kpi-label, .field, textarea, select, button').forEach((el) => {
+        panel.querySelectorAll('.grid-2, .zone-card, .panel-head, .kpi-label, .field, textarea, select, button').forEach((el) => {
           el.style.visibility = 'visible';
         });
         const grid = panel.firstElementChild && panel.firstElementChild.tagName === 'DIV' && panel.firstElementChild.className.indexOf('grid') === 0 ? panel.firstElementChild : panel.querySelector('.grid-2');
@@ -1396,7 +1396,7 @@ async function initChatInbox() {
           grid.style.visibility = 'visible';
         }
       }
-      // Force the entire admin-ads-view to be visible
+      // Force the entire monet-view to be visible
       if (ads) {
         ads.style.display = 'block';
         ads.style.visibility = 'visible';
@@ -1406,7 +1406,7 @@ async function initChatInbox() {
         });
       }
       requestAnimationFrame(() => {
-        const p = document.getElementById('ads-panel');
+        const p = document.getElementById('monet-panel');
         if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       return;
@@ -1422,10 +1422,10 @@ async function initChatInbox() {
       link.classList.add('active');
 
       // "Ads & Tracking" opens its own dedicated view instead of scrolling
-      if (id === 'ads-panel') {
+      if (id === 'monet-panel') {
         e.preventDefault();
         showView('ads');
-        history.replaceState(null, '', '#ads-panel');
+        history.replaceState(null, '', '#monet-panel');
         return;
       }
 
@@ -1439,7 +1439,7 @@ async function initChatInbox() {
     });
   });
 
-  const adsBackBtn = document.getElementById('ads-back-btn');
+  const adsBackBtn = document.getElementById('monet-back-btn');
   if (adsBackBtn) {
     adsBackBtn.addEventListener('click', () => {
       showView('dash');
@@ -1452,15 +1452,15 @@ async function initChatInbox() {
   }
 
   // Open the right view when the page is loaded (or navigated) with a hash,
-  // so e.g. admin.html#ads-panel shows the Ads & Visitor Tracking panel instead
+  // so e.g. admin.html#monet-panel shows the Ads & Visitor Tracking panel instead
   // of a blank area (the panel is hidden until this runs).
   function applyHash() {
     const h = (location.hash || '').toLowerCase();
-    const isAds = h.indexOf('ads') !== -1 || h.indexOf('tracking') !== -1;
+    const isAds = h.indexOf('monet') !== -1 || h.indexOf('ads') !== -1 || h.indexOf('tracking') !== -1;
     if (isAds) {
       showView('ads');
       document.querySelectorAll('.side-link').forEach((l) => l.classList.remove('active'));
-      const al = document.querySelector('.side-link[href="#ads-panel"]');
+      const al = document.querySelector('.side-link[href="#monet-panel"]');
       if (al) al.classList.add('active');
     } else {
       showView('dash');

@@ -91,9 +91,8 @@
     function quoteSVG() {
       return '<svg viewBox="0 0 24 24"><path d="M9.6 5.2C6.4 6.7 4.2 9.3 4.2 12.7c0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L9.6 5.2zm9.4 0c-3.2 1.5-5.4 4.1-5.4 7.5 0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L19 5.2z"/></svg>';
     }
-    function cardHTML(r) {
+    function cardInner(r) {
       return '' +
-      '<article class="rv-card rv-card-on">' +
         '<span class="rv-quote">' + quoteSVG() + '</span>' +
         '<div class="rv-top">' +
           '<div class="rv-rating">' + stars(r.rating) + '</div>' +
@@ -106,8 +105,7 @@
             '<div class="rv-name">' + esc(r.student_name) + (r.verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : '') + '</div>' +
             '<span class="rv-date-sub">Verified student review</span>' +
           '</div>' +
-        '</div>' +
-      '</article>';
+        '</div>';
     }
 
     var controls = document.getElementById('reviews-controls');
@@ -116,56 +114,137 @@
     var nextBtn = document.getElementById('rv-next');
     var carouselEl = document.getElementById('reviews-carousel');
     var idx = 0;
-    var enabled = rows.length > 1;
+    var vc = 1;                  // cards per view, recomputed on load/resize
+    var enabled = false;
     var paused = false;
     var timer = null;
+    var snapTimer = null;
+    var cards = [];
+    var track = null;
+    var step = 1;
 
-    function stopTimer() {
-      if (timer) { clearTimeout(timer); timer = null; }
+    function stopTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+    function stopSnap() { if (snapTimer) { clearTimeout(snapTimer); snapTimer = null; } }
+
+    function vcForWidth() {
+      var w = window.innerWidth || document.documentElement.clientWidth;
+      if (w >= 1100) return 4;
+      if (w >= 700) return 2;
+      return 1;
     }
 
-    function renderDots() {
-      if (!dotsEl) return;
-      dotsEl.innerHTML = rows.map(function (_, k) {
-        return '<button type="button" class="rv-dot' + (k === idx ? ' on' : '') + '" data-i="' + k + '" aria-label="Go to review ' + (k + 1) + '" aria-pressed="' + (k === idx) + '"></button>';
-      }).join('');
-      dotsEl.querySelectorAll('.rv-dot').forEach(function (d) {
-        d.addEventListener('click', function () { go(parseInt(d.getAttribute('data-i'), 10)); });
+    // Build the sliding track: all cards + clones of the first view so the
+    // last card can wrap seamlessly back to the first.
+    function renderCards() {
+      listEl.innerHTML = '';
+      cards = rows.map(function (r) {
+        var el = document.createElement('article');
+        el.className = 'rv-card';
+        el.innerHTML = cardInner(r);
+        return el;
       });
+      track = document.createElement('div');
+      track.className = 'rv-track';
+      cards.forEach(function (c) { track.appendChild(c); });
+      for (var c = 0; c < Math.min(vc, rows.length); c++) {
+        track.appendChild(cards[c].cloneNode(true));
+      }
+      listEl.appendChild(track);
     }
 
-    // Self-correcting autoplay: recomputes against the real clock every
-    // second, so it keeps its 6s rhythm even after a backgrounded tab or a
-    // suspended timer, and it never gets stuck "paused until refresh".
-    function startAutoplay() {
-      stopTimer();
-      if (!enabled || paused) return;
-      var at = Date.now() + 6000;
-      var tick = function () {
-        if (!enabled || paused) { stopTimer(); return; }
-        if (Date.now() >= at) { go(idx + 1); return; }
-        timer = setTimeout(tick, Math.min(1000, at - Date.now()));
-      };
-      timer = setTimeout(tick, 6000);
+    function updateDots() {
+      if (!dotsEl) return;
+      var pages = Math.max(1, Math.ceil(rows.length / vc));
+      var cur = Math.min(pages - 1, Math.floor(idx / vc));
+      dotsEl.innerHTML = '';
+      for (var p = 0; p < pages; p++) {
+        (function (pi) {
+          var d = document.createElement('button');
+          d.type = 'button';
+          d.className = 'rv-dot' + (pi === cur ? ' on' : '');
+          d.setAttribute('aria-label', 'Go to review page ' + (pi + 1));
+          d.setAttribute('aria-pressed', String(pi === cur));
+          d.addEventListener('click', function () { go(pi * vc); });
+          dotsEl.appendChild(d);
+        })(p);
+      }
+    }
+
+    function moveTo(i, smooth) {
+      i = Math.max(0, Math.min(rows.length, i));
+      idx = i;
+      if (smooth === false) track.style.transition = 'none';
+      track.style.transform = 'translateX(-' + (i * step) + 'px)';
+      if (smooth === false) { void track.offsetWidth; track.style.transition = ''; }
+      updateDots();
     }
 
     function go(i) {
-      if (!rows.length) return;
-      idx = (i + rows.length) % rows.length;
-      listEl.innerHTML = cardHTML(rows[idx]);
-      renderDots();
-      if (prevBtn) prevBtn.disabled = !enabled;
-      if (nextBtn) nextBtn.disabled = !enabled;
+      if (i < 0 || i >= rows.length) return;
+      stopSnap();
+      moveTo(i);
       startAutoplay();
     }
 
-    function hold() { paused = true; stopTimer(); }
+    function stepNext() {
+      if (!rows.length) return;
+      if (idx >= rows.length - 1) {
+        moveTo(rows.length);               // slide into the clones…
+        stopSnap();
+        snapTimer = setTimeout(function () { moveTo(0, false); }, 720);  // …then snap home
+      } else {
+        moveTo(idx + 1);
+      }
+      startAutoplay();
+    }
+
+    function stepPrev() {
+      if (!rows.length) return;
+      if (idx === 0) {
+        moveTo(rows.length, false);        // jump invisibly to the clone end…
+        moveTo(rows.length - 1);           // …then glide back onto the last card
+      } else {
+        moveTo(idx - 1);
+      }
+      startAutoplay();
+    }
+
+    // Self-correcting autoplay: recomputes against the real clock each
+    // second so the 5.2s rhythm holds even after a backgrounded tab and it
+    // never gets stuck "paused until refresh".
+    function startAutoplay() {
+      stopTimer();
+      if (!enabled || paused) return;
+      var at = Date.now() + 5200;
+      var tick = function () {
+        if (!enabled || paused) { stopTimer(); return; }
+        if (Date.now() >= at) { stepNext(); return; }
+        timer = setTimeout(tick, Math.min(1000, at - Date.now()));
+      };
+      timer = setTimeout(tick, 5200);
+    }
+
+    function hold() { paused = true; stopTimer(); stopSnap(); }
     function release() { paused = false; startAutoplay(); }
 
+    function relayout() {
+      vc = vcForWidth();
+      enabled = rows.length > vc;
+      stopTimer(); stopSnap();
+      renderCards();
+      step = listEl.clientWidth / vc;
+      moveTo(0, false);
+      if (controls) {
+        controls.style.display = enabled ? 'flex' : 'none';
+        if (prevBtn) prevBtn.disabled = false;
+        if (nextBtn) nextBtn.disabled = false;
+      }
+      if (enabled && !paused) startAutoplay();
+    }
+
     if (controls) {
-      controls.style.display = enabled ? 'flex' : 'none';
-      if (prevBtn) prevBtn.addEventListener('click', function () { go(idx - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { go(idx + 1); });
+      if (prevBtn) prevBtn.addEventListener('click', function () { stepPrev(); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { stepNext(); });
     }
     if (carouselEl) {
       carouselEl.setAttribute('role', 'group');
@@ -177,8 +256,11 @@
       carouselEl.addEventListener('touchcancel', release, { passive: true });
     }
     if (listEl) listEl.setAttribute('aria-live', 'polite');
-    if (enabled) startAutoplay();
-    go(0);
+    window.addEventListener('resize', function () {
+      clearTimeout(relayout.__t);
+      relayout.__t = setTimeout(relayout, 150);
+    });
+    relayout();
   }
 
   // ---------------------------------------------------------------
