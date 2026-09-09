@@ -27,6 +27,7 @@
       code: DEFAULTS.code || {},
       zones: DEFAULTS.zones || {},
       formats: DEFAULTS.formats || {},
+      auto: DEFAULTS.auto !== false,
       tracking: DEFAULTS.tracking !== false
     };
     try {
@@ -37,12 +38,14 @@
         if (saved.code) for (var c in saved.code) if (saved.code[c]) s.code[c] = saved.code[c];
         if (saved.zones) for (var z in saved.zones) if (typeof saved.zones[z] === "boolean") s.zones[z] = saved.zones[z];
         if (saved.formats) for (var f in saved.formats) if (validFormat(saved.formats[f])) s.formats[f] = saved.formats[f];
+        if (typeof saved.auto === "boolean") s.auto = saved.auto;
         if (typeof saved.tracking === "boolean") s.tracking = saved.tracking;
       }
     } catch (e) {}
     return s;
   }
   var cfg = settings();
+  var autoActivated = false;
 
   var slug = "ca-pub-" + (cfg.client || "");
 
@@ -125,6 +128,14 @@
         s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(clientId);
         s.crossOrigin = "anonymous";
         document.head.appendChild(s);
+      }
+      // Google Auto ads (dashboard: AdSense -> Settings -> Auto ads): with the
+      // loader present, this canonical push makes AdSense auto-place its units
+      // across the page based on the account's Auto ads selections. It does not
+      // create manual <ins> units, so slot-based zones below still work as before.
+      if (cfg.auto !== false && !autoActivated) {
+        autoActivated = true;
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({ google_enable_auto_ads: true }); } catch (e) {}
       }
     }
 
