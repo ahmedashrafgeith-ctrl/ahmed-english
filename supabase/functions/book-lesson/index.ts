@@ -107,11 +107,13 @@ function inWorkingWindow(iso) {
 }
 
 // Fetch Ahmed's existing bookings (the reliable, working read API).
+// Uses the unfiltered list so PENDING/unconfirmed bookings are counted:
+// Cal.com still blocks slots held by pending bookings, and filtering on
+// status=upcoming silently dropped those, so the site offered slots that
+// Cal.com then rejected with 409.
 async function fetchBusy(startIso, endIso) {
   try {
     const params = new URLSearchParams({ limit: "100" });
-    // start/end are the UTC slice of the whole window we display.
-    params.set("status", "upcoming");
     const res = await fetch(`${CAL_BASE}/v2/bookings?${params}`, {
       headers: {
         Authorization: `Bearer ${CAL_API_KEY}`,
@@ -124,6 +126,8 @@ async function fetchBusy(startIso, endIso) {
     const bookings = (body?.data?.bookings) || [];
     const busy = [];
     for (const b of bookings) {
+      const st = (b.status || "").toLowerCase();
+      if (st === "cancelled" || st === "rejected" || st === "completed") continue;
       const s = b.start ? new Date(b.start) : null;
       const e = b.end ? new Date(b.end) : null;
       if (s && e && !isNaN(s.getTime()) && !isNaN(e.getTime())) {
@@ -200,7 +204,19 @@ async function createBooking(user, body) {
   const cfg = SLUG_MAP[eventSlug];
   const minutes = cfg.minutes;
   const startMs = Math.floor(new Date(start).getTime());
-  const endIso = new Date(startMs + minutes * 60000).toISOString();
+  const endMs = startMs + minutes * 60000;
+  const endIso = new Date(endMs).toISOString();
+
+  // Re-verify the slot is still free right before creating the Cal.com
+  // booking. The availability shown to the student may be stale (a pending
+  // booking, another student racing, or a slot taken since the page loaded).
+  // Fail fast with 409 instead of pushing a conflicting event to Cal.com.
+  const dayKey = new Date(startMs).toISOString().slice(0, 10);
+  const nowBusy = await fetchBusy(dayKey + "T00:00:00Z", dayKey + "T23:59:59.000Z");
+  const stillFree = !nowBusy.some(b => startMs < b.end.getTime() && endMs > b.start.getTime());
+  if (!stillFree) {
+    return json("error", { message: "Sorry, that slot was just taken. Please pick another time." }, 409);
+  }
 
   // Create the booking on Cal.com directly with the server-side key.
   // Cal.com records the event, opens the calendar slot, and emails the
@@ -230,7 +246,13 @@ async function createBooking(user, body) {
       let reason = "That time couldn't be booked. Please pick another slot.";
       let code = 502;
       if (res.status === 401) { reason = "We couldn't confirm your booking just now. Please try again in a moment."; code = 502; }
-      if (res.status === 409) { reason = "Sorry, that slot was just taken. Please pick another time."; code = 409; }
+      if (res.status === 409) {
+        const calCode = out?.error?.code || "";
+        reason = calCode
+          ? "Sorry, that slot was just taken (" + calCode + "). Please pick another time."
+          : "Sorry, that slot was just taken. Please pick another time.";
+        code = 409;
+      }
       if (res.status === 422) { reason = "Sorry, that time is no longer available. Please pick another slot."; code = 422; }
       console.error("[book-lesson] cal create error", res.status, JSON.stringify(out));
       return json("error", { message: reason }, code);
