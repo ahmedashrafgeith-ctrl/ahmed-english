@@ -44,15 +44,6 @@ const SLUG_MAP = {
   "60min":       { slug: "60min",       eventTypeId: 6757820, minutes: 60 },
 };
 
-// Ahmed's working window: 18:00 - 22:00 (GMT+8). Verified against the
-// Cal.com schedule (Asia/Kuala_Lumpur, 18:00-22:00, all days).
-const WIN_START_MIN = 18 * 60;
-const WIN_END_MIN = 23 * 60;
-// Cal.com enforces a 120-minute (2 hour) minimum booking notice on these
-// event types. We hide any slot closer than this so students never see a
-// time Cal.com will reject.
-const MIN_NOTICE_MS = 120 * 60 * 1000;
-
 const supabase = createClient(SB_URL, SB_SERVICE);
 
 const CORS = {
@@ -99,81 +90,39 @@ async function requireStudent(req) {
   return profile || null;
 }
 
-// ---- GET: available slots for an event type ----
-function inWorkingWindow(iso) {
-  const d = new Date(iso);
-  const h = (d.getUTCHours() + 8) % 24; // hour in GMT+8 (no DST)
-  return h >= 18 && h < 23;
-}
+// ---- GET: authoritative available slots from Cal.com ----
+// Cal.com computes availability from the event type's real schedule
+// (work hours, buffers, date overrides, min notice, existing bookings).
+// We ask it directly instead of re-deriving windows/busy times locally,
+// so the site only ever offers slots Cal.com will accept. Earlier code
+// guessed the work window (18:00-23:00 vs the real 18:00-22:00) and
+// parsed the bookings response as data.bookings when the API returns a
+// flat array - both caused "taken" (409 ConflictException) errors.
+const SLOTS_VER = "2024-09-04";
 
-// Fetch Ahmed's existing bookings (the reliable, working read API).
-// Uses the unfiltered list so PENDING/unconfirmed bookings are counted:
-// Cal.com still blocks slots held by pending bookings, and filtering on
-// status=upcoming silently dropped those, so the site offered slots that
-// Cal.com then rejected with 409.
-async function fetchBusy(startIso, endIso) {
+async function getCalSlots(eventSlug, startDate, endDate) {
   try {
-    const params = new URLSearchParams({ limit: "100" });
-    const res = await fetch(`${CAL_BASE}/v2/bookings?${params}`, {
+    const params = new URLSearchParams({
+      eventTypeId: String(SLUG_MAP[eventSlug].eventTypeId),
+      start: startDate,
+      end: endDate,
+      timeZone: "UTC",
+      format: "range",
+    });
+    const res = await fetch(`${CAL_BASE}/v2/slots?${params}`, {
       headers: {
         Authorization: `Bearer ${CAL_API_KEY}`,
-        "cal-api-version": CAL_VER,
+        "cal-api-version": SLOTS_VER,
         Accept: "application/json",
       },
     });
-    if (!res.ok) return [];
+    if (!res.ok) return null;
     const body = await res.json();
-    const bookings = (body?.data?.bookings) || [];
-    const busy = [];
-    for (const b of bookings) {
-      const st = (b.status || "").toLowerCase();
-      if (st === "cancelled" || st === "rejected" || st === "completed") continue;
-      const s = b.start ? new Date(b.start) : null;
-      const e = b.end ? new Date(b.end) : null;
-      if (s && e && !isNaN(s.getTime()) && !isNaN(e.getTime())) {
-        busy.push({ start: s, end: e });
-      }
-    }
-    return busy;
+    return (body && body.data) || {};
   } catch (e) {
-    console.error("fetch busy error:", e.message);
-    return [];
+    console.error("getCalSlots error:", e.message);
+    return null;
   }
-}
-
-// Compute free slots inside 18:00-23:00 (GMT+8) for each date.
-function computeSlots(eventSlug, start, end, busy) {
-  const minutes = SLUG_MAP[eventSlug].minutes;
-  const startDate = new Date(start + "T00:00:00Z");
-  const endDate = new Date(end + "T23:59:59.000Z");
-  const data = {};
-
-  for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
-    const dateKey = d.toISOString().slice(0, 10);
-    // 18:00 GMT+8 == 10:00 UTC on the same calendar date.
-    const dayUTC = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-    const winStart = new Date(dayUTC + (WIN_START_MIN - 8 * 60) * 60000);
-    const winEnd = new Date(dayUTC + (WIN_END_MIN - 8 * 60) * 60000);
-
-    const step = minutes === 60 ? 60 : 30;
-    const slots = [];
-    const nowMs = Date.now();
-    for (let s = new Date(winStart); s.getTime() + minutes * 60000 <= winEnd.getTime(); s = new Date(s.getTime() + step * 60000)) {
-      const sMs = s.getTime();
-      const eMs = sMs + minutes * 60000;
-      // Hide anything already past, and anything within Cal.com's minimum
-      // booking notice (so a slot Cal.com would reject is never shown).
-      if (sMs <= nowMs) continue;
-      if (sMs - nowMs < MIN_NOTICE_MS) continue;
-      const overlaps = busy.some(b => sMs < b.end.getTime() && eMs > b.start.getTime());
-      if (overlaps) continue;
-      const iso = s.toISOString();
-      if (!inWorkingWindow(iso)) continue; // safety
-      slots.push({ start: iso, end: new Date(eMs).toISOString() });
-    }
-    if (slots.length) data[dateKey] = slots;
-  }
-  return data;
 }
 
 async function getSlots(url) {
@@ -186,9 +135,10 @@ async function getSlots(url) {
   if (!SLUG_MAP[eventSlug]) return json("error", { message: "Unknown event type" }, 400);
 
   const endDate = end || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
-  const busy = await fetchBusy(start + "T00:00:00Z", endDate + "T23:59:59.000Z");
-  const data = computeSlots(eventSlug, start, endDate, busy);
-
+  const data = await getCalSlots(eventSlug, start, endDate);
+  if (!data) {
+    return json("error", { message: "Could not load availability right now. Please try again in a moment." }, 502);
+  }
   return json("success", { data, timeZone: tz });
 }
 
@@ -207,14 +157,15 @@ async function createBooking(user, body) {
   const endMs = startMs + minutes * 60000;
   const endIso = new Date(endMs).toISOString();
 
-  // Re-verify the slot is still free right before creating the Cal.com
-  // booking. The availability shown to the student may be stale (a pending
-  // booking, another student racing, or a slot taken since the page loaded).
-  // Fail fast with 409 instead of pushing a conflicting event to Cal.com.
+  // Re-verify this exact slot is still bookable using Cal.com's authoritative
+  // availability (schedule hours, min notice, buffers, existing bookings) -
+  // if Cal no longer offers it, tell the student now instead of pushing a
+  // conflicting booking.
   const dayKey = new Date(startMs).toISOString().slice(0, 10);
-  const nowBusy = await fetchBusy(dayKey + "T00:00:00Z", dayKey + "T23:59:59.000Z");
-  const stillFree = !nowBusy.some(b => startMs < b.end.getTime() && endMs > b.start.getTime());
-  if (!stillFree) {
+  const daySlots = await getCalSlots(eventSlug, dayKey, dayKey);
+  const offered = (daySlots && daySlots[dayKey]) || [];
+  const stillBookable = offered.some(s => Math.floor(new Date(s.start).getTime()) === startMs);
+  if (!stillBookable) {
     return json("error", { message: "Sorry, that slot was just taken. Please pick another time." }, 409);
   }
 
