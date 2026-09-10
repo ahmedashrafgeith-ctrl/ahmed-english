@@ -20,11 +20,22 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function stars(n) {
-    n = Math.max(1, Math.min(5, Math.round(n)));
-    var out = '<span class="rv-stars" aria-label="' + n + ' out of 5 stars">';
+  var STAR_PATH = 'M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2';
+
+  // Fractional star engine: renders 5 half-star layers so ratings like
+  // 3.5 or 4.5 render exactly, using a CSS mask fill per star.
+  function mkStars(n, extra) {
+    n = Math.max(0, Math.min(5, +n || 0));
+    var label = (Math.round(n * 10) / 10) + ' out of 5 stars';
+    var out = '<span class="rv-stars' + (extra ? ' ' + extra : '') + '" aria-label="' + label + '">';
     for (var i = 1; i <= 5; i++) {
-      out += '<svg viewBox="0 0 24 24" class="' + (i <= n ? 'on' : '') + '"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+      var fill = Math.max(0, Math.min(1, n - (i - 1))) * 100;
+      out += '<span class="rv-st">' +
+        '<svg class="rv-st-bg" viewBox="0 0 24 24" aria-hidden="true"><polygon points="' + STAR_PATH + '"/></svg>' +
+        '<span class="rv-st-fill" style="width:' + fill + '%">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="' + STAR_PATH + '"/></svg>' +
+        '</span>' +
+      '</span>';
     }
     return out + '</span>';
   }
@@ -45,6 +56,29 @@
     var h = Math.floor(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
     var day = Math.floor(h / 24); if (day < 7) return day + (day === 1 ? ' day ago' : ' days ago');
     return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function hashStr(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  var PALETTE = [
+    ['#E8724A', '#F0944D'],
+    ['#7C3AED', '#A855F7'],
+    ['#0EA5E9', '#6366F1'],
+    ['#059669', '#10B981'],
+    ['#DC2626', '#F59E0B'],
+    ['#334155', '#64748B']
+  ];
+
+  function avatarGrad(name) {
+    var g = PALETTE[hashStr(name) % PALETTE.length];
+    return 'linear-gradient(135deg,' + g[0] + ',' + g[1] + ')';
+  }
+  function accentColor(name) {
+    return PALETTE[hashStr(name + '!') % PALETTE.length][0];
   }
 
   // ---------------------------------------------------------------
@@ -74,36 +108,56 @@
       return;
     }
 
-    var sum = rows.reduce(function (a, r) { return a + r.rating; }, 0);
+    var sum = rows.reduce(function (a, r) { return a + (Number(r.rating) || 0); }, 0);
     var avg = sum / rows.length;
-    var fives = rows.filter(function (r) { return r.rating === 5; }).length;
+
+    function distRows() {
+      var buckets = {};
+      rows.forEach(function (r) {
+        var k = Number(r.rating) || 0;
+        buckets[k] = (buckets[k] || 0) + 1;
+      });
+      return Object.keys(buckets).map(Number).sort(function (a, b) { return b - a; }).map(function (k) {
+        var w = Math.round((buckets[k] / rows.length) * 100);
+        return '<div class="rv-dist-row">' +
+          '<span class="rv-dist-label">' + k + '</span>' +
+          '<div class="rv-dist-track"><span class="rv-dist-fill" style="width:' + w + '%"></span></div>' +
+          '<span class="rv-dist-num">' + buckets[k] + '</span>' +
+        '</div>';
+      }).join('');
+    }
 
     if (metaEl) {
       metaEl.innerHTML =
-        '<div class="rv-sum-big">' + avg.toFixed(1) + '</div>' +
+        '<div class="rv-sum-big">' + avg.toFixed(2) + '<span class="rv-sum-of">of 5</span></div>' +
         '<div class="rv-sum-right">' +
-          '<span class="rv-sum-rate">' + stars(avg) + '</span>' +
-          '<span class="rv-sum-count"><strong>' + rows.length + '</strong> verified review' + (rows.length === 1 ? '' : 's') + '</span>' +
-          '<span class="rv-sum-sub">' + Math.round((fives / rows.length) * 100) + '% of students rated 5&#9733;</span>' +
+          '<span class="rv-sum-rate">' + mkStars(avg) + '</span>' +
+          '<span class="rv-sum-based"><strong>' + rows.length + '</strong> verified review' + (rows.length === 1 ? '' : 's') + '</span>' +
+          '<div class="rv-dist">' + distRows() + '</div>' +
+          '<span class="rv-sum-sub">Every review comes from a real student who booked a lesson on this site.</span>' +
         '</div>';
     }
 
     function quoteSVG() {
-      return '<svg viewBox="0 0 24 24"><path d="M9.6 5.2C6.4 6.7 4.2 9.3 4.2 12.7c0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L9.6 5.2zm9.4 0c-3.2 1.5-5.4 4.1-5.4 7.5 0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L19 5.2z"/></svg>';
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 5.2C6.4 6.7 4.2 9.3 4.2 12.7c0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L9.6 5.2zm9.4 0c-3.2 1.5-5.4 4.1-5.4 7.5 0 2.9 2 4.9 4.6 4.9 2.4 0 4.2-1.8 4.2-4.1 0-2.2-1.6-3.8-3.7-3.8-.4 0-.9.1-1.1.2.3-1.8 1.7-3.6 3.3-4.5L19 5.2z"/></svg>';
     }
     function cardInner(r) {
+      var verified = r.verified === true;
       return '' +
         '<span class="rv-quote">' + quoteSVG() + '</span>' +
         '<div class="rv-top">' +
-          '<div class="rv-rating">' + stars(r.rating) + '</div>' +
+          '<div class="rv-rating">' + mkStars(r.rating) + '</div>' +
           '<span class="rv-date">' + timeAgo(r.created_at) + '</span>' +
         '</div>' +
         '<p class="rv-text">' + esc(r.review) + '</p>' +
         '<div class="rv-author">' +
-          '<div class="rv-avatar-wrap"><div class="rv-avatar">' + initials(r.student_name) + '</div></div>' +
+          '<div class="rv-avatar-wrap">' +
+            (verified ? '<span class="rv-avatar-dot" aria-hidden="true"></span>' : '') +
+            '<div class="rv-avatar" style="background:' + avatarGrad(r.student_name) + '">' + initials(r.student_name) + '</div>' +
+          '</div>' +
           '<div class="rv-meta">' +
-            '<div class="rv-name">' + esc(r.student_name) + (r.verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : '') + '</div>' +
-            '<span class="rv-date-sub">Verified student review</span>' +
+            '<div class="rv-name">' + esc(r.student_name) + (verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : '') + '</div>' +
+            '<span class="rv-date-sub">' + (verified ? 'Verified student review' : 'Student review') + '</span>' +
           '</div>' +
         '</div>';
     }
@@ -122,6 +176,9 @@
     var cards = [];
     var track = null;
     var step = 1;
+    var dragStart = null;
+    var dragDx = 0;
+    var dragging = false;
 
     function stopTimer() { if (timer) { clearTimeout(timer); timer = null; } }
     function stopSnap() { if (snapTimer) { clearTimeout(snapTimer); snapTimer = null; } }
@@ -140,6 +197,7 @@
       cards = rows.map(function (r) {
         var el = document.createElement('article');
         el.className = 'rv-card';
+        el.style.setProperty('--rv-top', accentColor(r.student_name));
         el.innerHTML = cardInner(r);
         return el;
       });
@@ -156,6 +214,10 @@
       if (!dotsEl) return;
       var pages = Math.max(1, Math.ceil(rows.length / vc));
       var cur = Math.min(pages - 1, Math.floor(idx / vc));
+      if (pages > 12) {
+        dotsEl.innerHTML = '<span class="rv-dots-count">' + (cur + 1) + ' / ' + pages + '</span>';
+        return;
+      }
       dotsEl.innerHTML = '';
       for (var p = 0; p < pages; p++) {
         (function (pi) {
@@ -210,7 +272,7 @@
     }
 
     // Self-correcting autoplay: recomputes against the real clock each
-    // second so the 5.2s rhythm holds even after a backgrounded tab and it
+    // second so the rhythm holds even after a backgrounded tab and it
     // never gets stuck "paused until refresh".
     function startAutoplay() {
       stopTimer();
@@ -226,6 +288,39 @@
 
     function hold() { paused = true; stopTimer(); stopSnap(); }
     function release() { paused = false; startAutoplay(); }
+
+    // Pointer drag / touch-swipe with momentum-free snap. Works with the
+    // track's CSS transition disabled while dragging for direct control.
+    function onDragStart(e) {
+      if (!enabled) return;
+      if (e.target && e.target.closest && e.target.closest('button')) return;
+      dragging = true;
+      dragDx = 0;
+      dragStart = (e.touches ? e.touches[0].clientX : e.clientX);
+      hold();
+      stopSnap();
+      listEl.classList.add('rv-grabbing');
+      track.classList.add('rv-drag');
+    }
+    function onDragMove(e) {
+      if (!dragging) return;
+      dragDx = (e.touches ? e.touches[0].clientX : e.clientX) - dragStart;
+      track.style.transform = 'translateX(calc(-' + (idx * step) + 'px + ' + dragDx + 'px))';
+    }
+    function onDragEnd() {
+      if (!dragging) return;
+      dragging = false;
+      listEl.classList.remove('rv-grabbing');
+      track.classList.remove('rv-drag');
+      var d = dragDx;
+      dragDx = 0;
+      if (Math.abs(d) > 42) {
+        if (d < 0) stepNext(); else stepPrev();
+      } else {
+        moveTo(idx);
+        release();
+      }
+    }
 
     function relayout() {
       vc = vcForWidth();
@@ -255,7 +350,14 @@
       carouselEl.addEventListener('touchend', release, { passive: true });
       carouselEl.addEventListener('touchcancel', release, { passive: true });
     }
-    if (listEl) listEl.setAttribute('aria-live', 'polite');
+    if (listEl) {
+      listEl.setAttribute('aria-live', 'polite');
+      listEl.addEventListener('pointerdown', onDragStart);
+      listEl.addEventListener('pointermove', onDragMove);
+      listEl.addEventListener('pointerup', onDragEnd);
+      listEl.addEventListener('pointercancel', onDragEnd);
+      listEl.addEventListener('pointerleave', onDragEnd);
+    }
     window.addEventListener('resize', function () {
       clearTimeout(relayout.__t);
       relayout.__t = setTimeout(relayout, 150);
@@ -275,7 +377,6 @@
     var msgEl = document.getElementById('review-msg');
     var rating = 0;
 
-    // Star picker
     if (starsWrap) {
       var win = starsWrap.querySelectorAll('.rv-pick');
       win.forEach(function (b, i) {
@@ -305,7 +406,6 @@
       sendBtn.textContent = 'Submitting&hellip;';
       setMsg('');
 
-      // student_name snapshot for display, marked verified if they have taken a lesson
       var name = 'Student';
       var verified = false;
       try {
@@ -360,7 +460,7 @@
           '<strong>' + esc(r.student_name) + '</strong>' +
           '<span class="rv-stat ' + badge + '">' + r.status + '</span>' +
         '</div>' +
-        '<div class="rv-adm-meta"><span class="rv-stars">' + renderSolidStars(r.rating) + '</span>' +
+        '<div class="rv-adm-meta">' + mkStars(r.rating) +
           (r.verified ? ' <span class="rv-vbadge">&#10003; Verified</span>' : ' <span class="rv-vbadge none">Not verified</span>') +
           ' <span class="rv-date">' + timeAgo(r.created_at) + '</span></div>' +
         '<p class="rv-text">' + esc(r.review) + '</p>' +
@@ -407,14 +507,6 @@
         await loadAdmin(msgEl, listEl);
       });
     });
-  }
-
-  function renderSolidStars(n) {
-    var out = '';
-    for (var i = 1; i <= 5; i++) {
-      out += '<svg viewBox="0 0 24 24" class="' + (i <= n ? 'on' : '') + '"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-    }
-    return out;
   }
 
   async function loadAdmin(msgEl, listEl) {
