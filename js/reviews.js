@@ -94,48 +94,92 @@
     listEl.innerHTML = '<p class="muted" style="padding:30px;text-align:center;">Loading reviews&hellip;</p>';
 
     var ctx = await getSB();
-    var rows = [];
+    var allRows = [];
     if (ctx && ctx.sb) {
       try {
         var res = await ctx.sb.from('reviews').select('*').eq('status', 'approved').order('created_at', { ascending: false }).limit(50);
-        rows = res.data || [];
-      } catch (e) { rows = []; }
+        allRows = res.data || [];
+      } catch (e) { allRows = []; }
     }
+    var rows = allRows;
+    var filter = null;
 
-    if (!rows.length) {
+    if (!allRows.length) {
       listEl.innerHTML = '<p class="muted" style="padding:30px;text-align:center;">No student reviews yet &mdash; be the first to share your experience!</p>';
       if (metaEl) metaEl.style.display = 'none';
       return;
     }
 
-    var sum = rows.reduce(function (a, r) { return a + (Number(r.rating) || 0); }, 0);
-    var avg = sum / rows.length;
+    function distinctRatings(src) {
+      return src.map(function (r) { return Number(r.rating) || 0; })
+        .filter(function (v, i, a) { return a.indexOf(v) === i; })
+        .sort(function (a, b) { return b - a; });
+    }
 
-    function distRows() {
-      var buckets = {};
-      rows.forEach(function (r) {
-        var k = Number(r.rating) || 0;
-        buckets[k] = (buckets[k] || 0) + 1;
-      });
-      return Object.keys(buckets).map(Number).sort(function (a, b) { return b - a; }).map(function (k) {
-        var w = Math.round((buckets[k] / rows.length) * 100);
-        return '<div class="rv-dist-row">' +
-          '<span class="rv-dist-label">' + k + '</span>' +
-          '<div class="rv-dist-track"><span class="rv-dist-fill" style="width:' + w + '%"></span></div>' +
-          '<span class="rv-dist-num">' + buckets[k] + '</span>' +
-        '</div>';
+    function chipRow() {
+      var chips = distinctRatings(allRows).map(function (k) {
+        var n = allRows.filter(function (r) { return (Number(r.rating) || 0) === k; }).length;
+        return '<button type="button" class="rv-chip' + (filter === k ? ' on' : '') + '" data-r="' + k + '" aria-pressed="' + (filter === k) + '">' + k + '&#9733; (' + n + ')</button>';
       }).join('');
+      return '<div class="rv-chips" role="group" aria-label="Filter reviews by rating">' +
+        '<button type="button" class="rv-chip' + (filter === null ? ' on' : '') + '" data-r="all" aria-pressed="' + (filter === null) + '">All reviews (' + allRows.length + ')</button>' + chips + '</div>';
+    }
+
+    function renderSummary() {
+      var sum = rows.reduce(function (a, r) { return a + (Number(r.rating) || 0); }, 0);
+      var avg = rows.length ? sum / rows.length : 0;
+
+      function distRows() {
+        var buckets = {};
+        rows.forEach(function (r) {
+          var k = Number(r.rating) || 0;
+          buckets[k] = (buckets[k] || 0) + 1;
+        });
+        return distinctRatings(rows).map(function (k) {
+          var w = Math.round((buckets[k] / rows.length) * 100);
+          return '<div class="rv-dist-row' + (filter === k ? ' on' : '') + '" data-r="' + k + '" role="button" tabindex="0" aria-pressed="' + (filter === k) + '" title="Show only ' + k + ' star reviews">' +
+            '<span class="rv-dist-label">' + k + '</span>' +
+            '<div class="rv-dist-track"><span class="rv-dist-fill" style="width:' + w + '%"></span></div>' +
+            '<span class="rv-dist-num">' + buckets[k] + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      if (metaEl) {
+        metaEl.innerHTML =
+          '<div class="rv-sum-big">' + avg.toFixed(2) + '<span class="rv-sum-of">of 5</span></div>' +
+          '<div class="rv-sum-right">' +
+            '<span class="rv-sum-rate">' + mkStars(avg) + '</span>' +
+            '<span class="rv-sum-based"><strong>' + rows.length + '</strong> verified review' + (rows.length === 1 ? '' : 's') + '</span>' +
+            '<div class="rv-dist">' + distRows() + '</div>' +
+            chipRow() +
+            (filter !== null ? '<span class="rv-sum-sub">Showing ' + filter + '&#9733; reviews only. Click &ldquo;All reviews&rdquo; to clear.</span>' : '<span class="rv-sum-sub">Every review comes from a real student who booked a lesson on this site.</span>') +
+          '</div>';
+      }
+    }
+
+    renderSummary();
+
+    function setFilter(k) {
+      var next = (k === 'all' || k == null) ? null : Number(k);
+      if (next === filter) return;
+      filter = next;
+      rows = filter === null ? allRows : allRows.filter(function (r) { return (Number(r.rating) || 0) === filter; });
+      stopTimer(); stopSnap();
+      renderSummary();
+      relayout();
     }
 
     if (metaEl) {
-      metaEl.innerHTML =
-        '<div class="rv-sum-big">' + avg.toFixed(2) + '<span class="rv-sum-of">of 5</span></div>' +
-        '<div class="rv-sum-right">' +
-          '<span class="rv-sum-rate">' + mkStars(avg) + '</span>' +
-          '<span class="rv-sum-based"><strong>' + rows.length + '</strong> verified review' + (rows.length === 1 ? '' : 's') + '</span>' +
-          '<div class="rv-dist">' + distRows() + '</div>' +
-          '<span class="rv-sum-sub">Every review comes from a real student who booked a lesson on this site.</span>' +
-        '</div>';
+      metaEl.addEventListener('click', function (e) {
+        var t = e.target.closest('.rv-chip, .rv-dist-row');
+        if (t && t.getAttribute('data-r') !== null) setFilter(t.getAttribute('data-r'));
+      });
+      metaEl.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target.closest('.rv-dist-row');
+        if (t && t.getAttribute('data-r') !== null) { e.preventDefault(); setFilter(t.getAttribute('data-r')); }
+      });
     }
 
     function quoteSVG() {
@@ -204,7 +248,7 @@
       track = document.createElement('div');
       track.className = 'rv-track';
       cards.forEach(function (c) { track.appendChild(c); });
-      for (var c = 0; c < Math.min(vc, rows.length); c++) {
+      for (var c = 0; c < Math.min(enabled ? vc : 0, rows.length); c++) {
         track.appendChild(cards[c].cloneNode(true));
       }
       listEl.appendChild(track);
@@ -334,6 +378,7 @@
         if (prevBtn) prevBtn.disabled = false;
         if (nextBtn) nextBtn.disabled = false;
       }
+      listEl.classList.toggle('rv-static', !enabled);
       if (enabled && !paused) startAutoplay();
     }
 
