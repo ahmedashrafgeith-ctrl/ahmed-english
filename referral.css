@@ -1,0 +1,20 @@
+/* Referral page */
+.rl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
+.rl-grid .panel { margin-bottom: 0; }
+.rl-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 6px; }
+.rl-field { margin-bottom: 12px; }
+.rl-label { display: block; margin: 0 0 6px; font-size: .85rem; font-weight: 600; color: var(--c-ink, #111827); }
+.rl-opt { font-weight: 500; color: var(--c-ink-3, #9CA3AF); font-size: .78rem; }
+textarea.field { height: auto; min-height: 96px; padding-top: 12px; padding-bottom: 12px; resize: vertical; }
+select.field { cursor: pointer; }
+.rl-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+#rl-status { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: .9rem; display: none; }
+#rl-status.rl-ok { display: block; background: var(--c-ok-soft, #ECFDF5); color: var(--c-ok, #047857); border: 1px solid #A7F3D0; }
+#rl-status.rl-err { display: block; background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+#rl-status.rl-loading { display: block; background: var(--c-soft, #F3F4F6); color: var(--c-ink-2, #4B5563); border: 1px solid var(--c-border, #E5E7EB); }
+#rl-status.rl-loading b { opacity: .7; }
+.rl-field .field.invalid-pending { border-color: #DC2626; box-shadow: 0 0 0 3px rgba(220,38,38,.12); }
+@media (max-width: 760px) {
+  .rl-grid { grid-template-columns: 1fr; }
+  .rl-grid-2 { grid-template-columns: 1fr; }
+}

@@ -26,6 +26,11 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://www.proenglishtutor.online/referral.html</loc>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://www.proenglishtutor.online/login.html</loc>
     <priority>0.4</priority>
     <changefreq>monthly</changefreq>

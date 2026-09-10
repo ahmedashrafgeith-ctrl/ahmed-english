@@ -65,6 +65,14 @@
       contactUrl: "https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/contact"
     },
     story: {},
+    referral: {
+      // Google Sheets answer: paste the Apps Script Web App URL here (deploy as
+      // "Anyone" web app) to record referrals in your spreadsheet. Leave blank
+      // and referrals are stored in the Supabase `referrals` table instead.
+      // The ready-to-paste script lives in referral-sheets-apps-script.gs.
+      sheetUrl: "",
+      url: "https://www.proenglishtutor.online/referral.html"
+    },
     adsense: {
       // Owner can paste these here OR via the Dashboard › Ads control tab.
       client: "7286796230795532",
