@@ -73,7 +73,7 @@
       sheetUrl: "",
       // Full edit URL of the connected spreadsheet (a "__/docs" link). Paste it
       // and the Admin console shows an "Open spreadsheet" shortcut.
-      spreadsheetUrl: "",
+      spreadsheetUrl: "https://docs.google.com/spreadsheets/d/10JpUPwUXABOYfbrgjNatbVY0bCMIAGHyGwFFuunwgIE/edit?gid=0#gid=0",
       url: "https://www.proenglishtutor.online/referral.html"
     },
     adsense: {
