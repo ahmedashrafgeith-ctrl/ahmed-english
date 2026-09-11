@@ -70,7 +70,7 @@
       // "Anyone" web app) to record referrals in your spreadsheet. Leave blank
       // and referrals are stored in the Supabase `referrals` table instead.
       // The ready-to-paste script lives in referral-sheets-apps-script.gs.
-      sheetUrl: "",
+      sheetUrl: "https://script.google.com/macros/s/AKfycbwCfaEb3f4CYQQdY24AYVMHR0iuTmDI-_hrkFZIwTEhtpOCBWlTKTtd6Qr006qtDw/exec",
       // Full edit URL of the connected spreadsheet (a "__/docs" link). Paste it
       // and the Admin console shows an "Open spreadsheet" shortcut.
       spreadsheetUrl: "https://docs.google.com/spreadsheets/d/10JpUPwUXABOYfbrgjNatbVY0bCMIAGHyGwFFuunwgIE/edit?gid=0#gid=0",
