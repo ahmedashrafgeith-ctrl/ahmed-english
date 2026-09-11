@@ -1,4 +1,6 @@
 /* Referral page */
+.rl-share { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 26px; }
+.rl-share-label { font-size: .82rem; font-weight: 700; color: var(--c-ink-3, #9CA3AF); text-transform: uppercase; letter-spacing: .4px; }
 .rl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
 .rl-grid .panel { margin-bottom: 0; }
 .rl-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 6px; }

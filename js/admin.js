@@ -594,6 +594,78 @@
     } catch (e) { console.error('usage list error:', e); }
   }
 
+  // ==========================================
+  // REFERRALS PANEL
+  // ==========================================
+  async function loadReferralsPanel() {
+    const listEl = document.getElementById('referrals-admin-list');
+    const msgEl = document.getElementById('referrals-admin-msg');
+    if (!listEl) return;
+
+    const sheetUrl = window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.spreadsheetUrl;
+    const sheetBtn = document.getElementById('ref-sheet-btn');
+    if (sheetBtn && sheetUrl) {
+      sheetBtn.style.display = 'inline-flex';
+      sheetBtn.href = sheetUrl;
+      sheetBtn.setAttribute('target', '_blank');
+    }
+
+    try {
+      const { data: rows } = await sb.from('referrals').select('*').order('created_at', { ascending: false }).limit(200);
+      const badge = document.getElementById('ref-badge');
+      const fresh = (rows || []).filter(r => r.status === 'new').length;
+      if (badge) { badge.textContent = fresh; badge.style.display = fresh ? 'inline-flex' : 'none'; }
+
+      const fmt = iso => {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (isNaN(d)) return '';
+        return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) +
+          ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+      };
+      const friendMail = (name, email) => {
+        const subj = encodeURIComponent('Free English trial lesson - recommended by ' + (name || 'a friend'));
+        const body = encodeURIComponent('Hi there!\n\n' + (name || 'Someone who cares about your progress') +
+          ' recommended Ahmed at TutorEnglishPro for 1-on-1 English lessons.\n\n' +
+          'You can book a free 30-minute trial here: https://www.proenglishtutor.online/booking.html');
+        return 'mailto:' + encodeURIComponent(email) + '?subject=' + subj + '&body=' + body;
+      };
+
+      if (!rows || !rows.length) {
+        listEl.innerHTML = '<p class="muted" style="padding:22px;text-align:center;">No referrals yet. Referrals submitted on the Refer a Friend page appear here instantly.</p>';
+        return;
+      }
+
+      listEl.innerHTML = rows.map(r => {
+        const st = r.status || 'new';
+        const stBadge = st === 'converted' ? 'badge-ok' : (st === 'contacted' ? 'badge-warn' : 'badge-acc');
+        return `<div class="rv-adm" data-id="${r.id}">
+          <div class="rv-adm-top">
+            <strong>${esc(r.referrer_name)}</strong>
+            <span class="badge ${stBadge}">${esc(st)}</span>
+          </div>
+          <div class="rv-adm-meta">From: <a href="mailto:${esc(r.referrer_email)}">${esc(r.referrer_email)}</a>${r.referrer_phone ? ' · ' + esc(r.referrer_phone) : ''} &nbsp;<span class="rv-date">${fmt(r.created_at)}</span></div>
+          <p class="rv-text">→ <strong>${esc(r.friend_name)}</strong> (${esc(r.relationship || '—')}) · <a href="${friendMail(r.friend_name, r.friend_email)}">${esc(r.friend_email)}</a>${r.message ? '<br><em class="ref-note">' + esc(r.message) + '</em>' : ''}</p>
+          <div class="rv-adm-actions">
+            <a class="btn btn-sm btn-primary" href="${friendMail(r.friend_name, r.friend_email)}" target="_blank">Email friend</a>
+            ${st !== 'contacted' ? '<button class="btn btn-sm btn-ghost" data-refact="contacted">Mark contacted</button>' : ''}
+            ${st !== 'converted' ? '<button class="btn btn-sm btn-ghost" data-refact="converted">Mark converted</button>' : ''}
+            ${st !== 'new' ? '<button class="btn btn-sm btn-ghost" data-refact="new">Reopen</button>' : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('[data-refact]').forEach(b => b.addEventListener('click', async () => {
+        const act = b.getAttribute('data-refact');
+        const id = b.closest('.rv-adm').getAttribute('data-id');
+        b.disabled = true;
+        const { error } = await sb.from('referrals').update({ status: act }).eq('id', id);
+        if (error && msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#DC2626'; msgEl.textContent = 'Failed: ' + error.message; }
+        loadReferralsPanel();
+      }));
+    } catch (e) { console.error('referrals load error:', e); }
+  }
+
   function openUsageEditor(id, subs) {
     const s = subs.find(x => x.id === id);
     if (!s) return;
@@ -1471,6 +1543,7 @@ async function initChatInbox() {
 
   loadAdminBookings();
   renderUsageList();
+  loadReferralsPanel();
 });
 
 // ── Change a user's account type (student / tutor / admin) ──

@@ -128,6 +128,32 @@
         setStatus('', '');
       });
     }
+
+    // share strip
+    var link = (cfg().url) || 'https://www.proenglishtutor.online/referral.html';
+    var shareMsg = 'I\'m learning English 1-on-1 with Ahmed at TutorEnglishPro. When you book your first lesson package we both get a free 30-minute lesson. Start with a free trial here: ' + link;
+    var wa = $('ref-share-wa');
+    if (wa) wa.setAttribute('href', 'https://wa.me/?text=' + encodeURIComponent(shareMsg));
+    var mail = $('ref-share-mail');
+    if (mail) mail.setAttribute('href', 'mailto:?subject=' + encodeURIComponent('Free trial English lesson with Ahmed') + '&body=' + encodeURIComponent(shareMsg));
+    var copy = $('ref-share-copy');
+    if (copy) {
+      copy.addEventListener('click', function () {
+        function done() { copy.textContent = 'Copied!'; setTimeout(function () { copy.textContent = 'Copy link'; }, 2200); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).then(done, function () { fallbackCopy(link, done); });
+        } else { fallbackCopy(link, done); }
+      });
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (done) done();
   }
 
   if (document.readyState === 'loading') {

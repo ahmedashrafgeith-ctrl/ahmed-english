@@ -71,6 +71,9 @@
       // and referrals are stored in the Supabase `referrals` table instead.
       // The ready-to-paste script lives in referral-sheets-apps-script.gs.
       sheetUrl: "",
+      // Full edit URL of the connected spreadsheet (a "__/docs" link). Paste it
+      // and the Admin console shows an "Open spreadsheet" shortcut.
+      spreadsheetUrl: "",
       url: "https://www.proenglishtutor.online/referral.html"
     },
     adsense: {
