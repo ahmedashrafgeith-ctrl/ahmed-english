@@ -1365,27 +1365,59 @@ async function initAdsControl(sbc) {
     flash('Reset to defaults.');
   });
 
+  const isTest = (p) => p && (p.indexOf('/D:') === 0 || p.indexOf('admin-bypass') !== -1 || p.indexOf(':') === 1);
+
+  async function fetchVisitorRows(since) {
+    // Fetch EVERY visitor_views row for the window (Supabase caps each request at
+    // 1000 rows, so page through in parallel). No `.limit(5000)` — that was silently
+    // undercounting the totals when a 14-day window held more rows.
+    const CHUNK = 1000, MAX = 100000;
+    const SEL = 'path,title,referrer,device,os,browser,country,created_at';
+    const first = await sbc.from('visitor_views')
+      .select(SEL, { count: 'exact' })
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .range(0, CHUNK - 1);
+    let rows = ((first && first.data) || []).slice();
+    const total = (first && first.count) || rows.length;
+    let need = Math.min(total, MAX) - rows.length;
+    if (need > 0) {
+      const ranges = [];
+      for (let start = CHUNK; start < CHUNK + need; start += CHUNK) {
+        ranges.push({ start, end: Math.min(start + CHUNK - 1, CHUNK + need - 1) });
+      }
+      const parts = await Promise.all(ranges.map(({ start, end }) =>
+        sbc.from('visitor_views')
+          .select(SEL)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .range(start, end)
+      ));
+      parts.forEach((r) => { ((r && r.data) || []).forEach((x) => rows.push(x)); });
+    }
+    return rows;
+  }
+
   async function loadStats() {
     if (!totalEl || !topList) return;
+    const loading = (el) => { if (el) el.textContent = '…'; };
+    loading(totalEl); loading(todayEl);
+    const kpiEl = document.getElementById('views-top-page');
+    if (kpiEl) kpiEl.textContent = '…';
+    const distPlaceholders = [['stat-devices'], ['stat-countries'], ['stat-browsers']];
+    distPlaceholders.forEach(([id]) => { const el = document.getElementById(id); if (el) el.innerHTML = '<p class="muted" style="font-size:.8rem;">Refreshing…</p>'; });
     try {
       const since = new Date(Date.now() - 14 * 86400000).toISOString();
-      let res = await sbc.from('visitor_views')
-        .select('path,title,referrer,device,os,browser,country,created_at')
-        .gte('created_at', since)
-        .limit(5000);
-      const rows = ((res && res.data) || []).filter((r) => {
+      const rows = (await fetchVisitorRows(since)).filter((r) => {
         const p = r.path || '';
-        return p && p.indexOf('/D:') !== 0 && p.indexOf('admin-bypass') === -1 && p.indexOf(':') !== 1;
+        return p && !isTest(p);
       });
-      const total = rows.length;
-      const isTest = (p) => p && (p.indexOf('/D:') === 0 || p.indexOf('admin-bypass') !== -1 || p.indexOf(':') === 1);
-      const clean = rows.filter((r) => !isTest(r.path));
-      const TOTAL = clean.length;
+      const TOTAL = rows.length;
       if (totalEl) totalEl.textContent = TOTAL.toLocaleString();
       if (todayEl) {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        todayEl.textContent = clean.filter((r) => r.created_at && r.created_at >= todayStart).length.toLocaleString();
+        todayEl.textContent = rows.filter((r) => r.created_at && r.created_at >= todayStart).length.toLocaleString();
       }
       const PAGE_NAMES = {
         '/': 'Home', '/index.html': 'Home', '/index.php': 'Home', '/index': 'Home',
@@ -1406,7 +1438,7 @@ async function initAdsControl(sbc) {
       };
 
       const byPage = {};
-      clean.forEach((r) => {
+      rows.forEach((r) => {
         const name = pageName(r);
         byPage[name] = (byPage[name] || 0) + 1;
       });
@@ -1423,21 +1455,18 @@ async function initAdsControl(sbc) {
           </tr>`).join('');
       }
 
-      const dist = (key, label, id) => {
+      const dist = (key, label, id, unknownLabel) => {
         const el = document.getElementById(id);
         const map = {};
-        clean.forEach((r) => {
-          const v = (r[key] || '').trim() || label;
+        rows.forEach((r) => {
+          let v = (r[key] || '').trim() || unknownLabel;
+          if (v === 'Unknown') v = unknownLabel;
           map[v] = (map[v] || 0) + 1;
         });
-        const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
+        const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
         if (!el) return;
         if (!entries.length) { el.innerHTML = '<p class="muted" style="font-size:.8rem;">No data yet.</p>'; return; }
-        if (entries.length === 1 && (entries[0][0] === label || entries[0][0] === 'Unknown')) {
-          el.innerHTML = '<p class="muted" style="font-size:.8rem;">Collecting… breakdown appears on the next page visit.</p>';
-          return;
-        }
-        const base = clean.length || 1;
+        const base = rows.length || 1;
         el.innerHTML = entries.map(([name, n]) => {
           const pct = Math.round((n / base) * 100);
           return '<div class="dist-row">' +
@@ -1446,9 +1475,9 @@ async function initAdsControl(sbc) {
           '</div>';
         }).join('');
       };
-      dist('device', 'Unknown', 'stat-devices');
-      dist('country', 'Unknown', 'stat-countries');
-      dist('browser', 'Other', 'stat-browsers');
+      dist('device', 'Unknown', 'stat-devices', 'Unknown');
+      dist('country', 'Unknown', 'stat-countries', 'Other / not detected');
+      dist('browser', 'Other', 'stat-browsers', 'Other');
     } catch (e) {
       console.error('ads stats error:', e);
       if (topList) topList.innerHTML = '<tr><td colspan="2" class="muted">Could not load stats.</td></tr>';
@@ -1457,7 +1486,13 @@ async function initAdsControl(sbc) {
 
   fillForm();
   loadStats();
-  if (refreshBtn) refreshBtn.addEventListener('click', loadStats);
+  if (refreshBtn) refreshBtn.addEventListener('click', async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = 'Refreshing…';
+    await loadStats();
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = 'Refresh';
+  });
 }
 
 async function initChatInbox() {

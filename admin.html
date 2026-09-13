@@ -34,7 +34,8 @@
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/ads.js?v=20260906k"></script>
-  <script src="js/admin.js?v=20260906r"></script>
+  <script src="js/admin.js?v=20260906v"></script>
+  <script src="js/admin-tools.js?v=20260906v"></script>
 </head>
 <body>
 
@@ -83,6 +84,14 @@
         <a class="side-link" href="#monet-panel">
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="2" fill="var(--c-surface,#fff)"/></svg>
           Ads &amp; SEO
+        </a>
+        <a class="side-link" href="#ads-hub-panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 20V8a2 2 0 0 1 2-2h4V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9"/><rect x="4" y="16" width="4" height="4"/></svg>
+          Ads Hub (Meta &amp; Google)
+        </a>
+        <a class="side-link" href="#shortlinks-panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Link Shortener
         </a>
         <a class="side-link" target="_blank" href="https://cal.com/ahmed-ghaith-fbjoax">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -401,6 +410,109 @@
         </div>
         <div id="referrals-admin-msg" style="margin-bottom:10px;font-size:.85rem;font-weight:600;display:none;"></div>
         <div id="referrals-admin-list"><p class="muted" style="padding:22px;text-align:center;">Loading referrals&hellip;</p></div>
+      </section>
+
+      <!-- ADS HUB -->
+      <section class="panel" id="ads-hub-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Ads Hub — Meta &amp; Google</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Manage your ad accounts, build UTM-tracked links from your short links, and track campaign budgets, spend and leads — all from here.</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px;" id="ads-platforms"></div>
+
+        <div class="grid-2" style="gap:22px;margin-top:8px;">
+          <div>
+            <label class="kpi-label">Ad account links saved below open your platform dashboards in one click:</label>
+            <div style="display:grid;gap:10px;margin-top:10px;">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-acc" style="flex:0 0 auto;">Meta</span>
+                <input class="field" id="ads-fb-account" placeholder="Ad account ID (e.g. act_123456789)" autocomplete="off" style="flex:1;min-width:160px;">
+                <button type="button" class="btn btn-ghost btn-sm" id="ads-fb-open">Open Ads Manager</button>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-warn" style="flex:0 0 auto;">Google</span>
+                <input class="field" id="ads-ggl-account" placeholder="Google Ads customer ID (e.g. 123-456-7890)" autocomplete="off" style="flex:1;min-width:160px;">
+                <button type="button" class="btn btn-ghost btn-sm" id="ads-ggl-open">Open Google Ads</button>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="ads-save-accounts" style="justify-self:start;">Save account IDs</button>
+            </div>
+
+            <div style="margin-top:22px;">
+              <label class="kpi-label">UTM Link Builder</label>
+              <p class="muted" style="margin:2px 0 10px;font-size:.78rem;">Build a trackable link for an ad using one of your short links or any URL, then paste it into the ad platform.</p>
+              <div style="display:grid;gap:10px;">
+                <select class="field" id="utm-shortlink" style="margin-bottom:2px;"></select>
+                <input class="field" id="utm-url" type="url" placeholder="Or paste any full URL" autocomplete="off">
+                <input class="field" id="utm-source" placeholder="utm_source (e.g. facebook, google)" autocomplete="off">
+                <input class="field" id="utm-medium" placeholder="utm_medium (e.g. cpc, social)" autocomplete="off">
+                <input class="field" id="utm-campaign" placeholder="utm_campaign (e.g. spring_sale)" autocomplete="off">
+                <button type="button" class="btn btn-primary btn-sm" id="utm-build" style="justify-self:start;">Build UTM link</button>
+                <input class="field" id="utm-result" type="text" readonly style="font-size:.8rem;" placeholder="Your trackable link appears here…">
+                <button type="button" class="btn btn-ghost btn-sm" id="utm-copy" style="justify-self:start;display:none;">Copy link</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="kpi-label">Campaign Tracker</label>
+            <div style="display:grid;gap:10px;margin-top:10px;">
+              <div class="grid-2" style="gap:10px;">
+                <input class="field" id="cam-name" placeholder="Campaign name" autocomplete="off">
+                <select class="field" id="cam-platform">
+                  <option>Meta</option>
+                  <option>Google</option>
+                  <option>TikTok</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="grid-2" style="gap:10px;">
+                <input class="field" id="cam-budget" type="number" min="0" step="0.01" placeholder="Budget ($)" autocomplete="off">
+                <input class="field" id="cam-spend" type="number" min="0" step="0.01" placeholder="Spend ($)" autocomplete="off">
+              </div>
+              <div class="grid-2" style="gap:10px;">
+                <input class="field" id="cam-leads" type="number" min="0" step="1" placeholder="Leads" autocomplete="off">
+                <button type="button" class="btn btn-primary btn-sm" id="cam-add">Add campaign</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:4px;" id="cam-kpis"></div>
+              <div id="cam-list" style="display:grid;gap:8px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LINK SHORTENER -->
+      <section class="panel" id="shortlinks-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Link Shortener</h3>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Create short links that redirect to any page, use them in ads or WhatsApp, and see how many times each was clicked.</p>
+          </div>
+        </div>
+        <div style="max-width:640px;margin-bottom:18px;">
+          <div class="grid-2" style="gap:10px;align-items:end;">
+            <div>
+              <label class="kpi-label" for="sl-label">Label (optional)</label>
+              <input class="field" id="sl-label" type="text" placeholder="e.g. Spring sale landing" autocomplete="off">
+            </div>
+            <div>
+              <label class="kpi-label" for="sl-code">Custom code (optional)</label>
+              <input class="field" id="sl-code" type="text" placeholder="e.g. spring" autocomplete="off">
+            </div>
+            <div style="grid-column:1/-1;">
+              <label class="kpi-label" for="sl-url">Destination URL *</label>
+              <input class="field" id="sl-url" type="url" placeholder="https://www.proenglishtutor.online/packages.html" autocomplete="off">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary btn-sm" id="sl-create">Create short link</button>
+            <span class="muted" id="sl-preview" style="font-size:.85rem;color:var(--c-ink-3);"></span>
+          </div>
+        </div>
+        <div id="sl-msg" style="margin-bottom:10px;font-size:.85rem;font-weight:600;display:none;"></div>
+        <div id="sl-list" style="display:grid;gap:8px;"><p class="muted" style="padding:16px;text-align:center;">Loading short links…</p></div>
       </section>
 
       <!-- CHAT INBOX -->

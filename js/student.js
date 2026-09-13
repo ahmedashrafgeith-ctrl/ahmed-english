@@ -205,6 +205,31 @@ async function initReferWidget(user) {
       }
       countEl.textContent = mine.length;
 
+      const milestoneEl = document.getElementById('ref-milestone-list');
+      if (milestoneEl) {
+        const converted = mine.filter(r => String(r.status || '').toLowerCase() === 'converted').length;
+        const tiers = [
+          { need: 1, bonus: '1 free lesson', note: 'as soon as a friend books their first package — you BOTH get it' },
+          { need: 3, bonus: 'extra bonus lesson', note: 'when 3 friends have booked their first package' },
+          { need: 5, bonus: '2 more bonus lessons', note: 'when 5 friends have booked their first package' }
+        ];
+        milestoneEl.innerHTML = tiers.map((t, i) => {
+          const done = converted >= t.need;
+          const frac = Math.min(converted / t.need, 1);
+          const pct = Math.round(frac * 100);
+          return `<div style="margin-bottom:${i === tiers.length - 1 ? 0 : 10}px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="font-size:.85rem;font-weight:700;color:var(--c-ink);">${t.need} friend${t.need > 1 ? 's' : ''} → ${t.bonus}</span>
+              <span class="badge ${done ? 'badge-ok' : 'badge-acc'}">${done ? 'Unlocked' : converted + ' / ' + t.need}</span>
+            </div>
+            <div style="height:8px;background:var(--c-soft);border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:${done ? 100 : Math.max(pct, 2)}%;background:${done ? '#059669' : 'var(--c-accent,#E8724A)'};border-radius:99px;transition:width .4s ease;"></div>
+            </div>
+            <div style="font-size:.75rem;color:var(--c-ink-3);margin-top:4px;">${t.note}</div>
+          </div>`;
+        }).join('');
+      }
+
       const trackEl = document.getElementById('ref-track-list');
       if (trackEl) {
         if (!mine.length) {

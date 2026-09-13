@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting&hellip; — TutorEnglishPro</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0F172A;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;text-align:center}
+    .c{padding:24px}.sp{width:34px;height:34px;border:3px solid rgba(255,255,255,.2);border-top-color:#E8724A;border-radius:50%;margin:0 auto 16px;animation:r 1s linear infinite}
+    @keyframes r{to{transform:rotate(360deg)}}
+    a{color:#F4B95E}
+  </style>
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+</head>
+<body>
+  <div class="c">
+    <div class="sp"></div>
+    <div id="msg">Taking you there&hellip;</div>
+  </div>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var code = (params.get('c') || '').trim();
+      if (!code) { finish('Missing redirect code.'); return; }
+
+      var cfg = (window.APP_CONFIG && APP_CONFIG.supabase) || {};
+      if (!cfg.url || !cfg.anonKey) { finish('Link service unavailable.'); return; }
+
+      try {
+        var sb = getSupabase();
+        sb.from('shortlinks').select('url').eq('code', code).maybeSingle().then(function (res) {
+          var url = res.data && res.data.url;
+          if (!url) { finish('This link is no longer available.'); return; }
+          // count the click (best-effort)
+          sb.from('shortlinks').update({ hits: sb.SUPABASE_ADD ? undefined : undefined }).eq('code', code).then(function () {}, function () {});
+          // increment using RPC-less approach: read, then update hit count
+          sb.from('shortlinks').select('hits').eq('code', code).maybeSingle().then(function (rr) {
+            var hits = (rr.data && rr.data.hits) || 0;
+            sb.from('shortlinks').update({ hits: hits + 1 }).eq('code', code).then(function () {}, function () {});
+            window.location.replace(url);
+          }, function () { window.location.replace(url); });
+        }, function () { finish('Could not resolve this link.'); });
+      } catch (e) { finish('Link service error.'); }
+
+      function finish(msg) {
+        document.getElementById('msg').innerHTML = msg + ' <a href="index.html">Go to homepage</a>';
+      }
+    })();
+  </script>
+</body>
+</html>
