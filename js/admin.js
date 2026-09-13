@@ -635,7 +635,10 @@
         return;
       }
 
-      listEl.innerHTML = rows.map(r => {
+      const newCount = rows.filter(r => (r.status || 'new') === 'new').length;
+      const bulkBar = newCount > 1 ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:10px 14px;border:1px dashed var(--c-card-border);border-radius:10px;font-size:.84rem;color:var(--c-ink-2);"><strong>' + newCount + '</strong> new referral(s) pending contact<span style="margin-left:auto;"><button class="btn btn-sm btn-ghost" id="ref-bulk-contact">Mark all contacted</button></span></div>' : '';
+
+      listEl.innerHTML = bulkBar + rows.map(r => {
         const st = (r.status || 'new').toLowerCase();
         const stBadge = st === 'converted' ? 'badge-ok' : (st === 'contacted' ? 'badge-warn' : 'badge-acc');
         const friend = r.friend_name || 'A friend';
@@ -690,6 +693,31 @@
         }
         loadReferralsPanel();
       }));
+
+      const bulkBtn = document.getElementById('ref-bulk-contact');
+      if (bulkBtn) {
+        bulkBtn.addEventListener('click', async () => {
+          const newRows = rows.filter(r => (r.status || 'new') === 'new' && /^\d+$/.test(String(r.row || '')));
+          if (!newRows.length || !confirm('Mark all ' + newRows.length + ' new referral(s) as contacted?')) return;
+          bulkBtn.disabled = true;
+          let failed = 0;
+          if (sheetApp) {
+            for (const rr of newRows) {
+              try {
+                const res = await fetch(sheetApp, {
+                  method: 'POST', mode: 'cors', cache: 'no-store',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ action: 'status', row: Number(rr.row), status: 'contacted' })
+                });
+                const data = await res.json();
+                if (!res.ok || (data && data.ok === false)) throw new Error((data && data.message) || 'sheet http ' + res.status);
+              } catch (e) { failed++; }
+            }
+          }
+          if (failed && msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#DC2626'; msgEl.textContent = failed + ' row(s) failed to update.'; }
+          loadReferralsPanel();
+        });
+      }
     };
 
     if (sheetApp) {

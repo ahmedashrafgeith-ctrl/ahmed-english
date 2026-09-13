@@ -34,7 +34,7 @@
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
-  <script src="js/student.js?v=20260906r"></script>
+  <script src="js/student.js?v=20260906s"></script>
   <script src="js/ads.js?v=20260906k"></script>
 </head>
 <body>
@@ -192,6 +192,12 @@
         <a class="btn btn-ghost btn-sm" id="ref-share-mail" href="#">Email</a>
       </div>
       <p style="margin:14px 0 0;font-size:.85rem;color:var(--c-ink-3);">Referrals you&#39;ve sent: <strong id="ref-count" style="color:var(--c-ink);">0</strong></p>
+      <div id="ref-track" style="margin-top:14px;">
+        <div style="font-size:.8rem;font-weight:700;color:var(--c-ink-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Status of your referrals</div>
+        <div id="ref-track-list" style="display:grid;gap:8px;">
+          <p class="muted" style="margin:0;font-size:.85rem;">Loading your referrals...</p>
+        </div>
+      </div>
     </section>
 
     <!-- 2-COLUMN SECTION: TIMELINE FEED & HOMEWORK CHECKLIST -->

@@ -7,6 +7,7 @@
 .rl-field { margin-bottom: 12px; }
 .rl-label { display: block; margin: 0 0 6px; font-size: .85rem; font-weight: 600; color: var(--c-ink, #111827); }
 .rl-opt { font-weight: 500; color: var(--c-ink-3, #9CA3AF); font-size: .78rem; }
+.rl-req { color: #DC2626; font-weight: 700; }
 textarea.field { height: auto; min-height: 96px; padding-top: 12px; padding-bottom: 12px; resize: vertical; }
 select.field { cursor: pointer; }
 .rl-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }

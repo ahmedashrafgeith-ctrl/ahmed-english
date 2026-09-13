@@ -2,6 +2,8 @@
   'use strict';
 
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var link = '';
+  var shareMsg = '';
 
   function cfg() {
     return (window.APP_CONFIG && APP_CONFIG.referral) || {};
@@ -35,15 +37,17 @@
 
   function validate() {
     var v = {}, firstBad = null;
-    var name = $('rf-rname'), rem = $('rf-remail'), fname = $('rf-fname'), fem = $('rf-femail'), rel = $('rf-rel');
+    var name = $('rf-rname'), rem = $('rf-remail'), rphone = $('rf-rphone'), fname = $('rf-fname'), fem = $('rf-femail'), rel = $('rf-rel');
 
     if (!name.value.trim()) { markInvalid(name); if (!firstBad) firstBad = name; }
     if (!EMAIL_RE.test(rem.value.trim())) { markInvalid(rem); if (!firstBad) firstBad = rem; }
+    if (!rphone.value.trim()) { markInvalid(rphone); if (!firstBad) firstBad = rphone; }
     if (!fname.value.trim()) { markInvalid(fname); if (!firstBad) firstBad = fname; }
     if (!EMAIL_RE.test(fem.value.trim())) { markInvalid(fem); if (!firstBad) firstBad = fem; }
+    if (!rel.value) { markInvalid(rel); if (!firstBad) firstBad = rel; }
 
     if (firstBad) {
-      setStatus('Please fill in the required fields (name, email and your friend\'s name and email).', 'rl-err');
+      setStatus('Please fill in every required field — your name, email, phone, your friend\'s name and email, and how you know them.', 'rl-err');
       firstBad.focus();
       return null;
     }
@@ -102,14 +106,31 @@
       if (err && err._fallback === true) return postSupabase(payload);
       return postSupabase(payload).then(function () { return { _usedDb: true }; });
     }).then(function () {
-      setStatus('Referral received! We\'ll email your friend a personal welcome from Ahmed.', 'rl-ok',
-        '<b>Thank you!</b>');
+      setStatus('', '');
       var form = $('referral-form');
-      if (form) {
-        form.reset();
-        var focus = $('rf-fname');
-        if (focus) focus.focus();
+      var h3 = document.querySelector('.rl-grid');
+      var thank = $('rl-thankyou');
+      if (thank) {
+        thank.style.display = 'block';
+        var fn = $('rf-fname');
+        var friendName = fn && fn.value.trim() ? fn.value.trim() : 'your friend';
+        var tmsg = $('rl-thankyou-msg');
+        if (tmsg) tmsg.innerHTML = '<b>Thank you!</b> Your referral for <b>' + esc(friendName) + '</b> is on its way — we\'ll email them a personal welcome from Ahmed. Share your personalized link below to refer more friends:';
+        var thankLink = $('rl-thankyou-link');
+        if (thankLink) thankLink.value = link;
+        var thankWa = $('rl-thankyou-wa');
+        if (thankWa) thankWa.setAttribute('href', 'https://wa.me/?text=' + encodeURIComponent(shareMsg));
+        var thankCopy = $('rl-thankyou-copy');
+        if (thankCopy) {
+          thankCopy.addEventListener('click', function () {
+            function doneC() { thankCopy.textContent = 'Copied!'; setTimeout(function () { thankCopy.textContent = 'Copy'; }, 2200); }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(link).then(doneC, function () { fallbackCopy(link, doneC); });
+            } else { fallbackCopy(link, doneC); }
+          });
+        }
       }
+      if (form) form.reset();
     }).catch(function () {
       setStatus('Something went wrong. Please try again in a moment, or email ahmedashrafgeith@gmail.com.', 'rl-err');
     }).finally(function () {
@@ -134,14 +155,14 @@
     }
 
     // share strip
-    var link = (cfg().url) || 'https://www.proenglishtutor.online/referral.html';
+    link = (cfg().url) || 'https://www.proenglishtutor.online/referral.html';
     try {
       var locQs = window.location.search;
       if (locQs && locQs.length > 1 && (locQs.indexOf('email=') !== -1 || locQs.indexOf('name=') !== -1)) {
         link = link.split('?')[0] + locQs;
       }
     } catch (e) {}
-    var shareMsg = 'I\'m learning English 1-on-1 with Ahmed at TutorEnglishPro. When you book your first lesson package we both get a free 30-minute lesson. Start with a free trial here: ' + link;
+    shareMsg = 'I\'m learning English 1-on-1 with Ahmed at TutorEnglishPro. When you book your first lesson package we both get a free 30-minute lesson. Start with a free trial here: ' + link;
     var wa = $('ref-share-wa');
     if (wa) wa.setAttribute('href', 'https://wa.me/?text=' + encodeURIComponent(shareMsg));
     var mail = $('ref-share-mail');

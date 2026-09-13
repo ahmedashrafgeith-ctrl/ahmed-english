@@ -192,15 +192,38 @@ async function initReferWidget(user) {
   if (countEl && user && user.email) {
     try {
       const sheetApp = window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.sheetUrl;
-      let n = 0;
+      const mine = [];
       if (sheetApp) {
         const res = await fetch(sheetApp, { method: 'GET', mode: 'cors', cache: 'no-store' });
         const data = await res.json();
         if (res.ok && data && data.ok && Array.isArray(data.rows)) {
-          n = data.rows.filter(r => String(r.referrer_email || '').toLowerCase() === String(user.email).toLowerCase()).length;
+          data.rows.forEach(r => {
+            if (String(r.referrer_email || '').toLowerCase() === String(user.email).toLowerCase()) mine.push(r);
+          });
         }
       }
-      countEl.textContent = n;
+      countEl.textContent = mine.length;
+
+      const trackEl = document.getElementById('ref-track-list');
+      if (trackEl) {
+        if (!mine.length) {
+          trackEl.innerHTML = '<p class="muted" style="margin:0;font-size:.85rem;">No referrals yet. Copy your link above and share it with a friend to start earning free lessons!</p>';
+        } else {
+          trackEl.innerHTML = mine.map(r => {
+            const st = (r.status || 'new').toLowerCase();
+            const stBadge = st === 'converted' ? 'badge-ok' : (st === 'contacted' ? 'badge-warn' : 'badge-acc');
+            const label = st === 'converted' ? 'Booked — you earn a free lesson!' : (st === 'contacted' ? 'Contacted by Ahmed' : 'Awaiting reply');
+            const when = r.timestamp ? new Date(r.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--c-card-border);border-radius:12px;background:var(--c-surface);font-size:.86rem;">
+              <div style="flex:1;min-width:150px;">
+                <div style="font-weight:700;color:var(--c-ink);">${esc(r.friend_name || 'A friend')}</div>
+                <div style="font-size:.8rem;color:var(--c-ink-3);">${when || ''}</div>
+              </div>
+              <span class="badge ${stBadge}" title="${esc(label)}">${esc(st)}</span>
+            </div>`;
+          }).join('');
+        }
+      }
     } catch (e) { console.warn('refer count error:', e); }
   }
 }
