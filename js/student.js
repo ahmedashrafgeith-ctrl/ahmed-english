@@ -1,6 +1,7 @@
-﻿document.addEventListener('DOMContentLoaded', async () => {
+﻿const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
-  const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const user = sb ? await (async () => {
     try {
       const { data: { session } } = await sb.auth.getSession();
