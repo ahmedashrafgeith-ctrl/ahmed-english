@@ -638,17 +638,27 @@
       listEl.innerHTML = rows.map(r => {
         const st = (r.status || 'new').toLowerCase();
         const stBadge = st === 'converted' ? 'badge-ok' : (st === 'contacted' ? 'badge-warn' : 'badge-acc');
-        return `<div class="rv-adm" data-row="${r.row || r.id || ''}">
-          <div class="rv-adm-top">
-            <strong>${esc(r.referrer_name)}</strong>
+        const friend = r.friend_name || 'A friend';
+        const initials = friend.split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+        const when = fmt(r.timestamp || r.created_at);
+        return `<div class="ref-card" data-row="${r.row || r.id || ''}">
+          <div class="ref-card-head">
+            <div class="ref-avatar">${esc(initials)}</div>
+            <div class="ref-main">
+              <div class="ref-friend">${esc(friend)}<span class="ref-rel">${esc(r.relationship || 'friend')}</span></div>
+              <div class="ref-mail"><a href="mailto:${esc(r.friend_email)}">${esc(r.friend_email)}</a></div>
+            </div>
             <span class="badge ${stBadge}">${esc(st)}</span>
           </div>
-          <div class="rv-adm-meta">From: <a href="mailto:${esc(r.referrer_email)}">${esc(r.referrer_email)}</a>${r.referrer_phone ? ' · ' + esc(r.referrer_phone) : ''} &nbsp;<span class="rv-date">${fmt(r.timestamp || r.created_at)}</span></div>
-          <p class="rv-text">→ <strong>${esc(r.friend_name)}</strong> (${esc(r.relationship || '—')}) · <a href="${friendMail(r.friend_name, r.friend_email)}">${esc(r.friend_email)}</a>${r.message ? '<br><em class="ref-note">' + esc(r.message) + '</em>' : ''}</p>
-          <div class="rv-adm-actions">
-            <a class="btn btn-sm btn-primary" href="${friendMail(r.friend_name, r.friend_email)}" target="_blank">Email friend</a>
+          <div class="ref-meta">Referred by <strong>${esc(r.referrer_name)}</strong> · <a href="mailto:${esc(r.referrer_email)}">${esc(r.referrer_email)}</a>${r.referrer_phone ? ' · ' + esc(r.referrer_phone) : ''}${when ? ' · <span class="rv-date">' + when + '</span>' : ''}</div>
+          ${r.message ? '<div class="ref-note">"' + esc(r.message) + '"</div>' : ''}
+          <div class="ref-actions">
+            <a class="btn btn-sm btn-primary" href="${friendMail(r.friend_name, r.friend_email)}" target="_blank">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+              Email friend
+            </a>
             ${st !== 'contacted' ? '<button class="btn btn-sm btn-ghost" data-refact="contacted">Mark contacted</button>' : ''}
-            ${st !== 'converted' ? '<button class="btn btn-sm btn-ghost" data-refact="converted">Mark converted</button>' : ''}
+            ${st !== 'converted' ? '<button class="btn btn-sm btn-ok" data-refact="converted">Mark converted</button>' : ''}
             ${st !== 'new' ? '<button class="btn btn-sm btn-ghost" data-refact="new">Reopen</button>' : ''}
           </div>
         </div>`;
@@ -656,7 +666,7 @@
 
       listEl.querySelectorAll('[data-refact]').forEach(b => b.addEventListener('click', async () => {
         const act = b.getAttribute('data-refact');
-        const row = b.closest('.rv-adm').getAttribute('data-row');
+        const row = b.closest('.ref-card').getAttribute('data-row');
         const fromSheet = !!(sheetApp && /^\d+$/.test(row || ''));
         b.disabled = true;
         if (fromSheet) {
@@ -674,7 +684,7 @@
             return;
           }
         } else {
-          const id = b.closest('.rv-adm').getAttribute('data-row');
+          const id = b.closest('.ref-card').getAttribute('data-row');
           const { error } = await sb.from('referrals').update({ status: act }).eq('id', id);
           if (error && msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#DC2626'; msgEl.textContent = 'Failed: ' + error.message; }
         }

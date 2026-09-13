@@ -209,6 +209,26 @@
 .rv-adm .rv-text { color: var(--c-ink-2); }
 .rv-adm-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
+/* ---------- Referral cards (admin) ---------- */
+.ref-card { padding: 18px; border: 1px solid var(--c-card-border); border-radius: var(--r-lg); margin-bottom: 12px; background: var(--c-surface); }
+.ref-card-head { display: flex; align-items: center; gap: 14px; }
+.ref-avatar { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .85rem; color: #fff; background: linear-gradient(135deg, var(--c-accent), var(--c-accent-2, var(--c-accent))); letter-spacing: .02em; }
+.ref-main { flex: 1; min-width: 0; }
+.ref-friend { font-weight: 800; font-size: 1.02rem; color: var(--c-ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ref-rel { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); background: var(--c-soft); border: 1px solid var(--c-card-border); padding: 2px 9px; border-radius: 20px; }
+.ref-mail { font-size: .83rem; color: var(--c-ink-2); margin-top: 3px; }
+.ref-mail a { color: var(--c-accent); text-decoration: none; }
+.ref-mail a:hover { text-decoration: underline; }
+.ref-card-head .badge { flex: 0 0 auto; }
+.ref-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--c-card-border); font-size: .8rem; color: var(--c-ink-3); }
+.ref-meta strong { color: var(--c-ink); }
+.ref-meta a { color: var(--c-accent); text-decoration: none; }
+.ref-meta a:hover { text-decoration: underline; }
+.ref-note { margin-top: 10px; padding: 10px 14px; background: var(--c-soft); border: 1px solid var(--c-card-border); border-left: 3px solid var(--c-accent); border-radius: 10px; font-size: .86rem; color: var(--c-ink-2); font-style: italic; }
+.ref-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.ref-actions .btn-ok { background: color-mix(in srgb, #059669 10%, transparent); color: #059669; border-color: transparent; }
+.ref-actions .btn-ok:hover { background: #059669; color: #fff; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .rv-track .rv-card { flex: 0 0 calc((100% - 18px) / 2); }

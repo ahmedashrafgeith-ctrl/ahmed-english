@@ -34,7 +34,7 @@
   <script src="js/auth.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
-  <script src="js/student.js"></script>
+  <script src="js/student.js?v=20260906q"></script>
   <script src="js/ads.js?v=20260906k"></script>
 </head>
 <body>
@@ -173,6 +173,25 @@
         </a>
         <a class="btn btn-secondary btn-sm" href="packages.html">View Packages</a>
       </div>
+    </section>
+
+    <!-- REFER & EARN -->
+    <section class="panel reveal" id="refer-widget" style="border-left:3px solid var(--c-accent);">
+      <div class="panel-head" style="margin-bottom:6px;">
+        <h3 style="display:flex;align-items:center;gap:10px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M17.8 11.4 21 8l-3.2-3.4"/><circle cx="6" cy="15" r="2.2"/><circle cx="14" cy="11" r="1"/><circle cx="19" cy="17" r="1"/></svg>
+          Refer a Friend &amp; Earn
+        </h3>
+        <span class="badge badge-acc">1 free lesson per friend</span>
+      </div>
+      <p style="font-size:.96rem;color:var(--c-ink-2);margin:0 0 16px;">Recommend Ahmed to a friend. When they book their first lesson package, you <b style="color:var(--c-ink);">both</b> get a free 30-minute lesson.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input class="field" id="ref-link" type="text" readonly style="flex:1;min-width:240px;height:42px;font-size:.85rem;" value="https://www.proenglishtutor.online/referral.html">
+        <button type="button" class="btn btn-secondary btn-sm" id="ref-copy-btn">Copy link</button>
+        <a class="btn btn-primary btn-sm" id="ref-share-wa" target="_blank" rel="noopener" href="#">Share on WhatsApp</a>
+        <a class="btn btn-ghost btn-sm" id="ref-share-mail" href="#">Email</a>
+      </div>
+      <p style="margin:14px 0 0;font-size:.85rem;color:var(--c-ink-3);">Referrals you&#39;ve sent: <strong id="ref-count" style="color:var(--c-ink);">0</strong></p>
     </section>
 
     <!-- 2-COLUMN SECTION: TIMELINE FEED & HOMEWORK CHECKLIST -->

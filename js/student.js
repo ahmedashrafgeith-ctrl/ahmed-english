@@ -135,10 +135,66 @@ const statHours = document.getElementById('stat-hours');
       }
     }
 
-  } catch (err) {
+} catch (err) {
     console.error('Error loading student dashboard data:', err);
   }
+
+  // ── 7. Refer & Earn widget ──
+  initReferWidget(user);
 });
+
+// ── Refer & Earn widget ──
+async function initReferWidget(user) {
+  const link = (window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.url) || 'https://www.proenglishtutor.online/referral.html';
+  const linkEl = document.getElementById('ref-link');
+  const waEl = document.getElementById('ref-share-wa');
+  const mailEl = document.getElementById('ref-share-mail');
+  const copyEl = document.getElementById('ref-copy-btn');
+  const countEl = document.getElementById('ref-count');
+  if (!linkEl && !waEl && !mailEl && !copyEl) return;
+
+  if (linkEl) linkEl.value = link;
+  const msg = encodeURIComponent(
+    'Hi! I\'m learning English 1-on-1 with Ahmed at TutorEnglishPro. ' +
+    'When you book your first lesson package, we BOTH get a free 30-minute lesson! ' +
+    'Start with a free trial here: ' + link
+  );
+  if (waEl) waEl.href = 'https://wa.me/?text=' + msg;
+  if (mailEl) mailEl.href = 'mailto:?subject=' + encodeURIComponent('Learn English with Ahmed — free trial') + '&body=' + msg;
+
+  if (copyEl) {
+    copyEl.addEventListener('click', () => {
+      const done = () => {
+        copyEl.textContent = 'Copied!';
+        setTimeout(() => { copyEl.textContent = 'Copy link'; }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(done, done);
+        return;
+      }
+      if (linkEl) {
+        linkEl.select();
+        document.execCommand ? document.execCommand('copy') : null;
+      }
+      done();
+    });
+  }
+
+  if (countEl && user && user.email) {
+    try {
+      const sheetApp = window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.sheetUrl;
+      let n = 0;
+      if (sheetApp) {
+        const res = await fetch(sheetApp, { method: 'GET', mode: 'cors', cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok && data && data.ok && Array.isArray(data.rows)) {
+          n = data.rows.filter(r => String(r.referrer_email || '').toLowerCase() === String(user.email).toLowerCase()).length;
+        }
+      }
+      countEl.textContent = n;
+    } catch (e) { console.warn('refer count error:', e); }
+  }
+}
 
 // ── Upcoming lessons renderer ──
 function renderUpcoming(bookings, user) {
