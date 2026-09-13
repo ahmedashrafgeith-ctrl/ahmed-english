@@ -145,7 +145,16 @@ const statHours = document.getElementById('stat-hours');
 
 // ── Refer & Earn widget ──
 async function initReferWidget(user) {
-  const link = (window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.url) || 'https://www.proenglishtutor.online/referral.html';
+  const base = (window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.url) || 'https://www.proenglishtutor.online/referral.html';
+  let name = '';
+  try {
+    const p = await sb.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+    name = (p.data && p.data.full_name) || user.user_metadata && user.user_metadata.full_name || '';
+  } catch (e) { /* optional */ }
+  const qs = new URLSearchParams();
+  if (user && user.email) qs.set('email', user.email);
+  if (name) qs.set('name', name);
+  const link = base + (qs.toString() ? '?' + qs.toString() : '');
   const linkEl = document.getElementById('ref-link');
   const waEl = document.getElementById('ref-share-wa');
   const mailEl = document.getElementById('ref-share-mail');

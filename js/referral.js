@@ -13,6 +13,10 @@
 
   function $(id) { return document.getElementById(id); }
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function setStatus(msg, cls, html) {
     var s = $('rl-status');
     if (!s) return;
@@ -131,6 +135,12 @@
 
     // share strip
     var link = (cfg().url) || 'https://www.proenglishtutor.online/referral.html';
+    try {
+      var locQs = window.location.search;
+      if (locQs && locQs.length > 1 && (locQs.indexOf('email=') !== -1 || locQs.indexOf('name=') !== -1)) {
+        link = link.split('?')[0] + locQs;
+      }
+    } catch (e) {}
     var shareMsg = 'I\'m learning English 1-on-1 with Ahmed at TutorEnglishPro. When you book your first lesson package we both get a free 30-minute lesson. Start with a free trial here: ' + link;
     var wa = $('ref-share-wa');
     if (wa) wa.setAttribute('href', 'https://wa.me/?text=' + encodeURIComponent(shareMsg));
@@ -145,6 +155,30 @@
         } else { fallbackCopy(link, done); }
       });
     }
+
+    // Referral attribution: prefill referrer fields when the visitor arrived
+    // via a student's personalized share link (?email=&name=).
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var refName = params.get('name');
+      var refEmail = params.get('email');
+      if (refName || refEmail) {
+        var rem = $('rf-remail');
+        var rname = $('rf-rname');
+        if (rem && refEmail && EMAIL_RE.test(String(refEmail).trim())) rem.value = String(refEmail).trim();
+        if (rname && refName) rname.value = String(refName).trim();
+        var banner = $('rl-referred-banner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = (refName
+            ? '<b>' + esc(refName) + '</b> invited you to try a free lesson with Ahmed!'
+            : 'You were invited by a friend who is already learning with Ahmed!') +
+            ' Your name and email below are already filled in — just add your friend\'s details and send.';
+          var gf = $('rf-fname');
+          if (gf) setTimeout(function () { gf.focus(); }, 250);
+        }
+      }
+    } catch (e) { /* attribution is optional */ }
   }
 
   function fallbackCopy(text, done) {
