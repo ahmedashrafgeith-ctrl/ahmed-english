@@ -425,7 +425,7 @@
 
         <div class="grid-2" style="gap:22px;margin-top:8px;">
           <div>
-            <label class="kpi-label">Ad account links saved below open your platform dashboards in one click:</label>
+            <label class="kpi-label">The cards above open the official platforms - manage existing campaigns and create new ads there with your saved ad account. IDs below are optional and pre-fill those links:</label>
             <div style="display:grid;gap:10px;margin-top:10px;">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span class="badge badge-acc" style="flex:0 0 auto;">Meta</span>
@@ -503,7 +503,10 @@
             </div>
             <div>
               <label class="kpi-label" for="sl-code">Custom code (optional)</label>
-              <input class="field" id="sl-code" type="text" placeholder="e.g. spring" autocomplete="off">
+              <div style="display:flex;gap:8px;">
+                <input class="field" id="sl-code" type="text" placeholder="e.g. spring" autocomplete="off" style="flex:1;">
+                <button type="button" class="btn btn-ghost btn-sm" id="sl-gen" title="Generate a short random code" style="white-space:nowrap;">Generate</button>
+              </div>
             </div>
             <div style="grid-column:1/-1;">
               <label class="kpi-label" for="sl-url">Destination URL *</label>
@@ -754,7 +757,7 @@
               </div>
               <div class="stat" style="padding:18px 20px;">
                 <small>Most Viewed Page</small>
-                <div class="num" id="views-top-page" style="font-size:1.05rem;line-height:1.35;">"</div>
+                <div class="num" id="views-top-page" style="font-size:1.05rem;line-height:1.35;"></div>
               </div>
             </div>
             <div class="dist-card" style="margin-bottom:18px;">

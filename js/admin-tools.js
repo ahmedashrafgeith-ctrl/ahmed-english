@@ -63,17 +63,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cards = [
       {
         name: 'Meta Ads Manager', color: '#2563EB', icon: 'M', id: adAccounts.fb,
-        href: adAccounts.fb ? ('https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=' + adAccounts.fb)
+        manage: adAccounts.fb ? ('https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=' + adAccounts.fb)
           : 'https://adsmanager.facebook.com/adsmanager/manage/campaigns',
+        create: adAccounts.fb ? ('https://www.facebook.com/ads/create/?adaccount_id=' + adAccounts.fb)
+          : 'https://www.facebook.com/ads/create/',
         sub: 'Facebook & Instagram campaigns'
       },
       {
         name: 'Google Ads', color: '#4285F4', icon: 'G', id: adAccounts.ggl,
-        href: adAccounts.ggl ? ('https://ads.google.com/aw/campaigns?ocid=' + adAccounts.ggl)
+        manage: adAccounts.ggl ? ('https://ads.google.com/aw/campaigns?ocid=' + adAccounts.ggl)
           : 'https://ads.google.com/aw/campaigns',
+        create: adAccounts.ggl ? ('https://ads.google.com/aw/campaigns/create/quick?ocid=' + adAccounts.ggl)
+          : 'https://ads.google.com/aw/campaigns/create/quick',
         sub: 'Search, YouTube & Display'
       },
-      { name: 'TikTok Ads', color: '#111827', icon: 'T', id: '', href: 'https://ads.tiktok.com', sub: 'TikTok campaigns' }
+      { name: 'TikTok Ads', color: '#111827', icon: 'T', id: '', manage: 'https://ads.tiktok.com', create: null, sub: 'TikTok campaigns' }
     ];
     el.innerHTML = cards.map(c => `
       <div class="zone-card" style="padding:16px;">
@@ -84,7 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="font-size:.78rem;color:var(--c-ink-3);">${c.sub}</div>
           </div>
         </div>
-        <a class="btn btn-sm btn-ghost" style="width:100%;margin-top:12px;" href="${c.href}" target="_blank" rel="noopener">Open dashboard</a>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <a class="btn btn-sm btn-ghost" style="flex:1;" href="${c.manage}" target="_blank" rel="noopener">Open dashboard</a>
+          ${c.create ? `<a class="btn btn-sm btn-primary" style="flex:1;" href="${c.create}" target="_blank" rel="noopener">Create ad</a>` : ''}
+        </div>
       </div>`).join('');
   }
   renderPlatforms(document.getElementById('ads-platforms'));
@@ -289,6 +296,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     codeInput.addEventListener('input', () => {
       const c = codeInput.value.trim();
       previewEl.textContent = c ? prettyBase + c : '';
+    });
+  }
+
+  // Generate a random 8-char code (sl1nk-style short link)
+  const genBtn = document.getElementById('sl-gen');
+  if (genBtn && codeInput && previewEl) {
+    genBtn.addEventListener('click', () => {
+      codeInput.value = genCode(8);
+      previewEl.textContent = prettyBase + codeInput.value;
+      codeInput.focus();
     });
   }
 

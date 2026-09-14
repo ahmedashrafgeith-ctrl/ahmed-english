@@ -184,7 +184,7 @@
             <div class="pkg-sub">${p.lessons} ${p.subtext}</div>
             <div class="pkg-note">SAVE ${p.save}%</div>
             <p style="margin-top:14px;font-size:.95rem;">${p.desc}</p>
-            <ul class="checks">${p.features.map(f => `<li><span class="ck">"</span>${f}</li>`).join('')}</ul>
+            <ul class="checks">${p.features.map(f => `<li><span class="ck">&#10003;</span>${f}</li>`).join('')}</ul>
           </div>
           <div style="display:grid;gap:10px;">
             <button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" style="width:100%;cursor:pointer;" data-checkout="${p.planKey}" data-fallback="${p.stripeLink}">

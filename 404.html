@@ -27,7 +27,7 @@
       var raw = decodeURIComponent(window.location.pathname || '').replace(/^\/+|\/+$/g, '');
       var parts = raw.split('/').filter(Boolean);
       var code = parts[0] || '';
-      if (!/^[A-Za-z0-9_-]{1,64}$/.test(code)) { finish('This link is not available.'); return; }
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(code)) { goHome(); return; }
 
       var cfg = (window.APP_CONFIG && APP_CONFIG.supabase) || {};
       if (!cfg.url || !cfg.anonKey) { finish('Link service unavailable.'); return; }
@@ -36,7 +36,7 @@
         var sb = getSupabase();
         sb.from('shortlinks').select('url').eq('code', code).maybeSingle().then(function (res) {
           var url = res.data && res.data.url;
-          if (!url) { finish('This link is no longer available.'); return; }
+          if (!url) { goHome(); return; }
           // log the click into visitor analytics (best-effort, no cookies)
           trackClick(code);
           // increment the click counter (read-then-update, races are fine)
@@ -85,6 +85,10 @@
             created_at: new Date().toISOString()
           }).then(function () {}, function () {});
         } catch (e) {}
+      }
+
+      function goHome() {
+        window.location.replace(window.location.origin + '/');
       }
 
       function finish(msg) {
