@@ -1475,10 +1475,12 @@ html, body { overflow-x: hidden; }
   .jump-nav-link { padding: 5px 10px; font-size: .75rem; }
 }
 
-/* Defensive: ensure monet-view and all its children are always visible */
-#monet-view { display: block !important; visibility: visible !important; }
+/* Defensive: monet-view content stays visible once shown.
+   NOTE: no display:block !important on the containers themselves — that would
+   override showView()'s hide/show (inline display:none cannot beat !important). */
+#monet-view { visibility: visible !important; }
 #monet-view * { visibility: visible !important; }
-#monet-panel { display: block !important; visibility: visible !important; }
+#monet-panel { visibility: visible !important; }
 #monet-panel .grid-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 22px !important; }
 #monet-panel .zone-card { display: grid !important; }
 @media (max-width: 900px) {

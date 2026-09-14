@@ -1455,10 +1455,11 @@ async function initAdsControl(sbc) {
           </tr>`).join('');
       }
 
-      const dist = (key, label, id, unknownLabel) => {
+      const dist = (key, label, id, unknownLabel, src) => {
         const el = document.getElementById(id);
+        const source = (src || rows);
         const map = {};
-        rows.forEach((r) => {
+        source.forEach((r) => {
           let v = (r[key] || '').trim() || unknownLabel;
           if (v === 'Unknown') v = unknownLabel;
           map[v] = (map[v] || 0) + 1;
@@ -1466,7 +1467,7 @@ async function initAdsControl(sbc) {
         const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
         if (!el) return;
         if (!entries.length) { el.innerHTML = '<p class="muted" style="font-size:.8rem;">No data yet.</p>'; return; }
-        const base = rows.length || 1;
+        const base = (src ? src.length : rows.length) || 1;
         el.innerHTML = entries.map(([name, n]) => {
           const pct = Math.round((n / base) * 100);
           return '<div class="dist-row">' +
@@ -1478,6 +1479,52 @@ async function initAdsControl(sbc) {
       dist('device', 'Unknown', 'stat-devices', 'Unknown');
       dist('country', 'Unknown', 'stat-countries', 'Other / not detected');
       dist('browser', 'Other', 'stat-browsers', 'Other');
+      dist('os', 'Other', 'stat-os', 'Other');
+
+      // Referrer breakdown (grouped by host, direct visits separate)
+      const refName = (ref) => {
+        if (!ref) return 'Direct';
+        try {
+          const h = new URL(ref).hostname.replace(/^www\./i, '');
+          return h || 'Direct';
+        } catch (e) { return 'Direct'; }
+      };
+      const refRows = rows.map((r) => Object.assign({}, r, { referrer: refName(r.referrer) }));
+      dist('referrer', 'Direct', 'stat-referrers', 'Direct', refRows);
+
+      // 14-day per-day trend (pure CSS bars)
+      const trendEl = document.getElementById('views-trend');
+      if (trendEl) {
+        const now = new Date();
+        const buckets = [];
+        for (let i = 13; i >= 0; i--) {
+          const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+          const end = new Date(start.getTime() + 86400000);
+          buckets.push({
+            label: start.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+            start: start.toISOString(),
+            end: end.toISOString(),
+            count: 0
+          });
+        }
+        rows.forEach((r) => {
+          if (!r.created_at) return;
+          for (let i = 0; i < buckets.length; i++) {
+            if (r.created_at >= buckets[i].start && r.created_at < buckets[i].end) { buckets[i].count++; break; }
+          }
+        });
+        const max = Math.max.apply(null, buckets.map((b) => b.count)) || 1;
+        const lastLabel = buckets[buckets.length - 1].label;
+        trendEl.innerHTML = rows.length
+          ? buckets.map((b) => {
+              const w = Math.round((b.count / max) * 100);
+              return '<div class="dist-row">' +
+                '<div class="dist-top"><span>' + esc(b.label) + (b.label === lastLabel ? ' <em style="font-style:normal;opacity:.6;">· today</em>' : '') + '</span><b>' + b.count + '</b></div>' +
+                '<div class="dist-bar"><i style="width:' + Math.max(w, b.count ? 3 : 0) + '%"></i></div>' +
+              '</div>';
+            }).join('')
+          : '<p class="muted" style="font-size:.8rem;">No data yet.</p>';
+      }
     } catch (e) {
       console.error('ads stats error:', e);
       if (topList) topList.innerHTML = '<tr><td colspan="2" class="muted">Could not load stats.</td></tr>';

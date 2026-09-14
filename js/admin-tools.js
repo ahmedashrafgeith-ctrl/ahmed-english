@@ -11,21 +11,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const fmtMoney = (n) => '$' + Number(n || 0).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // ── Persist ad account IDs in localStorage ──
-  const adsKey = 'tep_adaccounts';
+  // ── Persist ad account IDs in Supabase site_settings (localStorage fallback) ──
+  const A_KEY = 'tep_adaccounts';
+  const SKEY = { fb: 'ads_fb_account', ggl: 'ads_ggl_account', pixel: 'ads_pixel_id' };
   let adAccounts = {};
-  try { adAccounts = JSON.parse(localStorage.getItem(adsKey)) || {}; } catch (e) {}
+  try { adAccounts = JSON.parse(localStorage.getItem(A_KEY)) || {}; } catch (e) {}
+
+  async function loadAccountStore() {
+    try {
+      const { data } = await sb.from('site_settings').select('key,value').in('key', Object.values(SKEY));
+      const s = {};
+      (data || []).forEach((r) => { s[r.key] = r.value; });
+      if (s[SKEY.fb]) adAccounts.fb = s[SKEY.fb];
+      if (s[SKEY.ggl]) adAccounts.ggl = s[SKEY.ggl];
+      if (s[SKEY.pixel]) adAccounts.pixel = s[SKEY.pixel];
+    } catch (e) { /* keep localStorage copy */ }
+  }
+
+  async function persistAccounts(values) {
+    const rows = Object.keys(values).map((k) => ({ key: SKEY[k], value: values[k] || '' }));
+    try {
+      await sb.from('site_settings').upsert(rows, { onConflict: 'key' });
+    } catch (e) { /* localStorage fallback only */ }
+    localStorage.setItem(A_KEY, JSON.stringify(adAccounts));
+  }
 
   const fbId = document.getElementById('ads-fb-account');
   const ggId = document.getElementById('ads-ggl-account');
-  if (fbId) fbId.value = adAccounts.fb || '';
-  if (ggId) ggId.value = adAccounts.ggl || '';
+  const pixelId = document.getElementById('ads-pixel-id');
+
+  (async () => {
+    await loadAccountStore();
+    if (fbId) fbId.value = adAccounts.fb || '';
+    if (ggId) ggId.value = adAccounts.ggl || '';
+    if (pixelId) pixelId.value = adAccounts.pixel || '';
+  })();
 
   if (document.getElementById('ads-save-accounts')) {
-    document.getElementById('ads-save-accounts').addEventListener('click', () => {
+    document.getElementById('ads-save-accounts').addEventListener('click', async () => {
       adAccounts.fb = (fbId ? fbId.value.trim() : '');
       adAccounts.ggl = (ggId ? ggId.value.trim() : '');
-      localStorage.setItem(adsKey, JSON.stringify(adAccounts));
+      adAccounts.pixel = (pixelId ? pixelId.value.trim() : '');
+      await persistAccounts({ fb: adAccounts.fb, ggl: adAccounts.ggl, pixel: adAccounts.pixel });
       const m = document.getElementById('ads-platforms');
       renderPlatforms(m);
     });
@@ -74,6 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── UTM builder ──
+  const prettyBase = 'https://www.proenglishtutor.online/';
   async function loadShortlinksForUtm() {
     const sel = document.getElementById('utm-shortlink');
     if (!sel) return;
@@ -81,8 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const { data } = await sb.from('shortlinks').select('code,label,url').order('created_at', { ascending: false }).limit(50);
       (data || []).forEach(r => {
-        const label = (r.label ? r.label + ' — ' : '') + 'go?c=' + r.code;
-        opts += '<option value="' + 'https://www.proenglishtutor.online/go.html?c=' + r.code + '">' + esc(label) + '</option>';
+        const name = r.label || r.code;
+        opts += '<option value="' + prettyBase + r.code + '">' + esc(name) + ' — ' + esc(prettyBase + r.code) + '</option>';
       });
     } catch (e) { /* noop */ }
     sel.innerHTML = opts;
@@ -218,9 +246,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               <strong>${esc(r.label || r.code)}</strong>
               <span class="badge badge-acc">${Number(r.hits || 0)} clicks</span>
             </div>
-            <div class="rv-adm-meta" style="word-break:break-all;">${shortBase}${esc(r.code)} &nbsp;→&nbsp; ${esc(r.url)}</div>
+            <div class="rv-adm-meta" style="word-break:break-all;">${prettyBase}${esc(r.code)} &nbsp;→&nbsp; ${esc(r.url)}</div>
             <div class="rv-adm-actions">
-              <button class="btn btn-sm btn-primary" data-slcp>Copy link</button>
+              <button class="btn btn-sm btn-primary" data-slcp2>Copy short link</button>
+              <button class="btn btn-sm btn-ghost" data-slqr="${prettyBase + r.code}">QR</button>
               <a class="btn btn-sm btn-ghost" href="${shortBase + r.code}" target="_blank" rel="noopener">Test</a>
               <button class="btn btn-sm btn-ghost" data-sldel="${r.code}">Delete</button>
             </div>
@@ -233,6 +262,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied!'), () => {});
         else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
       }));
+      slList.querySelectorAll('[data-slcp2]').forEach(b => b.addEventListener('click', () => {
+        const code = b.closest('.rv-adm').querySelector('[data-sldel]').getAttribute('data-sldel');
+        const url = prettyBase + code;
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied!'), () => {});
+        else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
+      }));
+      slList.querySelectorAll('[data-slqr]').forEach(b => b.addEventListener('click', () => {
+        const url = b.getAttribute('data-slqr');
+        const qr = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=' + encodeURIComponent(url);
+        window.open(qr, '_blank', 'noopener');
+      }));
       slList.querySelectorAll('[data-sldel]').forEach(b => b.addEventListener('click', async () => {
         if (!confirm('Delete this short link?')) return;
         await sb.from('shortlinks').delete().eq('code', b.getAttribute('data-sldel'));
@@ -241,6 +281,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) { slList.innerHTML = '<p class="muted">Could not load short links.</p>'; }
   }
   loadShortlinks();
+
+  // Live pretty-link preview while typing the custom code
+  const codeInput = document.getElementById('sl-code');
+  const previewEl = document.getElementById('sl-preview');
+  if (codeInput && previewEl) {
+    codeInput.addEventListener('input', () => {
+      const c = codeInput.value.trim();
+      previewEl.textContent = c ? prettyBase + c : '';
+    });
+  }
 
   function flash(msg, err) {
     if (!slMsg) return;
@@ -256,6 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const label = document.getElementById('sl-label').value.trim();
       const code = document.getElementById('sl-code').value.trim() || genCode(6);
       if (!url) { flash('Please enter the destination URL.', true); document.getElementById('sl-url').focus(); return; }
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(code)) { flash('Use only letters, numbers, dash or underscore in the code.', true); document.getElementById('sl-code').focus(); return; }
       let clean = url;
       if (!/^https?:\/\//i.test(clean)) clean = 'https://' + clean;
       const { error } = await sb.from('shortlinks').insert({ code, url: clean, label, hits: 0, created_at: new Date().toISOString() });
@@ -267,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('sl-code').value = '';
       document.getElementById('sl-url').value = '';
       document.getElementById('sl-label').value = '';
-      flash('Short link created: ' + shortBase + code);
+      flash('Short link created: ' + prettyBase + code);
       loadShortlinks();
       loadShortlinksForUtm();
     });

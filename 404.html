@@ -21,9 +21,13 @@
   </div>
   <script>
     (function () {
-      var params = new URLSearchParams(window.location.search);
-      var code = (params.get('c') || '').trim();
-      if (!code) { finish('Missing redirect code.'); return; }
+      // Pretty short links: https://www.proenglishtutor.online/<code>
+      // GitHub Pages serves this file for any path that does not exist, so a
+      // real page like /packages.html never reaches here — only short codes do.
+      var raw = decodeURIComponent(window.location.pathname || '').replace(/^\/+|\/+$/g, '');
+      var parts = raw.split('/').filter(Boolean);
+      var code = parts[0] || '';
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(code)) { finish('This link is not available.'); return; }
 
       var cfg = (window.APP_CONFIG && APP_CONFIG.supabase) || {};
       if (!cfg.url || !cfg.anonKey) { finish('Link service unavailable.'); return; }
@@ -35,7 +39,7 @@
           if (!url) { finish('This link is no longer available.'); return; }
           // log the click into visitor analytics (best-effort, no cookies)
           trackClick(code);
-          // increment using RPC-less approach: read, then update hit count
+          // increment the click counter (read-then-update, races are fine)
           sb.from('shortlinks').select('hits').eq('code', code).maybeSingle().then(function (rr) {
             var hits = (rr.data && rr.data.hits) || 0;
             sb.from('shortlinks').update({ hits: hits + 1 }).eq('code', code).then(function () {}, function () {});
