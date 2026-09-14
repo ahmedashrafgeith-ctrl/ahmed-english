@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // TutorEnglishPro - Live Chat (Supabase Edge Function)
 // ------------------------------------------------------------
 // Powering the student chat widget and the Admin Dashboard inbox.

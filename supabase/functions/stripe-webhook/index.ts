@@ -1,5 +1,5 @@
-﻿// ============================================================
-// TutorEnglishPro — Stripe Webhook (Supabase Edge Function)
+// ============================================================
+// TutorEnglishPro - Stripe Webhook (Supabase Edge Function)
 // ------------------------------------------------------------
 // Purpose: keeps the public `subscriptions` table in sync with
 // real Stripe payments so the admin "Revenue" and teacher
@@ -73,7 +73,7 @@ async function findOrCreateStudent(email: string) {
 
   if (existing) return existing;
 
-  // Student has no profile yet — create one as 'student' (role must
+  // Student has no profile yet - create one as 'student' (role must
   // never become admin/tutor from a payment).
   const { data: created, error: err } = await supabase
     .from("profiles")

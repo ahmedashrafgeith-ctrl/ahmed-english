@@ -1476,7 +1476,7 @@ html, body { overflow-x: hidden; }
 }
 
 /* Defensive: monet-view content stays visible once shown.
-   NOTE: no display:block !important on the containers themselves — that would
+   NOTE: no display:block !important on the containers themselves - that would
    override showView()'s hide/show (inline display:none cannot beat !important). */
 #monet-view { visibility: visible !important; }
 #monet-view * { visibility: visible !important; }

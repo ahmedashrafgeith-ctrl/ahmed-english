@@ -1,5 +1,5 @@
-﻿// ============================================================
-// TutorEnglishPro — Cal.com Webhook (Supabase Edge Function)
+// ============================================================
+// TutorEnglishPro - Cal.com Webhook (Supabase Edge Function)
 // ------------------------------------------------------------
 // Receives Cal.com booking webhooks (BOOKING_CREATED,
 // BOOKING_CANCELLED, BOOKING_RESCHEDULED) and keeps Supabase in
@@ -13,7 +13,7 @@
 // How to enable: Cal.com app -> Settings -> Webhooks -> Add webhook:
 //   URL: https://gggziewyeqsnuixwhvoe.supabase.co/functions/v1/cal-webhook
 //   Events: booking.created, booking.rescheduled, booking.cancelled
-// (Currently only the Cal.com dashboard can register these — the
+// (Currently only the Cal.com dashboard can register these - the
 // Cal API key cannot create webhooks while Cal's mutation endpoints
 // are returning 400.)
 //
@@ -67,7 +67,7 @@ async function upsertBooking(studentId, payload) {
   const email = attendees[0]?.email || payload.responses?.email || payload.email || null;
 
   // Match by cal_uid first (bookings created by our own book-lesson
-  // function store this uid, so we just refresh it — never re-consume).
+  // function store this uid, so we just refresh it - never re-consume).
   const { data: existing } = await supabase
     .from("bookings")
     .select("*")
@@ -206,6 +206,6 @@ Deno.serve(async (req) => {
     return json("success", { handled: true, rescheduled: true }, 200);
   }
 
-  // Unknown trigger (e.g. BOOKING_CONFIRMED, MEETING_ENDED) — ignore.
+  // Unknown trigger (e.g. BOOKING_CONFIRMED, MEETING_ENDED) - ignore.
   return json("success", { handled: true, skipped: true }, 200);
 });

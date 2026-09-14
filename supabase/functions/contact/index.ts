@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // TutorEnglishPro - Contact Form (Supabase Edge Function)
 // ------------------------------------------------------------
 // Public contact form (no login required). Stores the message in

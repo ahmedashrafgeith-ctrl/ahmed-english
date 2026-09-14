@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
   if (!sb) {
     const el = document.getElementById('user-name');
@@ -77,14 +77,14 @@
       updateStatusUI(newStatus);
       if (syncMsg) {
         syncMsg.style.color = '#059669';
-        syncMsg.textContent = `✓ Status updated to "${newStatus === 'open' ? 'Accepting New Students' : 'Not Accepting Students Currently'}"`;
+        syncMsg.textContent = `OK Status updated to "${newStatus === 'open' ? 'Accepting New Students' : 'Not Accepting Students Currently'}"`;
         setTimeout(() => { syncMsg.style.display = 'none'; }, 4000);
       }
     } catch (err) {
       console.error('Failed to update status:', err);
       if (syncMsg) {
         syncMsg.style.color = '#DC2626';
-        syncMsg.textContent = `✕ Failed to save: ${(err && err.message) || 'Permission denied or network issue'}`;
+        syncMsg.textContent = `x Failed to save: ${(err && err.message) || 'Permission denied or network issue'}`;
       }
     } finally {
       if (btnOpen) btnOpen.disabled = false;
@@ -146,13 +146,13 @@
     }
     studentList.innerHTML = list.map(s => {
       const s2 = allSubs.find(x => x.student_id === s.id && x.status === 'active');
-      const plan = s2 ? `<span class="badge badge-soft" style="font-weight:700;">${s2.package_name}</span>` : '<span class="muted">—</span>';
+      const plan = s2 ? `<span class="badge badge-soft" style="font-weight:700;">${s2.package_name}</span>` : '<span class="muted">-</span>';
       const status = s2 ? '<span class="badge badge-ok">Active</span>' : '<span class="badge badge-warn">No plan</span>';
       return `<tr>
         <td><strong>${s.full_name || 'Student'}</strong></td>
-        <td><small class="muted">${s.email || '—'}</small></td>
+        <td><small class="muted">${s.email || '-'}</small></td>
         <td>${s.english_level || 'Intermediate'}</td>
-        <td>${s.learning_goal ? s.learning_goal.slice(0, 32) + (s.learning_goal.length > 32 ? '…' : '') : '—'}</td>
+        <td>${s.learning_goal ? s.learning_goal.slice(0, 32) + (s.learning_goal.length > 32 ? '...' : '') : '-'}</td>
         <td>${plan}</td>
         <td>${status}</td>
         <td>
@@ -209,7 +209,7 @@
 
     const studentById = {};
     (studentsRes.data || []).forEach(s => studentById[s.id] = s);
-    const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '—';
+    const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '-';
 
     // Render Student Roster
     renderRoster(allStudents);
@@ -238,10 +238,10 @@
     if (subList) {
       if (allSubs.length) {
         subList.innerHTML = allSubs.map(s => {
-          const status = s.status === 'active' ? '<span class="badge badge-ok">Active</span>' : `<span class="badge badge-warn">${s.status || '—'}</span>`;
+          const status = s.status === 'active' ? '<span class="badge badge-ok">Active</span>' : `<span class="badge badge-warn">${s.status || '-'}</span>`;
           return `<tr>
             <td><strong>${nameOf(s.student_id)}</strong></td>
-            <td>${s.package_name || '—'}</td>
+            <td>${s.package_name || '-'}</td>
             <td>$${priceFor(s.package_name)}</td>
             <td>${s.lessons_used || 0} / ${s.lessons_total || 0}</td>
             <td>${status}</td>
@@ -262,7 +262,7 @@
               <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="a-body">
-              <strong>${n.title || 'Lesson Note'} <span class="muted" style="font-weight:400;">· ${nameOf(n.student_id)}</span></strong>
+              <strong>${n.title || 'Lesson Note'} <span class="muted" style="font-weight:400;">| ${nameOf(n.student_id)}</span></strong>
               <p>${n.content || ''}</p>
             </div>
             <div class="a-time">${new Date(n.created_at).toLocaleDateString()}</div>
@@ -353,14 +353,14 @@
           id: data.user.id, email, full_name: name,
           role: 'student', english_level: level, learning_goal: goal || 'Improve spoken English confidence and fluency'
         }, { onConflict: 'id' });
-        setMsg('as-msg', `✓ Created ${name} (${email}). They can log in with the password you set.`, true);
+        setMsg('as-msg', `OK Created ${name} (${email}). They can log in with the password you set.`, true);
         addStudentForm.reset();
         await refreshAdminData();
       } catch (err) {
         const m = (err && err.message) || 'Failed to create student';
-        setMsg('as-msg', `✕ ${m}`, false);
+        setMsg('as-msg', `x ${m}`, false);
         if (/rate|too many|attempts/i.test(m)) {
-          setMsg('as-msg', '✕ Supabase signup is rate-limited right now. Wait ~1 minute and try again.', false);
+          setMsg('as-msg', 'x Supabase signup is rate-limited right now. Wait ~1 minute and try again.', false);
         }
       } finally {
         if (submit) { submit.disabled = false; submit.textContent = 'Create Student'; }
@@ -385,12 +385,12 @@
           created_at: new Date().toISOString()
         });
         if (error) throw error;
-        setMsg('an-msg', '✓ Lesson note saved.', true);
+        setMsg('an-msg', 'OK Lesson note saved.', true);
         addNoteForm.reset();
         closeModal('modal-add-note');
         await refreshAdminData();
       } catch (err) {
-        setMsg('an-msg', `✕ ${(err && err.message) || 'Failed to save note'}`, false);
+        setMsg('an-msg', `x ${(err && err.message) || 'Failed to save note'}`, false);
       } finally {
         if (submit) { submit.disabled = false; submit.textContent = 'Save Note'; }
       }
@@ -416,12 +416,12 @@
           created_at: new Date().toISOString()
         });
         if (error) throw error;
-        setMsg('ah-msg', '✓ Homework assigned.', true);
+        setMsg('ah-msg', 'OK Homework assigned.', true);
         addHwForm.reset();
         closeModal('modal-add-hw');
         await refreshAdminData();
       } catch (err) {
-        setMsg('ah-msg', `✕ ${(err && err.message) || 'Failed to assign homework'}`, false);
+        setMsg('ah-msg', `x ${(err && err.message) || 'Failed to assign homework'}`, false);
       } finally {
         if (submit) { submit.disabled = false; submit.textContent = 'Assign'; }
       }
@@ -456,25 +456,25 @@
       if (subList) {
         const studentById = {};
         (r1.data || []).forEach(s => studentById[s.id] = s);
-        const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '—';
+        const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '-';
         subList.innerHTML = allSubs.length ? allSubs.map(s => `
           <tr>
             <td><strong>${nameOf(s.student_id)}</strong></td>
-            <td>${s.package_name || '—'}</td>
+            <td>${s.package_name || '-'}</td>
             <td>$${priceFor(s.package_name)}</td>
             <td>${s.lessons_used || 0} / ${s.lessons_total || 0}</td>
-            <td>${s.status === 'active' ? '<span class="badge badge-ok">Active</span>' : `<span class="badge badge-warn">${s.status || '—'}</span>`}</td>
+            <td>${s.status === 'active' ? '<span class="badge badge-ok">Active</span>' : `<span class="badge badge-warn">${s.status || '-'}</span>`}</td>
           </tr>`).join('') : '<tr><td colspan="5" class="muted">No subscriptions recorded yet.</td></tr>';
       }
       const recentNotes = document.getElementById('recent-notes');
       if (recentNotes) {
         const studentById = {};
         (r1.data || []).forEach(s => studentById[s.id] = s);
-        const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '—';
+        const nameOf = (id) => (studentById[id] && (studentById[id].full_name || studentById[id].email)) || '-';
         recentNotes.innerHTML = notes.length ? notes.map(n => `
           <div class="act-item">
             <div class="a-body">
-              <strong>${n.title || 'Lesson Note'} <span class="muted" style="font-weight:400;">· ${nameOf(n.student_id)}</span></strong>
+              <strong>${n.title || 'Lesson Note'} <span class="muted" style="font-weight:400;">| ${nameOf(n.student_id)}</span></strong>
               <p>${n.content || ''}</p>
             </div>
             <div class="a-time">${new Date(n.created_at).toLocaleDateString()}</div>
@@ -503,7 +503,7 @@
       const nameOf = b => {
         const p = byId[b.student_id];
         if (p) return p.full_name || p.email;
-        return b.guest_email || '—';
+        return b.guest_email || '-';
       };
       const slugLabel = s => ({
         '30min-trial': 'Free Trial',
@@ -515,10 +515,10 @@
         const start = new Date(b.start_at);
         const end = b.end_at ? new Date(b.end_at) : null;
         const dateStr = start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) + (end ? ' – ' + end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) : '');
-        const dur = b.duration_min ? b.duration_min + 'm' : (end ? Math.round((end - start) / 60000) + 'm' : '—');
+        const timeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) + (end ? ' - ' + end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) : '');
+        const dur = b.duration_min ? b.duration_min + 'm' : (end ? Math.round((end - start) / 60000) + 'm' : '-');
         const booked = b.status === 'booked';
-        const calShort = b.cal_uid ? b.cal_uid.slice(0, 8) + '…' : '—';
+        const calShort = b.cal_uid ? b.cal_uid.slice(0, 8) + '...' : '-';
         const title = (b.title && !['30min-trial', '30min', '60min'].includes(b.title)) ? b.title : slugLabel(b.event_slug);
         return `<tr>
           <td><strong>${esc(nameOf(b))}</strong></td>
@@ -572,11 +572,11 @@
       const byId = {};
       (await sb.from('profiles').select('id,full_name,email')).data.forEach(p => byId[p.id] = p);
       list.innerHTML = subs.map(s => {
-        const name = (byId[s.student_id] && (byId[s.student_id].full_name || byId[s.student_id].email)) || '—';
+        const name = (byId[s.student_id] && (byId[s.student_id].full_name || byId[s.student_id].email)) || '-';
         const total = s.lessons_total || 0, used = s.lessons_used || 0, left = Math.max(total - used, 0);
         return `<tr>
           <td><strong>${name}</strong></td>
-          <td>${s.package_name || '—'}</td>
+          <td>${s.package_name || '-'}</td>
           <td>${total}</td>
           <td>${used}</td>
           <td><span class="badge ${left > 0 ? 'badge-ok' : 'badge-warn'}">${left}</span></td>
@@ -615,7 +615,7 @@
       const d = new Date(iso);
       if (isNaN(d)) return '';
       return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) +
-        ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        ' | ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     };
     const friendMail = (name, email) => {
       const subj = encodeURIComponent('Free English trial lesson - recommended by ' + (name || 'a friend'));
@@ -653,7 +653,7 @@
             </div>
             <span class="badge ${stBadge}">${esc(st)}</span>
           </div>
-          <div class="ref-meta">Referred by <strong>${esc(r.referrer_name)}</strong> · <a href="mailto:${esc(r.referrer_email)}">${esc(r.referrer_email)}</a>${r.referrer_phone ? ' · ' + esc(r.referrer_phone) : ''}${when ? ' · <span class="rv-date">' + when + '</span>' : ''}</div>
+          <div class="ref-meta">Referred by <strong>${esc(r.referrer_name)}</strong> | <a href="mailto:${esc(r.referrer_email)}">${esc(r.referrer_email)}</a>${r.referrer_phone ? ' | ' + esc(r.referrer_phone) : ''}${when ? ' | <span class="rv-date">' + when + '</span>' : ''}</div>
           ${r.message ? '<div class="ref-note">"' + esc(r.message) + '"</div>' : ''}
           <div class="ref-actions">
             <a class="btn btn-sm btn-primary" href="${friendMail(r.friend_name, r.friend_email)}" target="_blank">
@@ -730,7 +730,7 @@
         }
         throw new Error((data && data.message) || 'sheet http ' + res.status);
       } catch (e) {
-        if (msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#B45309'; msgEl.textContent = 'Could not read the spreadsheet (' + (e && e.message || e) + ') — showing database copy instead.'; }
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#B45309'; msgEl.textContent = 'Could not read the spreadsheet (' + (e && e.message || e) + ') - showing database copy instead.'; }
       }
     }
 
@@ -768,11 +768,11 @@
       try {
         const { error } = await sb.from('subscriptions').update({ lessons_total: total, lessons_used: used }).eq('id', id);
         if (error) throw error;
-        if (msg) { msg.style.display = 'block'; msg.style.color = '#059669'; msg.textContent = '✓ Lesson balance updated.'; }
+        if (msg) { msg.style.display = 'block'; msg.style.color = '#059669'; msg.textContent = 'OK Lesson balance updated.'; }
         document.getElementById('modal-edit-usage').hidden = true;
         await renderUsageList();
       } catch (err) {
-        if (msg) { msg.style.display = 'block'; msg.style.color = '#DC2626'; msg.textContent = '✕ ' + ((err && err.message) || 'Failed to update'); }
+        if (msg) { msg.style.display = 'block'; msg.style.color = '#DC2626'; msg.textContent = 'x ' + ((err && err.message) || 'Failed to update'); }
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
       }
@@ -961,7 +961,7 @@ function openInboxContact(id) {
       <div class="bk-bubble guest">${inh(c.message || '')}<span class="bk-btime">${new Date(c.created_at).toLocaleString()}</span></div>
     </div>
     <div class="inbox-replybar">
-      <a class="btn btn-primary btn-sm" style="margin:auto;text-decoration:none;" href="mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent('Re: your message to TutorEnglishPro')}">Reply by email →</a>
+      <a class="btn btn-primary btn-sm" style="margin:auto;text-decoration:none;" href="mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent('Re: your message to TutorEnglishPro')}">Reply by email -></a>
     </div>`;
   if (c.status === 'new') sb.from('contacts').update({ status: 'seen' }).eq('id', c.id).then(() => loadInboxContacts());
 }
@@ -971,7 +971,7 @@ async function openInboxThread(chatId) {
   const thread = document.getElementById('inbox-thread');
   if (!thread) return;
   thread.style.justifyContent = 'flex-start';
-  thread.innerHTML = '<div class="inbox-no muted">Loading…</div>';
+  thread.innerHTML = '<div class="inbox-no muted">Loading...</div>';
   loadInboxList();
   subscribeInboxThread(chatId);
   const { data: msgs, error } = await sb.from('chat_messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true });
@@ -992,7 +992,7 @@ async function openInboxThread(chatId) {
     </div>
     <div id="admin-thread-body" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:16px;"></div>
     <div class="inbox-replybar">
-      <input class="field" id="inbox-reply" placeholder="Type your reply…" autocomplete="off" style="margin:0;">
+      <input class="field" id="inbox-reply" placeholder="Type your reply..." autocomplete="off" style="margin:0;">
       <button type="button" class="btn btn-primary btn-sm" id="inbox-send">Send</button>
     </div>`;
   const bodyEl = document.getElementById('admin-thread-body');
@@ -1276,7 +1276,7 @@ async function initAdsControl(sbc) {
 
   function flash(m, ok) {
     if (!msgEl) return;
-    msgEl.textContent = (ok ? 'Saved ✓ ' : '') + m;
+    msgEl.textContent = (ok ? 'Saved OK ' : '') + m;
     msgEl.style.color = ok ? '#065F46' : '#B45309';
     msgEl.style.display = 'inline-block';
     setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3000);
@@ -1369,7 +1369,7 @@ async function initAdsControl(sbc) {
 
   async function fetchVisitorRows(since) {
     // Fetch EVERY visitor_views row for the window (Supabase caps each request at
-    // 1000 rows, so page through in parallel). No `.limit(5000)` — that was silently
+    // 1000 rows, so page through in parallel). No `.limit(5000)` - that was silently
     // undercounting the totals when a 14-day window held more rows.
     const CHUNK = 1000, MAX = 100000;
     const SEL = 'path,title,referrer,device,os,browser,country,created_at';
@@ -1400,12 +1400,12 @@ async function initAdsControl(sbc) {
 
   async function loadStats() {
     if (!totalEl || !topList) return;
-    const loading = (el) => { if (el) el.textContent = '…'; };
+    const loading = (el) => { if (el) el.textContent = '...'; };
     loading(totalEl); loading(todayEl);
     const kpiEl = document.getElementById('views-top-page');
-    if (kpiEl) kpiEl.textContent = '…';
+    if (kpiEl) kpiEl.textContent = '...';
     const distPlaceholders = [['stat-devices'], ['stat-countries'], ['stat-browsers']];
-    distPlaceholders.forEach(([id]) => { const el = document.getElementById(id); if (el) el.innerHTML = '<p class="muted" style="font-size:.8rem;">Refreshing…</p>'; });
+    distPlaceholders.forEach(([id]) => { const el = document.getElementById(id); if (el) el.innerHTML = '<p class="muted" style="font-size:.8rem;">Refreshing...</p>'; });
     try {
       const since = new Date(Date.now() - 14 * 86400000).toISOString();
       const rows = (await fetchVisitorRows(since)).filter((r) => {
@@ -1444,7 +1444,7 @@ async function initAdsControl(sbc) {
       });
       const sorted = Object.entries(byPage).sort((a, b) => b[1] - a[1]).slice(0, 10);
       const kpiEl = document.getElementById('views-top-page');
-      if (kpiEl) kpiEl.textContent = sorted.length ? `${sorted[0][0]} · ${sorted[0][1]}` : '—';
+      if (kpiEl) kpiEl.textContent = sorted.length ? `${sorted[0][0]} | ${sorted[0][1]}` : '-';
       if (!sorted.length) {
         topList.innerHTML = '<tr><td colspan="2" class="muted">No views recorded yet. Open any page to start tracking.</td></tr>';
       } else {
@@ -1471,7 +1471,7 @@ async function initAdsControl(sbc) {
         el.innerHTML = entries.map(([name, n]) => {
           const pct = Math.round((n / base) * 100);
           return '<div class="dist-row">' +
-            '<div class="dist-top"><span>' + esc(name) + '</span><b>' + n + ' · ' + pct + '%</b></div>' +
+            '<div class="dist-top"><span>' + esc(name) + '</span><b>' + n + ' | ' + pct + '%</b></div>' +
             '<div class="dist-bar"><i style="width:' + Math.max(pct, 2) + '%"></i></div>' +
           '</div>';
         }).join('');
@@ -1519,7 +1519,7 @@ async function initAdsControl(sbc) {
           ? buckets.map((b) => {
               const w = Math.round((b.count / max) * 100);
               return '<div class="dist-row">' +
-                '<div class="dist-top"><span>' + esc(b.label) + (b.label === lastLabel ? ' <em style="font-style:normal;opacity:.6;">· today</em>' : '') + '</span><b>' + b.count + '</b></div>' +
+                '<div class="dist-top"><span>' + esc(b.label) + (b.label === lastLabel ? ' <em style="font-style:normal;opacity:.6;">| today</em>' : '') + '</span><b>' + b.count + '</b></div>' +
                 '<div class="dist-bar"><i style="width:' + Math.max(w, b.count ? 3 : 0) + '%"></i></div>' +
               '</div>';
             }).join('')
@@ -1535,7 +1535,7 @@ async function initAdsControl(sbc) {
   loadStats();
   if (refreshBtn) refreshBtn.addEventListener('click', async () => {
     refreshBtn.disabled = true;
-    refreshBtn.textContent = 'Refreshing…';
+    refreshBtn.textContent = 'Refreshing...';
     await loadStats();
     refreshBtn.disabled = false;
     refreshBtn.textContent = 'Refresh';
@@ -1702,7 +1702,7 @@ async function initChatInbox() {
   loadReferralsPanel();
 });
 
-// ── Change a user's account type (student / tutor / admin) ──
+// -- Change a user's account type (student / tutor / admin) --
 // Only reachable from the admin panel. Relies on the RLS policy
 // "Admin can manage all profiles" added to the database.
 window.changeRole = async function (userId, selectEl) {

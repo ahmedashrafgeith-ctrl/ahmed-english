@@ -1,11 +1,11 @@
-﻿// ============================================================
-// TutorEnglishPro — Internal Booking System (slot picker + My Bookings)
+// ============================================================
+// TutorEnglishPro - Internal Booking System (slot picker + My Bookings)
 // ------------------------------------------------------------
 // Talks to the Supabase Edge Function `book-lesson`, which reads
 // Ahmed's real Cal.com calendar (free slots) and creates the booking
 // directly on Cal.com (POST /v2/bookings) with the server-side API
 // key. Cal.com itself emails the student + host the confirmation and
-// calendar invite. Booking is ONE-TAP — the student confirms in-app
+// calendar invite. Booking is ONE-TAP - the student confirms in-app
 // and is shown a success state; there is no second Cal.com step.
 // ============================================================
 (function () {
@@ -33,9 +33,9 @@
     "60min": "60-Min Lesson",
   };
   const SLUG_ICON = {
-    "30min-trial": "⚡",
-    "30min": "🗓",
-    "60min": "🎓",
+    "30min-trial": "!",
+    "30min": "",
+    "60min": "",
   };
   function lessonLabel(b) {
     const s = (b.event_slug || "").toLowerCase();
@@ -85,7 +85,7 @@
     const b = addDays(a, 6);
     const fa = a.toLocaleDateString([], { month: "short", day: "numeric" });
     const fb = b.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
-    return `${fa} – ${fb}`;
+    return `${fa} - ${fb}`;
   }
   function monthStart(d) {
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -169,7 +169,7 @@
       <div class="bk-cal">
         <div class="bk-cal-side">
           <div class="bk-cal-avatar"><img src="${esc(photo)}" alt="Tutor" onerror="this.style.display='none'"><span>${esc("TG")}</span></div>
-          <p class="bk-cal-who">Ahmed Ghaith · English Tutor</p>
+          <p class="bk-cal-who">Ahmed Ghaith | English Tutor</p>
           <h2 class="bk-cal-title" id="bk-cal-title">${esc(activeEvent.label)}</h2>
           <div class="bk-cal-meta">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -187,7 +187,7 @@
               </button>`).join('')}
           </div>
 
-          <p class="bk-cal-powered">Confirmed instantly · invite by email</p>
+          <p class="bk-cal-powered">Confirmed instantly | invite by email</p>
         </div>
 
         <div class="bk-cal-main">
@@ -214,7 +214,7 @@
               <span>&#9881; Shown in your local timezone: <span id="bk-tz-note-name" style="font-weight:800;">&hellip;</span></span>
             </div>
             <div id="bk-slots" style="min-height:140px;">
-              <div class="muted" style="padding:24px;text-align:center;">Loading available times…</div>
+              <div class="muted" style="padding:24px;text-align:center;">Loading available times...</div>
             </div>
             <div id="bk-day-detail" style="display:none;"></div>
           </div>
@@ -227,7 +227,7 @@
           <h3 style="margin:0;font-size:1.1rem;">My Bookings</h3>
           <span class="muted" style="font-size:.78rem;">Your upcoming lessons appear here.</span>
         </div>
-        <div id="bk-mybookings" style="margin-top:12px;"><p class="muted">Loading…</p></div>
+        <div id="bk-mybookings" style="margin-top:12px;"><p class="muted">Loading...</p></div>
       </div>`;
 
     els.range = q("#bk-range");
@@ -253,10 +253,10 @@
       const { data: sub } = await sb.from("subscriptions").select("*").eq("student_id", user.id).eq("status", "active").maybeSingle();
       if (sub) {
         packLeft = Math.max((sub.lessons_total || 0) - (sub.lessons_used || 0), 0);
-        els.pack.innerHTML = `<span class="badge badge-acc">${esc(sub.package_name || "Plan")} · <span id="pack-left">${packLeft}</span> / ${sub.lessons_total || 0} lessons left</span>`;
+        els.pack.innerHTML = `<span class="badge badge-acc">${esc(sub.package_name || "Plan")} | <span id="pack-left">${packLeft}</span> / ${sub.lessons_total || 0} lessons left</span>`;
       } else {
         packLeft = null;
-        els.pack.innerHTML = `<span class="muted">No active plan — pay-as-you-go trial available</span>`;
+        els.pack.innerHTML = `<span class="muted">No active plan - pay-as-you-go trial available</span>`;
       }
     } catch { /* ignore */ }
   }
@@ -273,7 +273,7 @@
   }
 
   async function loadSlots() {
-    els.slots.innerHTML = `<div class="muted" style="padding:40px;text-align:center;">Loading available times…</div>`;
+    els.slots.innerHTML = `<div class="muted" style="padding:40px;text-align:center;">Loading available times...</div>`;
     els.dayDetail.style.display = "none";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     const { start, end, label } = currentRange();
@@ -313,7 +313,7 @@
       els.slots.innerHTML = `
         <div style="padding:28px;text-align:center;" class="muted">
           No open slots this week.
-          <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next week →</button>
+          <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next week -></button>
         </div>`;
       const jump = q("#bk-jump-next");
       if (jump) jump.addEventListener("click", () => { weekStart = addDays(weekStart, 7); activeDay = null; loadSlots(); });
@@ -397,7 +397,7 @@
       els.slots.innerHTML = `
         <div style="padding:28px;text-align:center;" class="muted">
           No open slots this month.
-          <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next month →</button>
+          <button type="button" class="btn btn-soft btn-sm" id="bk-jump-next" style="margin-left:6px;">next month -></button>
         </div>`;
       const jump = q("#bk-jump-next");
       if (jump) jump.addEventListener("click", () => { monthCursor = new Date(a.getFullYear(), a.getMonth() + 1, 1); loadSlots(); });
@@ -425,7 +425,7 @@
           const past = new Date(s.start) <= Date.now();
           return `<button type="button" class="bk-dslot ${past ? 'is-past' : ''}" data-start="${esc(s.start)}" data-end="${esc(s.end || '')}">
             <span class="bk-dt">${esc(fmtTime(s.start, tz))}</span>
-            <span class="bk-dm">${esc(s.start.slice(11, 16))} - ${esc((s.end || s.start).slice(11, 16))} <span class="muted">· ${esc(tz)}</span></span>
+            <span class="bk-dm">${esc(s.start.slice(11, 16))} - ${esc((s.end || s.start).slice(11, 16))} <span class="muted">| ${esc(tz)}</span></span>
             ${past ? `<span class="bk-dtag">past</span>` : `<span class="bk-dtag bk-ok">select</span>`}
           </button>`;
         }).join("")
@@ -456,22 +456,22 @@
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     const { date, time } = fmtDateLong(start, tz);
     const leftText = packLeft == null
-      ? "You can book without a plan — pay when you're ready."
+      ? "You can book without a plan - pay when you're ready."
       : `Lessons remaining on your plan: <b>${packLeft}</b>`;
     lastPick = { event, date, time, leftText, tz };
 
     openModal(`
       <div class="bk-confirm">
         <div class="bk-confirm-head">
-          <button type="button" class="bk-close-x" data-close aria-label="Close">✕</button>
+          <button type="button" class="bk-close-x" data-close aria-label="Close">x</button>
           <h3>Confirm your booking</h3>
-          <p>Books instantly — your invite arrives by email.</p>
+          <p>Books instantly - your invite arrives by email.</p>
         </div>
 
         <div class="bk-sum2">
           <div class="bk-cell"><span class="muted">Lesson</span><b id="bk-sum-type">${esc(event.label)}</b></div>
           <div class="bk-cell"><span class="muted">Date</span><b>${esc(date)}</b></div>
-          <div class="bk-cell"><span class="muted">Time</span><b>${esc(time)}</b><small>· ${esc(tz)}</small></div>
+          <div class="bk-cell"><span class="muted">Time</span><b>${esc(time)}</b><small>| ${esc(tz)}</small></div>
           <div class="bk-cell"><span class="muted">Plan</span><b class="bk-plantext">${leftText}</b></div>
         </div>
 
@@ -484,7 +484,7 @@
 
         <div class="bk-actions">
           <button type="button" class="btn btn-secondary" data-close>Go back</button>
-          <button type="button" class="btn btn-primary" id="bk-confirm">Confirm →</button>
+          <button type="button" class="btn btn-primary" id="bk-confirm">Confirm -></button>
         </div>
       </div>
     `);
@@ -503,7 +503,7 @@
       setModal(`
         <div class="bk-confirm">
           <div class="bk-confirm-head"><h3>Confirming</h3><p>Adding your Book - Check Your Email</p></div>
-          <p class="bk-loading">Hang on a moment…</p>
+          <p class="bk-loading">Hang on a moment...</p>
         </div>
       `);
       const r = await callFn("", {
@@ -517,7 +517,7 @@
             <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>OK</button></div>
           </div>
         `);
-        toast(r.message || "Booking failed — try another slot.", false);
+        toast(r.message || "Booking failed - try another slot.", false);
         return;
       }
       const p = lastPick;
@@ -527,20 +527,20 @@
       setModal(`
         <div class="bk-confirm">
           <div class="bk-confirm-head">
-            <div class="bk-ok-check">✓</div>
+            <div class="bk-ok-check">OK</div>
             <h3>Booked!</h3>
-            <p>Confirmed — invite sent to ${esc((user && user.email) || "your email")}.</p>
+            <p>Confirmed - invite sent to ${esc((user && user.email) || "your email")}.</p>
           </div>
           <div class="bk-sum2">
             <div class="bk-cell"><span class="muted">Lesson</span><b>${esc(p.event.label)}</b></div>
             <div class="bk-cell"><span class="muted">Date</span><b>${esc(p.date)}</b></div>
-            <div class="bk-cell"><span class="muted">Time</span><b>${esc(p.time)}</b><small>· ${esc(p.tz)}</small></div>
+            <div class="bk-cell"><span class="muted">Time</span><b>${esc(p.time)}</b><small>| ${esc(p.tz)}</small></div>
             <div class="bk-cell"><span class="muted">Plan</span><b class="bk-plantext">${leftText2}</b></div>
           </div>
           <div class="bk-actions"><button type="button" class="btn btn-primary" data-close>Done</button></div>
         </div>
       `);
-      toast("✓ Lesson booked — confirmation email sent.", true);
+      toast("OK Lesson booked - confirmation email sent.", true);
       await loadSlots();
       await loadMyBookings();
       await loadPack();
@@ -561,7 +561,7 @@
       if (!rows || !rows.length) {
         els.mybookings.innerHTML = `
           <div class="bk-books-empty">
-            <div class="bk-books-empty-ic">📅</div>
+            <div class="bk-books-empty-ic"></div>
             <strong>No lessons yet</strong>
             <p class="muted">Pick a free slot above to book your first lesson.</p>
           </div>`;
@@ -600,9 +600,9 @@
     const end = b.end_at ? new Date(b.end_at) : null;
     const dateStr = start.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
     const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
-      + (end ? " – " + end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true }) : "");
+      + (end ? " - " + end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true }) : "");
     const label = lessonLabel(b);
-    const icon = SLUG_ICON[(b.event_slug || "").toLowerCase()] || "🗓";
+    const icon = SLUG_ICON[(b.event_slug || "").toLowerCase()] || "";
     const cancelled = b.status !== "booked" && b.status !== "pending";
     const badge = b.status === "pending"
       ? `<span class="bk-stat bk-stat-pend">Pending</span>`
@@ -637,7 +637,7 @@
       </div>
     `);
     q("#bk-cancel-yes").addEventListener("click", async () => {
-      setModal(`<h3>Cancelling…</h3><p class="bk-sub">Hold on a moment.</p>`);
+      setModal(`<h3>Cancelling...</h3><p class="bk-sub">Hold on a moment.</p>`);
       const r = await callFn("", { method: "POST", body: JSON.stringify({ action: "cancel", bookingId: id }) });
       if (!r.ok) {
         setModal(`
@@ -649,7 +649,7 @@
         return;
       }
       closeModal();
-      toast("✓ Lesson cancelled and credited back.", true);
+      toast("OK Lesson cancelled and credited back.", true);
       await loadMyBookings();
       await loadPack();
       await loadSlots();

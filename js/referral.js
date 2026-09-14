@@ -47,7 +47,7 @@
     if (!rel.value) { markInvalid(rel); if (!firstBad) firstBad = rel; }
 
     if (firstBad) {
-      setStatus('Please fill in every required field — your name, email, phone, your friend\'s name and email, and how you know them.', 'rl-err');
+      setStatus('Please fill in every required field - your name, email, phone, your friend\'s name and email, and how you know them.', 'rl-err');
       firstBad.focus();
       return null;
     }
@@ -98,8 +98,8 @@
   function submit(payload) {
     var btn = $('rf-submit');
     btn.disabled = true;
-    btn.textContent = 'Sending…';
-    setStatus('Sending your referral…', 'rl-loading', '<b>One moment</b>');
+    btn.textContent = 'Sending...';
+    setStatus('Sending your referral...', 'rl-loading', '<b>One moment</b>');
 
     postSheet(payload).catch(function (err) {
       // No sheet URL configured, or the sheet endpoint failed -> also/write to Supabase.
@@ -115,7 +115,7 @@
         var fn = $('rf-fname');
         var friendName = fn && fn.value.trim() ? fn.value.trim() : 'your friend';
         var tmsg = $('rl-thankyou-msg');
-        if (tmsg) tmsg.innerHTML = '<b>Thank you!</b> Your referral for <b>' + esc(friendName) + '</b> is on its way — we\'ll email them a personal welcome from Ahmed. Share your personalized link below to refer more friends:';
+        if (tmsg) tmsg.innerHTML = '<b>Thank you!</b> Your referral for <b>' + esc(friendName) + '</b> is on its way - we\'ll email them a personal welcome from Ahmed. Share your personalized link below to refer more friends:';
         var thankLink = $('rl-thankyou-link');
         if (thankLink) thankLink.value = link;
         var thankWa = $('rl-thankyou-wa');
@@ -194,7 +194,7 @@
           banner.innerHTML = (refName
             ? '<b>' + esc(refName) + '</b> invited you to try a free lesson with Ahmed!'
             : 'You were invited by a friend who is already learning with Ahmed!') +
-            ' Your name and email below are already filled in — just add your friend\'s details and send.';
+            ' Your name and email below are already filled in - just add your friend\'s details and send.';
           var gf = $('rf-fname');
           if (gf) setTimeout(function () { gf.focus(); }, 250);
         }

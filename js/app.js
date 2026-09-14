@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-contact-email]').forEach(el => {
     el.textContent = window.APP_CONFIG.contactEmail || 'ahmedashrafgeith@gmail.com';
   });

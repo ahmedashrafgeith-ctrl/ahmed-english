@@ -295,9 +295,9 @@
     function stepNext() {
       if (!rows.length) return;
       if (idx >= rows.length - 1) {
-        moveTo(rows.length);               // slide into the clones…
+        moveTo(rows.length);               // slide into the clones...
         stopSnap();
-        snapTimer = setTimeout(function () { moveTo(0, false); }, 720);  // …then snap home
+        snapTimer = setTimeout(function () { moveTo(0, false); }, 720);  // ...then snap home
       } else {
         moveTo(idx + 1);
       }
@@ -307,8 +307,8 @@
     function stepPrev() {
       if (!rows.length) return;
       if (idx === 0) {
-        moveTo(rows.length, false);        // jump invisibly to the clone end…
-        moveTo(rows.length - 1);           // …then glide back onto the last card
+        moveTo(rows.length, false);        // jump invisibly to the clone end...
+        moveTo(rows.length - 1);           // ...then glide back onto the last card
       } else {
         moveTo(idx - 1);
       }

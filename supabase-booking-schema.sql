@@ -5,7 +5,7 @@
 -- REQUIRES the MAIN schema (supabase-schema.sql) to have been run
 -- FIRST, because the `bookings` table references public.profiles(id).
 -- If you try to run this before profiles exists you will get a
--- misleading "syntax error at or near ';'" — that means the main
+-- misleading "syntax error at or near ';'" - that means the main
 -- schema hasn't been applied yet. Run supabase-schema.sql first.
 --
 -- This file adds the `bookings` table + the consume/credit lesson

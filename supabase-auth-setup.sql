@@ -1,5 +1,5 @@
 -- ============================================================
--- Ahmed English — AUTH / ACCOUNT SETUP (run AFTER creating users)
+-- Ahmed English - AUTH / ACCOUNT SETUP (run AFTER creating users)
 -- ============================================================
 -- WHAT THIS DOES:
 --   1. Auto-creates a profiles row on EVERY signup, always as 'student'.

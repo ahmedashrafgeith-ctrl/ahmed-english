@@ -77,12 +77,12 @@
       url: "https://www.proenglishtutor.online/referral.html"
     },
     adsense: {
-      // Owner can paste these here OR via the Dashboard › Ads control tab.
+      // Owner can paste these here OR via the Dashboard > Ads control tab.
       client: "7286796230795532",
       // per-zone slot ids (types & locations):
       // { banner(header), in-content(in article), in-article(article body), sidebar, footer, mobile }
       // NOTE: slot ids (data-ad-slot) still need to be created in AdSense and pasted in the
-      // Dashboard › Ads control tab before units render. Client-only zones show a placeholder.
+      // Dashboard > Ads control tab before units render. Client-only zones show a placeholder.
       slots: { banner: "", "in-content": "", "in-article": "", sidebar: "", footer: "", mobile: "" },
       // zones turned on by default (boolean)
       zones: { banner: true, "in-content": true, "in-article": true, sidebar: true, footer: true, mobile: true },

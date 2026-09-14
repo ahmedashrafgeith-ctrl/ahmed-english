@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   }
 
-  // ── Auth-aware header ──
+  // -- Auth-aware header --
   // When signed in: hide any [data-auth="guest"] links (Student Login)
   // and show [data-auth="user"] links (Dashboard + Sign Out). The
   // Dashboard link is pointed at the right portal for the user's role.

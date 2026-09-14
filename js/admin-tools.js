@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const fmtMoney = (n) => '$' + Number(n || 0).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // ── Persist ad account IDs in Supabase site_settings (localStorage fallback) ──
+  // -- Persist ad account IDs in Supabase site_settings (localStorage fallback) --
   const A_KEY = 'tep_adaccounts';
   const SKEY = { fb: 'ads_fb_account', ggl: 'ads_ggl_account', pixel: 'ads_pixel_id' };
   let adAccounts = {};
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.open(url, '_blank', 'noopener');
   }
 
-  // ── UTM builder ──
+  // -- UTM builder --
   const prettyBase = 'https://www.proenglishtutor.online/';
   async function loadShortlinksForUtm() {
     const sel = document.getElementById('utm-shortlink');
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data } = await sb.from('shortlinks').select('code,label,url').order('created_at', { ascending: false }).limit(50);
       (data || []).forEach(r => {
         const name = r.label || r.code;
-        opts += '<option value="' + prettyBase + r.code + '">' + esc(name) + ' — ' + esc(prettyBase + r.code) + '</option>';
+        opts += '<option value="' + prettyBase + r.code + '">' + esc(name) + ' - ' + esc(prettyBase + r.code) + '</option>';
       });
     } catch (e) { /* noop */ }
     sel.innerHTML = opts;
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── Campaign tracker ──
+  // -- Campaign tracker --
   async function loadCampaigns() {
     const list = document.getElementById('cam-list');
     if (!list) return;
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="p-stat"><small>Budget</small><strong>${fmtMoney(totBudget)}</strong></div>
         <div class="p-stat"><small>Spend</small><strong>${fmtMoney(totSpend)}</strong></div>
         <div class="p-stat"><small>Leads</small><strong>${totLeads}</strong></div>
-        <div class="p-stat"><small>Cost / lead</small><strong>${cpl ? fmtMoney(cpl) : '—'}</strong></div>`;
+        <div class="p-stat"><small>Cost / lead</small><strong>${cpl ? fmtMoney(cpl) : '-'}</strong></div>`;
     }
 
     list.innerHTML = rows.length
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <strong>${esc(r.name)}</strong>
               <span class="badge ${st}">${esc(r.status)}</span>
             </div>
-            <div class="rv-adm-meta">${esc(r.platform)} &nbsp;·&nbsp; Budget ${fmtMoney(r.budget)} · Spend ${fmtMoney(r.spend)} · ${Number(r.leads || 0)} leads${r.notes ? ' · ' + esc(r.notes) : ''}</div>
+            <div class="rv-adm-meta">${esc(r.platform)} &nbsp;|&nbsp; Budget ${fmtMoney(r.budget)} | Spend ${fmtMoney(r.spend)} | ${Number(r.leads || 0)} leads${r.notes ? ' | ' + esc(r.notes) : ''}</div>
             <div class="rv-adm-actions">
               ${r.status !== 'active' ? '<button class="btn btn-sm btn-ghost" data-camact="active">Activate</button>' : ''}
               ${r.status !== 'paused' ? '<button class="btn btn-sm btn-ghost" data-camact="paused">Pause</button>' : ''}
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── Link shortener ──
+  // -- Link shortener --
   const slList = document.getElementById('sl-list');
   const slMsg = document.getElementById('sl-msg');
   const shortBase = 'https://www.proenglishtutor.online/go.html?c=';
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <strong>${esc(r.label || r.code)}</strong>
               <span class="badge badge-acc">${Number(r.hits || 0)} clicks</span>
             </div>
-            <div class="rv-adm-meta" style="word-break:break-all;">${prettyBase}${esc(r.code)} &nbsp;→&nbsp; ${esc(r.url)}</div>
+            <div class="rv-adm-meta" style="word-break:break-all;">${prettyBase}${esc(r.code)} &nbsp;->&nbsp; ${esc(r.url)}</div>
             <div class="rv-adm-actions">
               <button class="btn btn-sm btn-primary" data-slcp2>Copy short link</button>
               <button class="btn btn-sm btn-ghost" data-slqr="${prettyBase + r.code}">QR</button>
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!/^https?:\/\//i.test(clean)) clean = 'https://' + clean;
       const { error } = await sb.from('shortlinks').insert({ code, url: clean, label, hits: 0, created_at: new Date().toISOString() });
       if (error) {
-        if (/duplicate|already exists/i.test(error.message)) flash('That code "' + code + '" is already taken — try another.', true);
+        if (/duplicate|already exists/i.test(error.message)) flash('That code "' + code + '" is already taken - try another.', true);
         else flash('Failed: ' + error.message, true);
         return;
       }

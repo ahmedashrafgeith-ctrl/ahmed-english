@@ -1,8 +1,8 @@
 // ============================================================
-// TutorEnglishPro — AdSense slots + visitor tracking
+// TutorEnglishPro - AdSense slots + visitor tracking
 // ------------------------------------------------------------
 // Reads ad settings with priority:
-//   1. localStorage['ahm_ads']  (set by the Dashboard → Ads control tab)
+//   1. localStorage['ahm_ads']  (set by the Dashboard -> Ads control tab)
 //   2. window.APP_CONFIG.adsense (defaults in js/config.js)
 //
 // Renders each [data-ad-zone] container as a real AdSense unit when
@@ -96,7 +96,7 @@
       return;
     }
 
-    // 3) Off / not fully configured → hide the area entirely
+    // 3) Off / not fully configured -> hide the area entirely
     //    (no "Advertisements" label or empty box should ever appear on the site)
     el.innerHTML = "";
     el.style.display = "none";

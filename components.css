@@ -1,11 +1,11 @@
 /* ============================================================
-   components.css — Ahmed English UI Component Library
+   components.css - Ahmed English UI Component Library
    Premium glassmorphism, animations, Inter font, dark-mode
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ── Global token overrides ── */
+/* -- Global token overrides -- */
 :root {
   --font-body: 'Inter', system-ui, sans-serif;
   --font-h: 'Inter', system-ui, sans-serif;
@@ -37,7 +37,7 @@
 
 body { font-family: var(--font-body); }
 
-/* ── Hero badge ── */
+/* -- Hero badge -- */
 .hero-badge {
   display: inline-flex;
   align-items: center;
@@ -78,7 +78,7 @@ body { font-family: var(--font-body); }
   50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
 }
 
-/* ── Admin: account-type selector ── */
+/* -- Admin: account-type selector -- */
 .role-select {
   font-family: inherit;
   font-size: 0.8rem;
@@ -94,7 +94,7 @@ body { font-family: var(--font-body); }
 .role-select:focus { outline: 2px solid var(--c-accent, #4F46E5); outline-offset: 1px; }
 .role-select:disabled { opacity: 0.6; cursor: wait; }
 
-/* ── KPI / Stat cards ── */
+/* -- KPI / Stat cards -- */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -163,7 +163,7 @@ body { font-family: var(--font-body); }
 }
 .kpi-spark svg { width: 100%; height: 100%; }
 
-/* ── Progress Ring ── */
+/* -- Progress Ring -- */
 .ring {
   position: relative;
   width: 90px;
@@ -197,7 +197,7 @@ body { font-family: var(--font-body); }
 .ring .rl strong { font-size: 0.95rem; font-weight: 700; }
 .ring .rl small  { font-size: 0.78rem; opacity: 0.75; }
 
-/* ── Timeline ── */
+/* -- Timeline -- */
 .timeline {
   display: flex;
   flex-direction: column;
@@ -241,7 +241,7 @@ body { font-family: var(--font-body); }
 .tl-meta    { font-size: 0.76rem; color: var(--c-ink-3, #9CA3AF); margin-bottom: 4px; }
 .tl-body    { font-size: 0.84rem; color: var(--c-ink-2, #374151); line-height: 1.5; }
 
-/* ── Homework Checklist ── */
+/* -- Homework Checklist -- */
 .hw-form {
   display: flex;
   gap: 8px;
@@ -326,7 +326,7 @@ body { font-family: var(--font-body); }
 }
 .hw-del:hover { color: #EF4444; background: #FFF1F2; }
 
-/* ── Glass card ── */
+/* -- Glass card -- */
 .glass-card {
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.15);
@@ -336,7 +336,7 @@ body { font-family: var(--font-body); }
   box-shadow: 0 8px 32px rgba(0,0,0,0.28);
 }
 
-/* ── Micro-animations ── */
+/* -- Micro-animations -- */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -347,7 +347,7 @@ body { font-family: var(--font-body); }
 .delay-3 { animation-delay: 0.3s; }
 .delay-4 { animation-delay: 0.4s; }
 
-/* ── Dark mode overrides ── */
+/* -- Dark mode overrides -- */
 @media (prefers-color-scheme: dark) {
   .kpi-card {
     background: #1E1B4B;
@@ -360,7 +360,7 @@ body { font-family: var(--font-body); }
   .hw-input { background: #1E1B4B; border-color: #312E81; color: #E0E7FF; }
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 640px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .ring { width: 72px; height: 72px; }

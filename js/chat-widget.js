@@ -1,14 +1,14 @@
-﻿// ============================================================
-// TutorEnglishPro — Live Chat Widget (student + guest)
+// ============================================================
+// TutorEnglishPro - Live Chat Widget (student + guest)
 // ------------------------------------------------------------
 // Floating action button on all public/student pages. Hovering or
 // tapping it reveals two options:
-//   • Chat with us          → live 1-on-1 chat with Ahmed
-//   • We'll get back to you → short contact form
+//   | Chat with us          -> live 1-on-1 chat with Ahmed
+//   | We'll get back to you -> short contact form
 //
 // Chat works with or without an account:
-//   • signed-in students use their account automatically
-//   • guests just type their name + email (no password, no sign-up)
+//   | signed-in students use their account automatically
+//   | guests just type their name + email (no password, no sign-up)
 // The widget's colors follow the site theme (js/theme.js CSS vars),
 // and the chat pane fills the whole screen on phones.
 // ============================================================
@@ -192,7 +192,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
           <div class="ahm-avatar">A</div>
           <div>
             <div class="ahm-name">TutorEnglishPro</div>
-            <small id="ahm-state">Connecting…</small>
+            <small id="ahm-state">Connecting...</small>
           </div>
           <button id="ahm-chat-close" title="Close chat" aria-label="Close chat">${CLOSE_SVG}</button>
         </div>
@@ -431,7 +431,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     input.innerHTML = chatInputHtml();
     wireChatInput();
 
-    bodyEl.innerHTML = `<div id="ahm-chat-empty">Loading…</div>`;
+    bodyEl.innerHTML = `<div id="ahm-chat-empty">Loading...</div>`;
     var r = await callFn("chats", { action: "chats" });
     if (r.status !== "success") {
       setState("Could not load chat");
@@ -445,7 +445,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     var target = chats.length ? chats[0] : null;
     if (!target) {
       setState(signedIn ? "Send a message to Ahmed" : "Hi " + (guest && guest.name ? guest.name.split(" ")[0] : "") + "!");
-      bodyEl.innerHTML = `<div id="ahm-chat-empty">Ask anything — Ahmed replies usually the same day.</div>`;
+      bodyEl.innerHTML = `<div id="ahm-chat-empty">Ask anything - Ahmed replies usually the same day.</div>`;
       currentChat = null;
       return;
     }
@@ -458,7 +458,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     return `
       <div class="ahm-guest">
         <h4>Start chatting</h4>
-        <p>No account needed — just your name and email.</p>
+        <p>No account needed - just your name and email.</p>
         <input class="ahm-in" id="ahm-gname" placeholder="Your name" autocomplete="name">
         <input class="ahm-in" id="ahm-gmail" type="email" placeholder="you@example.com" autocomplete="email">
         <button class="ahm-btn" id="ahm-gstart" type="button">Start chatting</button>
@@ -477,7 +477,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
   function chatInputHtml() {
     return `
-      <textarea class="ahm-in" id="ahm-field" placeholder="Type your message…" rows="1"></textarea>
+      <textarea class="ahm-in" id="ahm-field" placeholder="Type your message..." rows="1"></textarea>
       <button class="ahm-btn" id="ahm-send" title="Send" style="width:48px;padding:0;flex:0 0 auto;">&rarr;</button>`;
   }
 
@@ -538,7 +538,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
   async function renderThread(chatId, silent) {
     var bodyEl = document.getElementById("ahm-chat-body");
     if (!bodyEl) return;
-    if (!silent) bodyEl.innerHTML = `<div id="ahm-chat-empty">Loading…</div>`;
+    if (!silent) bodyEl.innerHTML = `<div id="ahm-chat-empty">Loading...</div>`;
     var msgs = null;
     if (signedIn && sb) {
       var { data, error } = await sb
@@ -631,7 +631,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     if (send) send.disabled = false;
     if (r.status !== "success") {
       var note = document.getElementById("ahm-chat-note");
-      if (note) note.textContent = r.message || "Could not send — try again.";
+      if (note) note.textContent = r.message || "Could not send - try again.";
       setState("Could not send");
       return;
     }
@@ -644,7 +644,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     var m = r.message || { sender: "student", body: text, created_at: new Date().toISOString() };
     if (m.id) seenIds[m.id] = 1;
     addBubble({ sender: m.sender, body: m.body, created_at: m.created_at });
-    setState("Sent — Ahmed will reply soon");
+    setState("Sent - Ahmed will reply soon");
   }
 
   // ---------- contact form ----------
@@ -707,7 +707,7 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
       return;
     }
     var btn = document.getElementById("ahm-csend");
-    if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+    if (btn) { btn.disabled = true; btn.textContent = "Sending..."; }
     try {
       var res = await fetch(CONTACT_FN, {
         method: "POST",
@@ -721,13 +721,13 @@ var ICON_HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
         if (form) form.style.display = "none";
         if (done) {
           done.style.display = "block";
-          done.innerHTML = `<div class="ahm-cok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="width:22px;height:22px;color:var(--c-accent,#0b3b2c)"><path d="M20 6 9 17l-5-5"/></svg><span>Request sent — Ahmed will get back to you shortly.</span></div>`;
+          done.innerHTML = `<div class="ahm-cok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="width:22px;height:22px;color:var(--c-accent,#0b3b2c)"><path d="M20 6 9 17l-5-5"/></svg><span>Request sent - Ahmed will get back to you shortly.</span></div>`;
         }
       } else {
-        if (err) err.textContent = out.message || "Could not send — please try again.";
+        if (err) err.textContent = out.message || "Could not send - please try again.";
       }
     } catch {
-      if (err) err.textContent = "Could not send — please try again.";
+      if (err) err.textContent = "Could not send - please try again.";
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = "Send request"; }
     }

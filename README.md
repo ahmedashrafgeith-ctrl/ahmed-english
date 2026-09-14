@@ -1,4 +1,4 @@
-# Ahmed English — Standalone Tutor Platform v3
+# Ahmed English - Standalone Tutor Platform v3
 
 Professional standalone tutor website/app starter.
 

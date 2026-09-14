@@ -1,4 +1,4 @@
-﻿const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 document.addEventListener('DOMContentLoaded', async () => {
   const sb = getSupabase();
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { return null; }
   })() : null;
 
-  // ── Unauthenticated state ──
+  // -- Unauthenticated state --
   if (!user) {
     const nameEl = document.getElementById('student-name');
     if (nameEl) nameEl.textContent = 'Student';
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // ── Profile ──
+  // -- Profile --
   let profile = null;
   try {
     const res = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!sb) return;
   try {
-    // ── 1. Subscription & Progress Ring ──
+    // -- 1. Subscription & Progress Ring --
     const { data: sub } = await sb.from('subscriptions')
       .select('*').eq('student_id', user.id).eq('status', 'active').limit(1).maybeSingle();
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         : '<span class="badge badge-warn">No active plan</span>';
     }
 
-    // Animate progress ring (circumference 2π×42 ≈ 264)
+    // Animate progress ring (circumference 2pix42 ~ 264)
     const circumference = 264;
     const pct = Math.min(Math.round((used / Math.max(total, 1)) * 100), 100);
     const circle = document.getElementById('progress-circle');
@@ -80,24 +80,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ringTitle) ringTitle.textContent = pkgName;
     if (ringSub)   ringSub.textContent   = `${used} of ${total} lessons completed`;
 
-// ── 2. Upcoming lessons ──
+// -- 2. Upcoming lessons --
     const { data: upcoming } = await sb.from('bookings')
       .select('*').eq('student_id', user.id).eq('status', 'booked').gte('start_at', new Date().toISOString())
       .order('start_at', { ascending: true }).limit(5);
     renderUpcoming(upcoming || [], user);
 
-    // ── 3. Lesson Notes Timeline ──
+    // -- 3. Lesson Notes Timeline --
     const { data: notes } = await sb.from('lesson_notes')
       .select('*').eq('student_id', user.id).order('created_at', { ascending: false }).limit(10);
     renderTimeline(notes, user);
 
-    // ── 4. Homework Checklist ──
+    // -- 4. Homework Checklist --
     const { data: hwAll } = await sb.from('homework')
       .select('*').eq('student_id', user.id).order('created_at', { ascending: false }).limit(50);
     const hw = hwAll || [];
     renderChecklist(hw, user);
 
-    // ── 4. Stats ──
+    // -- 4. Stats --
     const done = hw.filter(h => h.completed);
     const lessonsTaken = (notes && notes.length) || used;
     const statLessons = document.getElementById('stat-lessons');
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 const statHours = document.getElementById('stat-hours');
     if (statHours) statHours.textContent = lessonsTaken;
 
-    // ── 5. My Purchases ──
+    // -- 5. My Purchases --
     const { data: purchases } = await sb.from('subscriptions')
       .select('*').eq('student_id', user.id).order('created_at', { ascending: false });
     const purchasesEl = document.getElementById('purchases-list');
@@ -140,11 +140,11 @@ const statHours = document.getElementById('stat-hours');
     console.error('Error loading student dashboard data:', err);
   }
 
-  // ── 7. Refer & Earn widget ──
+  // -- 7. Refer & Earn widget --
   initReferWidget(user);
 });
 
-// ── Refer & Earn widget ──
+// -- Refer & Earn widget --
 async function initReferWidget(user) {
   const base = (window.APP_CONFIG && APP_CONFIG.referral && APP_CONFIG.referral.url) || 'https://www.proenglishtutor.online/referral.html';
   let name = '';
@@ -170,7 +170,7 @@ async function initReferWidget(user) {
     'Start with a free trial here: ' + link
   );
   if (waEl) waEl.href = 'https://wa.me/?text=' + msg;
-  if (mailEl) mailEl.href = 'mailto:?subject=' + encodeURIComponent('Learn English with Ahmed — free trial') + '&body=' + msg;
+  if (mailEl) mailEl.href = 'mailto:?subject=' + encodeURIComponent('Learn English with Ahmed - free trial') + '&body=' + msg;
 
   if (copyEl) {
     copyEl.addEventListener('click', () => {
@@ -209,7 +209,7 @@ async function initReferWidget(user) {
       if (milestoneEl) {
         const converted = mine.filter(r => String(r.status || '').toLowerCase() === 'converted').length;
         const tiers = [
-          { need: 1, bonus: '1 free lesson', note: 'as soon as a friend books their first package — you BOTH get it' },
+          { need: 1, bonus: '1 free lesson', note: 'as soon as a friend books their first package - you BOTH get it' },
           { need: 3, bonus: 'extra bonus lesson', note: 'when 3 friends have booked their first package' },
           { need: 5, bonus: '2 more bonus lessons', note: 'when 5 friends have booked their first package' }
         ];
@@ -219,7 +219,7 @@ async function initReferWidget(user) {
           const pct = Math.round(frac * 100);
           return `<div style="margin-bottom:${i === tiers.length - 1 ? 0 : 10}px;">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
-              <span style="font-size:.85rem;font-weight:700;color:var(--c-ink);">${t.need} friend${t.need > 1 ? 's' : ''} → ${t.bonus}</span>
+              <span style="font-size:.85rem;font-weight:700;color:var(--c-ink);">${t.need} friend${t.need > 1 ? 's' : ''} -> ${t.bonus}</span>
               <span class="badge ${done ? 'badge-ok' : 'badge-acc'}">${done ? 'Unlocked' : converted + ' / ' + t.need}</span>
             </div>
             <div style="height:8px;background:var(--c-soft);border-radius:99px;overflow:hidden;">
@@ -238,7 +238,7 @@ async function initReferWidget(user) {
           trackEl.innerHTML = mine.map(r => {
             const st = (r.status || 'new').toLowerCase();
             const stBadge = st === 'converted' ? 'badge-ok' : (st === 'contacted' ? 'badge-warn' : 'badge-acc');
-            const label = st === 'converted' ? 'Booked — you earn a free lesson!' : (st === 'contacted' ? 'Contacted by Ahmed' : 'Awaiting reply');
+            const label = st === 'converted' ? 'Booked - you earn a free lesson!' : (st === 'contacted' ? 'Contacted by Ahmed' : 'Awaiting reply');
             const when = r.timestamp ? new Date(r.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '';
             return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--c-card-border);border-radius:12px;background:var(--c-surface);font-size:.86rem;">
               <div style="flex:1;min-width:150px;">
@@ -254,7 +254,7 @@ async function initReferWidget(user) {
   }
 }
 
-// ── Upcoming lessons renderer ──
+// -- Upcoming lessons renderer --
 function renderUpcoming(bookings, user) {
   const el = document.getElementById('student-upcoming');
   if (!el) return;
@@ -281,7 +281,7 @@ function renderUpcoming(bookings, user) {
   }).join('');
 }
 
-// ── Timeline renderer ──
+// -- Timeline renderer --
 function renderTimeline(notes, user) {
   const el = document.getElementById('notes-timeline');
   if (!el) return;
@@ -308,7 +308,7 @@ function renderTimeline(notes, user) {
   `).join('');
 }
 
-// ── Checklist renderer ──
+// -- Checklist renderer --
 function renderChecklist(hw, user) {
   const container = document.getElementById('homework-checklist');
   if (!container) return;
@@ -368,7 +368,7 @@ function renderChecklist(hw, user) {
   }).join('');
 }
 
-// ── Toggle homework completion ──
+// -- Toggle homework completion --
 async function toggleHomework(id, isCompleted) {
   const sb = getSupabase();
   if (!sb) return;
@@ -387,7 +387,7 @@ async function toggleHomework(id, isCompleted) {
 }
 window.toggleHomework = toggleHomework;
 
-// ── Delete homework task ──
+// -- Delete homework task --
 async function deleteHomework(id) {
   if (!confirm('Delete this homework task?')) return;
   const sb = getSupabase();
@@ -402,7 +402,7 @@ async function deleteHomework(id) {
 }
 window.deleteHomework = deleteHomework;
 
-// ── Add new homework item ──
+// -- Add new homework item --
 async function addHomeworkItem() {
   const input = document.getElementById('hw-new-text');
   const btn   = document.getElementById('hw-add-btn');

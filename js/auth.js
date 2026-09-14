@@ -1,5 +1,5 @@
-﻿/**
- * auth.js — Role-based route guards
+/**
+ * auth.js - Role-based route guards
  * Admin identity is stored ONLY in Supabase (profiles.role = 'admin').
  * No email addresses or passwords are stored here.
  */
@@ -32,7 +32,7 @@ async function requireStudent() {
 }
 
 /**
- * requireAdmin — Only profiles with role='admin' (set in Supabase) are allowed.
+ * requireAdmin - Only profiles with role='admin' (set in Supabase) are allowed.
  * No email addresses are hardcoded here; identity is verified server-side.
  * Non-admin users are silently redirected without exposing any admin details.
  */
@@ -42,9 +42,9 @@ async function requireAdmin() {
 
   const profile = await getUserProfile(user.id);
 
-  // Role is set exclusively in Supabase profiles table — no credential check in code
+  // Role is set exclusively in Supabase profiles table - no credential check in code
   if (!profile || profile.role !== 'admin') {
-    // Redirect silently — do not reveal that an admin page exists
+    // Redirect silently - do not reveal that an admin page exists
     if (profile && profile.role === 'tutor') {
       window.location.href = 'dashboard.html';
     } else {

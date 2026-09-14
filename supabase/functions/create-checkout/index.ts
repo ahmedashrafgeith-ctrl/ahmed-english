@@ -1,5 +1,5 @@
 // ============================================================
-// TutorEnglishPro — Create Stripe Checkout Session (Supabase Edge Function)
+// TutorEnglishPro - Create Stripe Checkout Session (Supabase Edge Function)
 // ------------------------------------------------------------
 // Purpose: creates a hosted Stripe Checkout Session that expires
 // in ~24 hours (Stripe enforces 30 min minimum / 24 h max for
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
             currency: "usd",
             unit_amount: plan.amountCents,
             product_data: {
-              name: `${plan.name} — ${plan.lessons} 1-on-1 English Lessons`,
+              name: `${plan.name} - ${plan.lessons} 1-on-1 English Lessons`,
               description: `TutorEnglishPro ${plan.name} package: ${plan.lessons} x 60-min private lessons per month.`,
               metadata: { plan: planKey, lessons: String(plan.lessons) },
             },
