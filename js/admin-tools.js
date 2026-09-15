@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -- UTM builder --
   const prettyBase = 'https://www.proenglishtutor.online/';
   const brandLabel = 'ProEng/';
+  const SHORT_HOST = 'p.proenglishtutor.online';
+  const SHORT_DOMAIN_LIVE = false;
+  const shortBranded = (code) => 'https://' + SHORT_HOST + '/' + code;
   async function loadShortlinksForUtm() {
     const sel = document.getElementById('utm-shortlink');
     if (!sel) return;
@@ -123,19 +126,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       rows = data || [];
     } catch (e) { list.innerHTML = '<p class="muted">Could not load campaigns.</p>'; return; }
 
-    const kpis = document.getElementById('cam-kpis');
+    const kpis = document.getElementById('hub-kpis');
     if (kpis) {
-      const totBudget = rows.reduce((a, r) => a + Number(r.budget || 0), 0);
-      const totSpend = rows.reduce((a, r) => a + Number(r.spend || 0), 0);
-      const totLeads = rows.reduce((a, r) => a + Number(r.leads || 0), 0);
-      const cpl = totLeads > 0 ? totSpend / totLeads : 0;
-      const active = rows.filter(r => r.status === 'active').length;
-      kpis.innerHTML = `
-        <div class="p-stat"><small>Active</small><strong>${active}</strong></div>
-        <div class="p-stat"><small>Budget</small><strong>${fmtMoney(totBudget)}</strong></div>
-        <div class="p-stat"><small>Spend</small><strong>${fmtMoney(totSpend)}</strong></div>
-        <div class="p-stat"><small>Leads</small><strong>${totLeads}</strong></div>
-        <div class="p-stat"><small>Cost / lead</small><strong>${cpl ? fmtMoney(cpl) : '-'}</strong></div>`;
+      if (!rows.length) {
+        kpis.innerHTML = '<div class="kpi-tile empty"><small>Nothing tracked yet</small><b>--</b><span>Add a campaign below</span></div>';
+      } else {
+        const totBudget = rows.reduce((a, r) => a + Number(r.budget || 0), 0);
+        const totSpend = rows.reduce((a, r) => a + Number(r.spend || 0), 0);
+        const totLeads = rows.reduce((a, r) => a + Number(r.leads || 0), 0);
+        const cpl = totLeads > 0 ? totSpend / totLeads : 0;
+        const active = rows.filter(r => r.status === 'active').length;
+        kpis.innerHTML = [
+          '<div class="kpi-tile accent"><small>Active</small><b>' + active + '</b></div>',
+          '<div class="kpi-tile"><small>Budget</small><b>' + fmtMoney(totBudget) + '</b></div>',
+          '<div class="kpi-tile"><small>Spend</small><b>' + fmtMoney(totSpend) + '</b></div>',
+          '<div class="kpi-tile"><small>Leads</small><b>' + totLeads + '</b></div>',
+          '<div class="kpi-tile"><small>Cost / lead</small><b>' + (cpl ? fmtMoney(cpl) : '--') + '</b></div>'
+        ].join('');
+      }
     }
 
     list.innerHTML = rows.length
@@ -203,32 +211,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     return s;
   }
 
+  function renderShortlinkStats(rows) {
+    const band = document.getElementById('sl-stats');
+    if (!band) return;
+    if (!rows.length) {
+      band.innerHTML = '<div class="kpi-tile empty"><small>No links yet</small><b>--</b></div>';
+      return;
+    }
+    const total = rows.length;
+    const clicks = rows.reduce((a, r) => a + Number(r.hits || 0), 0);
+    const top = rows.reduce((best, r) => Number(r.hits || 0) > Number(best.hits || 0) ? r : best, rows[0]);
+    band.innerHTML = [
+      '<div class="kpi-tile accent"><small>Total links</small><b>' + total + '</b></div>',
+      '<div class="kpi-tile"><small>Total clicks</small><b>' + clicks + '</b></div>',
+      '<div class="kpi-tile"><small>Top link</small><b>' + (top.label || top.code || '--') + '</b><span>' + Number(top.hits || 0) + ' clicks</span></div>'
+    ].join('');
+  }
+
   async function loadShortlinks() {
     if (!slList) return;
     try {
       const { data } = await sb.from('shortlinks').select('*').order('created_at', { ascending: false }).limit(200);
-      slList.innerHTML = (data || []).length
-        ? (data || []).map(r => `
-          <div class="rv-adm">
-            <div class="rv-adm-top">
-              <strong>${esc(r.label || r.code)}</strong>
-              <span class="badge badge-acc">${Number(r.hits || 0)} clicks</span>
-            </div>
-            <div class="rv-adm-meta" style="word-break:break-all;font-weight:700;">${brandLabel}${esc(r.code)} &nbsp;->&nbsp; ${esc(r.url)}</div>
-            <div class="rv-adm-meta" style="word-break:break-all;font-size:.72rem;">Full working URL: ${prettyBase}${esc(r.code)}</div>
-            <div class="rv-adm-actions">
-              <button class="btn btn-sm btn-primary" data-slcp2 title="Copies ProEng/xxx in one click">Copy ProEng link</button>
-              <button class="btn btn-sm btn-ghost" data-slcfull="${prettyBase + r.code}">Full URL</button>
-              <button class="btn btn-sm btn-ghost" data-slqr="${prettyBase + r.code}">QR</button>
-              <a class="btn btn-sm btn-ghost" href="${shortBase + r.code}" target="_blank" rel="noopener">Test</a>
-              <button class="btn btn-sm btn-ghost" data-sldel="${r.code}">Delete</button>
-            </div>
-          </div>`).join('')
-        : '<p class="muted" style="padding:16px;text-align:center;">No short links yet. Create your first one above.</p>';
+      const rows = data || [];
+      renderShortlinkStats(rows);
+      slList.innerHTML = rows.length
+        ? rows.map(r => {
+            const code = r.code;
+            const nb = Number(r.hits || 0);
+            const displayUrl = SHORT_DOMAIN_LIVE ? shortBranded(code) : prettyBase + code;
+            const shortLabel = SHORT_DOMAIN_LIVE ? shortBranded(code) : brandLabel + code;
+            return '<div class="sl-row">'
+              + '<div class="sl-row-main">'
+              + '<div class="sl-row-short">' + esc(shortLabel) + '</div>'
+              + '<div class="sl-row-target">' + esc(r.url) + '</div>'
+              + (r.label ? '<div class="sl-row-label"><span class="badge badge-soft">' + esc(r.label) + '</span></div>' : '')
+              + '<div class="sl-row-actions">'
+              + '<button class="btn btn-sm btn-primary" data-slcp="' + esc(code) + '">Copy</button>'
+              + '<button class="btn btn-sm btn-ghost" data-slqr="' + esc(displayUrl) + '">QR</button>'
+              + '<button class="btn btn-sm btn-ghost" data-slcfull="' + esc(prettyBase + code) + '">Full URL</button>'
+              + '<a class="btn btn-sm btn-ghost" href="' + esc(shortBase + code) + '" target="_blank" rel="noopener">Test</a>'
+              + '<button class="btn btn-sm btn-ghost" data-sldel="' + esc(code) + '">Delete</button>'
+              + '</div>'
+              + '</div>'
+              + '<div class="sl-row-stats">'
+              + '<div class="sl-row-clicks">' + nb + '</div>'
+              + '<div class="sl-row-stat-lbl">clicks</div>'
+              + '</div>'
+              + '</div>';
+          }).join('')
+        : '<div class="sl-empty">No short links yet. Create your first one above.</div>';
 
-      slList.querySelectorAll('[data-slcp2]').forEach(b => b.addEventListener('click', () => {
-        const code = b.closest('.rv-adm').querySelector('[data-sldel]').getAttribute('data-sldel');
-        const url = brandLabel + code;
+      slList.querySelectorAll('[data-slcp]').forEach(b => b.addEventListener('click', () => {
+        const code = b.getAttribute('data-slcp');
+        const url = SHORT_DOMAIN_LIVE ? shortBranded(code) : prettyBase + code;
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied: ' + url), () => {});
         else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
       }));
@@ -247,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await sb.from('shortlinks').delete().eq('code', b.getAttribute('data-sldel'));
         loadShortlinks();
       }));
-    } catch (e) { slList.innerHTML = '<p class="muted">Could not load short links.</p>'; }
+    } catch (e) { slList.innerHTML = '<div class="sl-empty">Could not load short links.</div>'; }
   }
   loadShortlinks();
 
@@ -274,7 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function flash(msg, err) {
     if (!slMsg) return;
     slMsg.style.display = 'block';
-    slMsg.style.color = err ? '#DC2626' : '#059669';
+    slMsg.className = 'sl-msg' + (err ? ' err' : ' ok');
     slMsg.textContent = msg;
     setTimeout(() => { slMsg.style.display = 'none'; }, 4000);
   }
