@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // -- UTM builder --
   const prettyBase = 'https://www.proenglishtutor.online/';
+  const brandLabel = 'ProEng/';
   async function loadShortlinksForUtm() {
     const sel = document.getElementById('utm-shortlink');
     if (!sel) return;
@@ -213,9 +214,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               <strong>${esc(r.label || r.code)}</strong>
               <span class="badge badge-acc">${Number(r.hits || 0)} clicks</span>
             </div>
-            <div class="rv-adm-meta" style="word-break:break-all;">${prettyBase}${esc(r.code)} &nbsp;->&nbsp; ${esc(r.url)}</div>
+            <div class="rv-adm-meta" style="word-break:break-all;font-weight:700;">${brandLabel}${esc(r.code)} &nbsp;->&nbsp; ${esc(r.url)}</div>
+            <div class="rv-adm-meta" style="word-break:break-all;font-size:.72rem;">Full working URL: ${prettyBase}${esc(r.code)}</div>
             <div class="rv-adm-actions">
-              <button class="btn btn-sm btn-primary" data-slcp2>Copy short link</button>
+              <button class="btn btn-sm btn-primary" data-slcp2 title="Copies ProEng/xxx in one click">Copy ProEng link</button>
+              <button class="btn btn-sm btn-ghost" data-slcfull="${prettyBase + r.code}">Full URL</button>
               <button class="btn btn-sm btn-ghost" data-slqr="${prettyBase + r.code}">QR</button>
               <a class="btn btn-sm btn-ghost" href="${shortBase + r.code}" target="_blank" rel="noopener">Test</a>
               <button class="btn btn-sm btn-ghost" data-sldel="${r.code}">Delete</button>
@@ -223,16 +226,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>`).join('')
         : '<p class="muted" style="padding:16px;text-align:center;">No short links yet. Create your first one above.</p>';
 
-      slList.querySelectorAll('[data-slcp]').forEach(b => b.addEventListener('click', () => {
-        const code = b.closest('.rv-adm').querySelector('[data-sldel]').getAttribute('data-sldel');
-        const url = shortBase + code;
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied!'), () => {});
-        else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
-      }));
       slList.querySelectorAll('[data-slcp2]').forEach(b => b.addEventListener('click', () => {
         const code = b.closest('.rv-adm').querySelector('[data-sldel]').getAttribute('data-sldel');
-        const url = prettyBase + code;
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied!'), () => {});
+        const url = brandLabel + code;
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied: ' + url), () => {});
+        else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
+      }));
+      slList.querySelectorAll('[data-slcfull]').forEach(b => b.addEventListener('click', () => {
+        const url = b.getAttribute('data-slcfull');
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied full URL'), () => {});
         else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
       }));
       slList.querySelectorAll('[data-slqr]').forEach(b => b.addEventListener('click', () => {
@@ -255,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (codeInput && previewEl) {
     codeInput.addEventListener('input', () => {
       const c = codeInput.value.trim();
-      previewEl.textContent = c ? prettyBase + c : '';
+      previewEl.textContent = c ? brandLabel + c : '';
     });
   }
 
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (genBtn && codeInput && previewEl) {
     genBtn.addEventListener('click', () => {
       codeInput.value = genCode(8);
-      previewEl.textContent = prettyBase + codeInput.value;
+      previewEl.textContent = brandLabel + codeInput.value;
       codeInput.focus();
     });
   }
@@ -298,12 +300,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('sl-label').value = '';
       const previewEl = document.getElementById('sl-preview');
       if (previewEl) previewEl.textContent = '';
-      const short = prettyBase + code;
+      const short = brandLabel + code;
+      const full = prettyBase + code;
       const resultEl = document.getElementById('sl-result');
       const resultUrl = document.getElementById('sl-result-url');
       const testEl = document.getElementById('sl-test');
+      const resultFull = document.getElementById('sl-result-full');
       if (resultUrl) resultUrl.value = short;
-      if (testEl) testEl.href = short;
+      if (testEl) testEl.href = full;
+      if (resultFull) resultFull.textContent = 'Full working URL: ' + full;
       if (resultEl) {
         resultEl.style.display = '';
         try { resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
