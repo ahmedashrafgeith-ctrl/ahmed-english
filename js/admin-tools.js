@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -- UTM builder --
   const prettyBase = 'https://www.proenglishtutor.online/';
   const brandLabel = 'ProEng/';
-  const SHORT_HOST = 'p.proenglishtutor.online';
+  const SHORT_HOST = 'proeng-go.proenglishtutor.online';
   const SHORT_DOMAIN_LIVE = true;
   const shortBranded = (code) => 'https://' + SHORT_HOST + '/' + code;
   const shortLink = (code) => SHORT_DOMAIN_LIVE ? shortBranded(code) : (prettyBase + code);
