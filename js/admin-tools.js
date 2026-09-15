@@ -71,8 +71,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const prettyBase = 'https://www.proenglishtutor.online/';
   const brandLabel = 'ProEng/';
   const SHORT_HOST = 'p.proenglishtutor.online';
-  const SHORT_DOMAIN_LIVE = false;
+  const SHORT_DOMAIN_LIVE = true;
   const shortBranded = (code) => 'https://' + SHORT_HOST + '/' + code;
+  const shortLink = (code) => SHORT_DOMAIN_LIVE ? shortBranded(code) : (prettyBase + code);
+  const shortLabel = (code) => SHORT_DOMAIN_LIVE ? shortBranded(code) : (brandLabel + code);
+  const brandPrefix = () => SHORT_DOMAIN_LIVE ? (SHORT_HOST + '/') : brandLabel;
+  const prefixEl = document.getElementById('sl-prefix');
+  if (prefixEl) {
+    prefixEl.textContent = SHORT_DOMAIN_LIVE ? '' : brandLabel;
+    if (SHORT_DOMAIN_LIVE) prefixEl.style.display = 'none';
+  }
   async function loadShortlinksForUtm() {
     const sel = document.getElementById('utm-shortlink');
     if (!sel) return;
@@ -81,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data } = await sb.from('shortlinks').select('code,label,url').order('created_at', { ascending: false }).limit(50);
       (data || []).forEach(r => {
         const name = r.label || r.code;
-        opts += '<option value="' + prettyBase + r.code + '">' + esc(name) + ' - ' + esc(prettyBase + r.code) + '</option>';
+        opts += '<option value="' + shortLink(r.code) + '">' + esc(name) + ' - ' + esc(shortLink(r.code)) + '</option>';
       });
     } catch (e) { /* noop */ }
     sel.innerHTML = opts;
@@ -238,18 +246,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? rows.map(r => {
             const code = r.code;
             const nb = Number(r.hits || 0);
-            const displayUrl = SHORT_DOMAIN_LIVE ? shortBranded(code) : prettyBase + code;
-            const shortLabel = SHORT_DOMAIN_LIVE ? shortBranded(code) : brandLabel + code;
+            const link = shortLink(code);
             return '<div class="sl-row">'
               + '<div class="sl-row-main">'
-              + '<div class="sl-row-short">' + esc(shortLabel) + '</div>'
+              + '<div class="sl-row-short">' + esc(shortLabel(code)) + '</div>'
               + '<div class="sl-row-target">' + esc(r.url) + '</div>'
               + (r.label ? '<div class="sl-row-label"><span class="badge badge-soft">' + esc(r.label) + '</span></div>' : '')
               + '<div class="sl-row-actions">'
               + '<button class="btn btn-sm btn-primary" data-slcp="' + esc(code) + '">Copy</button>'
-              + '<button class="btn btn-sm btn-ghost" data-slqr="' + esc(displayUrl) + '">QR</button>'
+              + '<button class="btn btn-sm btn-ghost" data-slqr="' + esc(link) + '">QR</button>'
               + '<button class="btn btn-sm btn-ghost" data-slcfull="' + esc(prettyBase + code) + '">Full URL</button>'
-              + '<a class="btn btn-sm btn-ghost" href="' + esc(shortBase + code) + '" target="_blank" rel="noopener">Test</a>'
+              + '<a class="btn btn-sm btn-ghost" href="' + esc(link) + '" target="_blank" rel="noopener">Test</a>'
               + '<button class="btn btn-sm btn-ghost" data-sldel="' + esc(code) + '">Delete</button>'
               + '</div>'
               + '</div>'
@@ -263,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       slList.querySelectorAll('[data-slcp]').forEach(b => b.addEventListener('click', () => {
         const code = b.getAttribute('data-slcp');
-        const url = SHORT_DOMAIN_LIVE ? shortBranded(code) : prettyBase + code;
+        const url = shortLink(code);
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => flash('Copied: ' + url), () => {});
         else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); }
       }));
@@ -292,7 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (codeInput && previewEl) {
     codeInput.addEventListener('input', () => {
       const c = codeInput.value.trim();
-      previewEl.textContent = c ? brandLabel + c : '';
+      previewEl.textContent = c ? shortLabel(c) : '';
     });
   }
 
@@ -301,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (genBtn && codeInput && previewEl) {
     genBtn.addEventListener('click', () => {
       codeInput.value = genCode(8);
-      previewEl.textContent = brandLabel + codeInput.value;
+      previewEl.textContent = shortLabel(codeInput.value);
       codeInput.focus();
     });
   }
@@ -335,20 +342,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('sl-label').value = '';
       const previewEl = document.getElementById('sl-preview');
       if (previewEl) previewEl.textContent = '';
-      const short = brandLabel + code;
-      const full = prettyBase + code;
+      const full = shortLink(code);
       const resultEl = document.getElementById('sl-result');
       const resultUrl = document.getElementById('sl-result-url');
       const testEl = document.getElementById('sl-test');
       const resultFull = document.getElementById('sl-result-full');
-      if (resultUrl) resultUrl.value = short;
+      if (resultUrl) resultUrl.value = full;
       if (testEl) testEl.href = full;
-      if (resultFull) resultFull.textContent = 'Full working URL: ' + full;
+      if (resultFull) resultFull.textContent = SHORT_DOMAIN_LIVE ? ('Fallback if needed: ' + prettyBase + code) : ('Full working URL: ' + full);
       if (resultEl) {
         resultEl.style.display = '';
         try { resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
       }
-      flash('Short link created: ' + short);
+      flash('Short link created: ' + full);
       loadShortlinks();
       loadShortlinksForUtm();
     });
