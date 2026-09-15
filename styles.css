@@ -1486,3 +1486,14 @@ html, body { overflow-x: hidden; }
 @media (max-width: 900px) {
   #monet-panel .grid-2 { grid-template-columns: 1fr !important; }
 }
+
+/* Ads AI manager panel (admin) */
+.ai-card { background: var(--c-surface, #fff); border: 1px solid var(--c-card-border, #e5e7eb); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.tbl th, .tbl td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--c-card-border, #eee3da); vertical-align: top; }
+.tbl th { color: var(--c-ink-3, #9ca3af); font-weight: 600; }
+.ai-line { font-size: .82rem; line-height: 1.55; margin: 3px 0; }
+.ai-line pre, .ai-log pre { margin: 6px 0; white-space: pre-wrap; word-break: break-all; font-size: .78rem; }
+.ai-line.ai-ok { color: #059669; font-weight: 600; }
+.ai-line.ai-err { color: #DC2626; font-weight: 600; }
+.ai-line.ai-info { color: var(--c-ink-2, #4b5563); }

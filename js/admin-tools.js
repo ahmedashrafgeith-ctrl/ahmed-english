@@ -53,48 +53,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       adAccounts.ggl = (ggId ? ggId.value.trim() : '');
       adAccounts.pixel = (pixelId ? pixelId.value.trim() : '');
       await persistAccounts({ fb: adAccounts.fb, ggl: adAccounts.ggl, pixel: adAccounts.pixel });
-      const m = document.getElementById('ads-platforms');
-      renderPlatforms(m);
     });
   }
-
-  function renderPlatforms(el) {
-    if (!el) return;
-    const cards = [
-      {
-        name: 'Meta Ads Manager', color: '#2563EB', icon: 'M', id: adAccounts.fb,
-        manage: adAccounts.fb ? ('https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=' + adAccounts.fb)
-          : 'https://adsmanager.facebook.com/adsmanager/manage/campaigns',
-        create: adAccounts.fb ? ('https://www.facebook.com/ads/create/?adaccount_id=' + adAccounts.fb)
-          : 'https://www.facebook.com/ads/create/',
-        sub: 'Facebook & Instagram campaigns'
-      },
-      {
-        name: 'Google Ads', color: '#4285F4', icon: 'G', id: adAccounts.ggl,
-        manage: adAccounts.ggl ? ('https://ads.google.com/aw/campaigns?ocid=' + adAccounts.ggl)
-          : 'https://ads.google.com/aw/campaigns',
-        create: adAccounts.ggl ? ('https://ads.google.com/aw/campaigns/create/quick?ocid=' + adAccounts.ggl)
-          : 'https://ads.google.com/aw/campaigns/create/quick',
-        sub: 'Search, YouTube & Display'
-      },
-      { name: 'TikTok Ads', color: '#111827', icon: 'T', id: '', manage: 'https://ads.tiktok.com', create: null, sub: 'TikTok campaigns' }
-    ];
-    el.innerHTML = cards.map(c => `
-      <div class="zone-card" style="padding:16px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:${c.color};color:#fff;display:grid;place-items:center;font-weight:800;">${c.icon}</div>
-          <div style="min-width:0;">
-            <div style="font-weight:700;">${c.name}</div>
-            <div style="font-size:.78rem;color:var(--c-ink-3);">${c.sub}</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-          <a class="btn btn-sm btn-ghost" style="flex:1;" href="${c.manage}" target="_blank" rel="noopener">Open dashboard</a>
-          ${c.create ? `<a class="btn btn-sm btn-primary" style="flex:1;" href="${c.create}" target="_blank" rel="noopener">Create ad</a>` : ''}
-        </div>
-      </div>`).join('');
-  }
-  renderPlatforms(document.getElementById('ads-platforms'));
 
   if (document.getElementById('ads-fb-open')) {
     document.getElementById('ads-fb-open').addEventListener('click', () => openAdPlatform(adAccounts.fb, 'fb'));
@@ -317,12 +277,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => { slMsg.style.display = 'none'; }, 4000);
   }
 
-  if (document.getElementById('sl-create')) {
-    document.getElementById('sl-create').addEventListener('click', async () => {
+  const shortenBtn = document.getElementById('sl-shorten') || document.getElementById('sl-create');
+  if (shortenBtn) {
+    shortenBtn.addEventListener('click', async () => {
       const url = document.getElementById('sl-url').value.trim();
       const label = document.getElementById('sl-label').value.trim();
       const code = document.getElementById('sl-code').value.trim() || genCode(6);
-      if (!url) { flash('Please enter the destination URL.', true); document.getElementById('sl-url').focus(); return; }
+      if (!url) { flash('Please paste the long URL first.', true); document.getElementById('sl-url').focus(); return; }
       if (!/^[A-Za-z0-9_-]{1,64}$/.test(code)) { flash('Use only letters, numbers, dash or underscore in the code.', true); document.getElementById('sl-code').focus(); return; }
       let clean = url;
       if (!/^https?:\/\//i.test(clean)) clean = 'https://' + clean;
@@ -335,9 +296,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('sl-code').value = '';
       document.getElementById('sl-url').value = '';
       document.getElementById('sl-label').value = '';
-      flash('Short link created: ' + prettyBase + code);
+      const previewEl = document.getElementById('sl-preview');
+      if (previewEl) previewEl.textContent = '';
+      const short = prettyBase + code;
+      const resultEl = document.getElementById('sl-result');
+      const resultUrl = document.getElementById('sl-result-url');
+      const testEl = document.getElementById('sl-test');
+      if (resultUrl) resultUrl.value = short;
+      if (testEl) testEl.href = short;
+      if (resultEl) {
+        resultEl.style.display = '';
+        try { resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      }
+      flash('Short link created: ' + short);
       loadShortlinks();
       loadShortlinksForUtm();
+    });
+  }
+
+  const copyBtn = document.getElementById('sl-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const resultUrl = document.getElementById('sl-result-url');
+      const val = resultUrl ? resultUrl.value : '';
+      if (!val) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(() => {
+          copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 2000);
+        }, () => {});
+      } else {
+        const ta = document.createElement('textarea'); ta.value = val; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+        copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 2000);
+      }
     });
   }
 });

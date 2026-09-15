@@ -23,7 +23,7 @@
 <meta name="keywords" content="online english tutor, 1-on-1 english lessons, private english teacher, learn english online, spoken english confidence, business english coaching, tefl certified english tutor">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"TutorEnglishPro","url":"https://www.proenglishtutor.online/admin.html","potentialAction":{"@type":"SearchAction","target":"https://www.proenglishtutor.online/?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"EducationalOrganization","name":"TutorEnglishPro","url":"https://www.proenglishtutor.online/admin.html","description":"Personal 1-on-1 online English tutoring for business professionals, interview prep, and spoken confidence.","foundingDate":"2023","founder":{"@type":"Person","name":"Ahmed"},"sameAs":[]}]}</script>
   <title>Admin Dashboard - TutorEnglishPro</title>
-  <link rel="stylesheet" href="styles-20260904f.css?v=20260914a">
+  <link rel="stylesheet" href="styles-20260904f.css?v=20260915a">
   <link rel="stylesheet" href="components.css?v=20260906k">
   <link rel="stylesheet" href="reviews.css?v=20260906q">
   <script src="js/config.js"></script>
@@ -35,7 +35,9 @@
   <script src="js/theme.js"></script>
   <script src="js/ads.js?v=20260906k"></script>
   <script src="js/admin.js?v=20260914a"></script>
-  <script src="js/admin-tools.js?v=20260914a"></script>
+  <script src="js/ads-mcp.js?v=20260915a"></script>
+  <script src="js/ads-ai.js?v=20260915a"></script>
+  <script src="js/admin-tools.js?v=20260915a"></script>
 </head>
 <body>
 
@@ -421,11 +423,13 @@
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px;" id="ads-platforms"></div>
+        <h4 style="margin:0 0 6px;">AI Ads Manager</h4>
+        <p class="muted" style="margin:0 0 14px;font-size:0.85rem;">Connect your Pipeboard API token to manage real Meta ads right here - list campaigns, inspect ads, pause/resume, and create new ads (always created paused).</p>
+        <div id="ads-ai-app"></div>
 
         <div class="grid-2" style="gap:22px;margin-top:8px;">
           <div>
-            <label class="kpi-label">The cards above open the official platforms - manage existing campaigns and create new ads there with your saved ad account. IDs below are optional and pre-fill those links:</label>
+            <label class="kpi-label">Optional account shortcuts - the IDs below pre-fill the classic official dashboards if you still need them:</label>
             <div style="display:grid;gap:10px;margin-top:10px;">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span class="badge badge-acc" style="flex:0 0 auto;">Meta</span>
@@ -454,7 +458,7 @@
                 <input class="field" id="utm-medium" placeholder="utm_medium (e.g. cpc, social)" autocomplete="off">
                 <input class="field" id="utm-campaign" placeholder="utm_campaign (e.g. spring_sale)" autocomplete="off">
                 <button type="button" class="btn btn-primary btn-sm" id="utm-build" style="justify-self:start;">Build UTM link</button>
-                <input class="field" id="utm-result" type="text" readonly style="font-size:.8rem;" placeholder="Your trackable link appears here|">
+                <input class="field" id="utm-result" type="text" readonly style="font-size:.8rem;" placeholder="Your trackable link appears here...">
                 <button type="button" class="btn btn-ghost btn-sm" id="utm-copy" style="justify-self:start;display:none;">Copy link</button>
               </div>
             </div>
@@ -492,34 +496,51 @@
         <div class="panel-head">
           <div>
             <h3>Link Shortener</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Create short links that redirect to any page, use them in ads or WhatsApp, and see how many times each was clicked.</p>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Shorten any long link (Instagram, Facebook, YouTube, WhatsApp, TikTok, blogs, or your own pages), share the short link anywhere, and track how many clicks each one gets.</p>
           </div>
         </div>
-        <div style="max-width:640px;margin-bottom:18px;">
-          <div class="grid-2" style="gap:10px;align-items:end;">
+
+        <div class="zone-card" style="padding:18px 20px;margin-bottom:16px;">
+          <label class="kpi-label" for="sl-url" style="margin-bottom:6px;">Long URL</label>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <input class="field" id="sl-url" type="url" placeholder="Paste the long link you want to shorten" autocomplete="off" style="flex:1;min-width:230px;">
+            <button type="button" class="btn btn-primary btn-sm" id="sl-shorten" style="white-space:nowrap;">Shorten URL</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px;">
             <div>
-              <label class="kpi-label" for="sl-label">Label (optional)</label>
-              <input class="field" id="sl-label" type="text" placeholder="e.g. Spring sale landing" autocomplete="off">
-            </div>
-            <div>
-              <label class="kpi-label" for="sl-code">Custom code (optional)</label>
+              <label class="kpi-label" for="sl-code" style="margin-bottom:6px;">Custom code (what comes after the / )</label>
               <div style="display:flex;gap:8px;">
-                <input class="field" id="sl-code" type="text" placeholder="e.g. spring" autocomplete="off" style="flex:1;">
+                <input class="field" id="sl-code" type="text" placeholder="e.g. spring, mylink, Xy7kq2" autocomplete="off" spellcheck="false" style="flex:1;">
                 <button type="button" class="btn btn-ghost btn-sm" id="sl-gen" title="Generate a short random code" style="white-space:nowrap;">Generate</button>
               </div>
+              <p class="muted" id="sl-preview" style="margin:6px 0 0;font-size:.78rem;word-break:break-all;"></p>
             </div>
-            <div style="grid-column:1/-1;">
-              <label class="kpi-label" for="sl-url">Destination URL *</label>
-              <input class="field" id="sl-url" type="url" placeholder="https://www.proenglishtutor.online/packages.html" autocomplete="off">
+            <div>
+              <label class="kpi-label" for="sl-label" style="margin-bottom:6px;">Label (optional - for your own tracking)</label>
+              <input class="field" id="sl-label" type="text" placeholder="e.g. Spring sale landing" autocomplete="off">
             </div>
           </div>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;">
-            <button type="button" class="btn btn-primary btn-sm" id="sl-create">Create short link</button>
-            <span class="muted" id="sl-preview" style="font-size:.85rem;color:var(--c-ink-3);"></span>
+
+          <div id="sl-result" style="display:none;margin-top:16px;padding:12px 14px;border:1px solid var(--c-card-border);border-radius:10px;background:var(--c-soft);">
+            <div class="muted" style="font-size:.78rem;font-weight:700;margin-bottom:6px;">Your new short link - share it anywhere:</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <input class="field" id="sl-result-url" type="text" readonly style="flex:1;min-width:200px;font-size:.84rem;">
+              <button type="button" class="btn btn-primary btn-sm" id="sl-copy" style="white-space:nowrap;">Copy link</button>
+              <a class="btn btn-sm btn-ghost" id="sl-test" href="#" target="_blank" rel="noopener">Test</a>
+            </div>
           </div>
         </div>
+
         <div id="sl-msg" style="margin-bottom:10px;font-size:.85rem;font-weight:600;display:none;"></div>
-        <div id="sl-list" style="display:grid;gap:8px;"><p class="muted" style="padding:16px;text-align:center;">Loading short links|</p></div>
+
+        <div class="zone-card" style="padding:16px 18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+            <label class="kpi-label" style="margin:0;">Your short links</label>
+            <span class="muted" style="font-size:.78rem;">Clicks are counted every time someone opens one of these links.</span>
+          </div>
+          <div id="sl-list" style="display:grid;gap:8px;"><p class="muted" style="padding:16px;text-align:center;">Loading short links...</p></div>
+        </div>
       </section>
 
       <!-- CHAT INBOX -->
@@ -527,7 +548,7 @@
         <div class="panel-head bk-inbox-head">
           <div>
             <h3>Inbox</h3>
-            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here | they see it instantly and get an email.</p>
+            <p class="muted" style="margin:2px 0 0;font-size:0.85rem;">Live messages from students and site visitors. Reply here - they see it instantly and get an email.</p>
           </div>
           <div class="bk-inbox-tools">
             <button type="button" class="btn btn-ghost btn-sm" id="inbox-archive-btn" title="Delete conversations idle for over 90 days">Clean old (90+ days)</button>
@@ -543,13 +564,13 @@
 
         <div class="bk-inbox-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="inbox-search" placeholder="Search name, email, or message|" autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
+          <input type="text" id="inbox-search" placeholder="Search name, email, or message..." autocomplete="off" style="border:0;outline:0;background:transparent;font-family:var(--font);font-size:.88rem;flex:1;color:var(--c-ink,#111);">
         </div>
 
         <div id="inbox-wrap">
           <div id="inbox-side">
             <div id="inbox-list">
-              <p class="muted" style="padding:18px;text-align:center;">Loading conversations|</p>
+              <p class="muted" style="padding:18px;text-align:center;">Loading conversations...</p>
             </div>
           </div>
           <div id="inbox-thread">
