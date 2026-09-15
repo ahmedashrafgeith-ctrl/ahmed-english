@@ -1497,3 +1497,7 @@ html, body { overflow-x: hidden; }
 .ai-line.ai-ok { color: #059669; font-weight: 600; }
 .ai-line.ai-err { color: #DC2626; font-weight: 600; }
 .ai-line.ai-info { color: var(--c-ink-2, #4b5563); }
+
+/* Ads AI key-status note (admin) */
+.ai-key-note { font-size: .76rem; color: var(--c-ink-2, #4b5563); margin: 6px 0 0; }
+.ai-key-note.on { color: #059669; }
